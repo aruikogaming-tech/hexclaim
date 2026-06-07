@@ -715,7 +715,6 @@ function resetAllProgress(){
     document.getElementById('resetFinalNo').onclick=function(){popup2.remove();playSfx('menuBack')};
     document.getElementById('resetFinalYes').onclick=function(){
       popup2.remove();
-      var wasAdmin=save.isAdmin;
       try{localStorage.removeItem('hexclaim_v4')}catch(e){}
       save={
         playerName:'Player',portrait:'⬡',profileLevel:1,profileXP:0,
@@ -732,10 +731,9 @@ function resetAllProgress(){
         totalSpins:0,
         questProgress:{},questClaimed:{},questResetDaily:null,questResetWeekly:null,questResetMonthly:null,
         dailyGamesPlayed:0,dailyWins:0,dailyBPTasks:{},
-        matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:false,
+        matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:1000,seasonClaimed:false,
         nameChangesFree:1,activeSkin:'default',aiStats:{},
-        authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
-        isAdmin:wasAdmin
+        authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true
       };
       saveProg();
       updateAllUI();
@@ -1557,7 +1555,7 @@ function generateFriendCode(){
 
 function buildFriendsScreen(){
   var tabs=document.getElementById('friendsTabs');tabs.innerHTML='';
-  ['Friends','Add','Requests'].forEach(function(t,i){
+  ['Friends','Add','Requests','Local PVP'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
     btn.textContent=t;
     btn.onclick=function(){
@@ -1596,9 +1594,11 @@ function renderFriendsTab(tab){
           +'<div style="font-size:9px;color:'+rankObj.color+'">'+rankObj.icon+' '+rankObj.name+' — '+(friend.elo||1000)+' ELO</div>'
           +'<div style="font-size:8px;color:var(--muted);margin-top:1px">Level '+(friend.level||1)+'</div></div>'
           +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
+          +'<div class="challenge-btn" style="cursor:pointer;font-size:9px;color:#fff;font-weight:800;padding:4px 10px;background:var(--p1);border-radius:6px" data-idx="'+idx+'">⚔️ Challenge</div>'
           +'<div class="remove-btn" style="cursor:pointer;font-size:8px;color:var(--c4)" data-idx="'+idx+'">Remove</div></div>';
         cont.appendChild(el);
         // Attach events after append
+        el.querySelector('.challenge-btn').onclick=function(){challengeFriend(friend)};
         el.querySelector('.remove-btn').onclick=function(){removeFriend(idx)};
       });
     }
@@ -2414,9 +2414,13 @@ function updateAllUI(){
   // Show admin panel if admin
   const ap=document.getElementById('adminPanel');
   if(ap&&save.isAdmin)ap.style.display='block';
-  // Ranked PVP is coming soon — always locked
+  // Update ranked PVP button lock state
   const pvpBtn=document.getElementById('pvpBtn');
-  if(pvpBtn){pvpBtn.style.opacity='0.4';pvpBtn.style.pointerEvents='none'}
+  if(pvpBtn){
+    const locked=!save.tutorialDone||save.profileLevel<10;
+    if(locked){pvpBtn.style.opacity='0.5';pvpBtn.innerHTML='⚔ Ranked PVP <span style="font-size:9px">🔒 Lv.10</span>'}
+    else{pvpBtn.style.opacity='1';pvpBtn.innerHTML='⚔ Ranked PVP'}
+  }
 }
 
 function updateTopBar(){
@@ -3609,7 +3613,7 @@ const CHALLENGES=[
   {name:"Color Chaos",desc:"Win with 6 colors on the board.",reward:"Title: Prismatic",cols:8,rows:10,colors:6,aiSmart:0.4,reqChapter:1},
   {name:"Marathon",desc:"Win on a massive 12×14 board.",reward:"100 Chromas",cols:12,rows:14,colors:5,aiSmart:0.5,reqChapter:1},
   {name:"Blindfold Blitz",desc:"Full fog + 55 moves.",reward:"Title: Blind Seer",cols:9,rows:11,colors:5,aiSmart:0.6,fog:true,moveLimit:true,baseMoves:55,reqChapter:2},
-  {name:"No Margin",desc:"Win with 60%+ territory. Every tile counts.",reward:"Title: Precision",cols:8,rows:10,colors:4,aiSmart:0.5,winPct:60,reqChapter:2},
+  {name:"No Margin",desc:"Win with exactly 65% — no more.",reward:"Title: Precision",cols:8,rows:10,colors:4,aiSmart:0.5,winPct:65,reqChapter:2},
   {name:"Fog of War",desc:"Win with fog on a 10×12 board.",reward:"75 Chromas",cols:10,rows:12,colors:5,aiSmart:0.6,fog:true,reqChapter:2},
   {name:"Speedrun Pro",desc:"Win in under 30 moves.",reward:"Title: Flash",cols:7,rows:8,colors:3,aiSmart:0.4,moveLimit:true,baseMoves:30,reqChapter:2},
   {name:"Impossible SHADE",desc:"Max AI on 6-color board.",reward:"Title: Chromancer Supreme",cols:10,rows:12,colors:6,aiSmart:1.0,reqChapter:3},
@@ -3621,10 +3625,10 @@ const CHALLENGES=[
   {name:"🎨 Shadow Walk",desc:"Win with fog + Hard AI + 6 colors. Navigate the darkness.",reward:"Skin: Shadow Walker",rewardSkin:'ch_shadow',cols:10,rows:12,colors:6,aiSmart:0.82,fog:true,reqChapter:2,difficulty:'medium'},
   {name:"🎨 Prism Break",desc:"Win on a 6×6 board vs Smart AI with only 3 colors. Tight quarters.",reward:"Skin: Prism Core",rewardSkin:'ch_prism',cols:6,rows:6,colors:3,aiSmart:0.7,reqChapter:1,difficulty:'medium'},
   // ===== LEGENDARY CHALLENGES (Very Hard) =====
-  {name:"💀 Perfect Storm",desc:"Win with 80%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin: Obsidian Crown + Title: The Perfect",rewardSkin:'ch_obsidian',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:80,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Perfect Storm",desc:"Win with 95%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin: Obsidian Crown + Title: The Perfect",rewardSkin:'ch_obsidian',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:95,reqChapter:3,difficulty:'legendary'},
   {name:"💀 Suicide Mission",desc:"Win vs Impossible AI, fog, 7 colors, only 50 moves. Good luck.",reward:"Skin: Void Emperor + Title: Deathless",rewardSkin:'ch_void_emperor',rewardTitle:'Deathless',cols:10,rows:12,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:50,reqChapter:3,difficulty:'legendary'},
   {name:"💀 Iron Curtain",desc:"Beat Expert AI on 14×16, 6 colors, 90 moves. An endurance nightmare.",reward:"Skin: Eternal Flame + Title: Iron Wall",rewardSkin:'ch_eternal',rewardTitle:'Iron Wall',cols:14,rows:16,colors:6,aiSmart:0.94,moveLimit:true,baseMoves:90,reqChapter:3,difficulty:'legendary'},
-  {name:"💀 Absolute Zero",desc:"Max AI, fog, 7 colors, 90 moves, 75%+ territory. The final test.",reward:"Skin: Chromatic Nexus + Title: Nexus Lord",rewardSkin:'ch_nexus',rewardTitle:'Nexus Lord',cols:12,rows:14,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:90,winPct:75,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Absolute Zero",desc:"Max AI, fog, 7 colors, 90 moves, 90%+ territory. The final test.",reward:"Skin: Chromatic Nexus + Title: Nexus Lord",rewardSkin:'ch_nexus',rewardTitle:'Nexus Lord',cols:12,rows:14,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:90,winPct:90,reqChapter:3,difficulty:'legendary'},
 ];
 
 // ===== GAME STATE =====
@@ -4488,24 +4492,16 @@ function showChapterLevels(ci){
   const g=document.getElementById('levelGrid');
   const storeKey='stars';
   const clearedKey='cleared';
-  const levelProgression=[
-    [{cols:10,rows:12,colors:4},{cols:11,rows:13,colors:4},{cols:11,rows:13,colors:5},{cols:12,rows:14,colors:5},{cols:12,rows:14,colors:5}],
-    [{cols:10,rows:12,colors:4},{cols:11,rows:13,colors:4},{cols:11,rows:13,colors:5},{cols:12,rows:14,colors:5},{cols:12,rows:14,colors:6}],
-    [{cols:11,rows:13,colors:4},{cols:12,rows:14,colors:5},{cols:12,rows:14,colors:5},{cols:13,rows:15,colors:6},{cols:13,rows:15,colors:6}],
-    [{cols:12,rows:14,colors:5,baseMoves:120},{cols:13,rows:15,colors:5,baseMoves:110},{cols:13,rows:15,colors:6,baseMoves:105},{cols:14,rows:16,colors:6,baseMoves:100},{cols:14,rows:16,colors:6,baseMoves:90}]
-  ];
   for(let l=0;l<ch.levels;l++){
     const key=ci+'-'+l;
     const prevKey=ci+'-'+(l-1);
     const unlocked=l===0||(save[clearedKey]||{})[prevKey]||save.cleared[prevKey];
     const stars=(save[storeKey]||save.stars)[key]||0;
     const hasMastery=(save.masteryStars||{})[key];
-    const lp=(levelProgression[ci]||[])[l]||{};
     const dot=document.createElement('div');dot.className='level-dot'+(unlocked?'':' locked');
     let s='';for(let i=0;i<3;i++)s+=i<stars?'<span style="color:var(--star)">★</span>':'<span style="color:var(--stardim)">★</span>';
     s+=hasMastery?'<span style="color:#ffd166" title="Mastery">💎</span>':'<span style="color:var(--stardim)">◇</span>';
-    const info=lp.cols?'<div style="font-size:7px;color:var(--muted);margin-top:1px">'+lp.cols+'×'+lp.rows+' · '+lp.colors+'🎨'+(lp.baseMoves&&lp.baseMoves<999?' · '+lp.baseMoves+'🔢':'')+'</div>':'';
-    dot.innerHTML='<div class="ln">'+(l+1)+'</div><div class="ls">'+s+'</div>'+info;
+    dot.innerHTML='<div class="ln">'+(l+1)+'</div><div class="ls">'+s+'</div>';
     if(unlocked)dot.onclick=function(){startCampaignLevel(ci,l)};
     g.appendChild(dot);
   }
@@ -4570,14 +4566,7 @@ function startCampaignLevel(ci,li){
     [{cols:12,rows:14,colors:5,aiSmart:0.88,baseMoves:120},{cols:13,rows:15,colors:5,aiSmart:0.91,baseMoves:110},{cols:13,rows:15,colors:6,aiSmart:0.94,baseMoves:105},{cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:100},{cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:90}]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
-  curConfig={
-    cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,
-    aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),
-    fog:ch.fog||false,powerTiles:ch.powerTiles||false,
-    moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,
-    baseMoves:lp.baseMoves||999,
-    starThresholds:ch.starThresholds,winPct:75,chapterIdx:ci,levelIdx:li
-  };
+  curConfig={cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),fog:ch.fog||false,powerTiles:ch.powerTiles||false,moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,baseMoves:lp.baseMoves||999,starThresholds:ch.starThresholds,winPct:75,chapterIdx:ci,levelIdx:li};
   if(li===0){showStory(ch,ci)}else{launchLevel()}
 }
 function startChallenge(i){
@@ -5525,17 +5514,13 @@ function buildColorPicker(){
       if(ci===p1Color||ci===p2Color||ci===p1LastColor)continue;
       const sO=owner.map(r=>[...r]),sG=grid.map(r=>[...r]);
       for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(sO[r][c]===1)sG[r][c]=ci}
-      let changed=true;
-      while(changed){changed=false;
-        for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(sO[r][c]!==1)continue;
-          [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;
-            if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&sO[nr][nc]===0&&sG[nr][nc]===ci){sO[nr][nc]=1;changed=true}})}}
-      for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-        if(sO[r][c]===1&&owner[r][c]!==1&&powerTiles.some(p=>p.r===r&&p.c===c)){powerCapColors.add(ci);break}}
+      let changed=true;while(changed){changed=false;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(sO[r][c]!==1)continue;[[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&sO[nr][nc]===0&&sG[nr][nc]===ci){sO[nr][nc]=1;changed=true}})}}
+      for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(sO[r][c]===1&&owner[r][c]!==1&&powerTiles.some(p=>p.r===r&&p.c===c)){powerCapColors.add(ci);break}}
     }
   }
   for(let i=0;i<NUM_COLORS;i++){
     const b=document.createElement('div');b.className='color-btn';b.style.background=COLOR_HEX[i];b.style.position='relative';
+    // Add symbol overlay
     const sym=document.createElement('span');
     sym.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,0.3);pointer-events:none';
     sym.textContent=symbols[i]||'';
@@ -5543,21 +5528,18 @@ function buildColorPicker(){
     const isOwn=i===p1Color||i===p2Color;
     const isCooldown=i===p1LastColor;
     if(isOwn||isCooldown)b.classList.add('disabled');
+
     if(isCooldown&&!isOwn){
       const cd=document.createElement('span');
       cd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;background:rgba(0,0,0,0.5);border-radius:8px;color:var(--muted);font-weight:800;z-index:1';
       cd.textContent='⏳';b.appendChild(cd)}
-    if(powerCapColors.has(i)){
-      b.style.boxShadow='0 0 0 2px #ffd166, 0 0 8px rgba(255,209,102,0.6)';
-      const badge=document.createElement('span');
-      badge.style.cssText='position:absolute;top:-4px;right:-4px;font-size:10px;z-index:2;filter:drop-shadow(0 0 3px #ffd166)';
-      badge.textContent='⚡';b.appendChild(badge);
-    }
+    if(powerCapColors.has(i)){b.style.boxShadow='0 0 0 2px #ffd166, 0 0 8px rgba(255,209,102,0.6)';const badge=document.createElement('span');badge.style.cssText='position:absolute;top:-4px;right:-4px;font-size:10px;z-index:2;filter:drop-shadow(0 0 3px #ffd166)';badge.textContent='⚡';b.appendChild(badge);}
     b.addEventListener('mouseenter',()=>{if(!isOwn&&!isCooldown&&!animatingMove)computePreview(i)});
     b.addEventListener('mouseleave',()=>computePreview(-1));
     b.onclick=()=>playerMove(i);
     picker.appendChild(b);
   }
+
 }
 function buildPowerups(){
   const c=document.getElementById('powerups');c.innerHTML='';if(!curConfig.powerTiles)return;
@@ -5882,14 +5864,7 @@ function aiMove(){
     const before=countFor(sO,2);
     simExpand(sO,sG,2,ci);
     let score=countFor(sO,2)-before;
-    // Power tile bonus — scales with aiSmart so easy AI ignores, hard AI hunts
-    if(curConfig.powerTiles&&powerTiles.length){
-      let ptBonus=0;
-      for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-        if(sO[r][c]===2&&owner[r][c]!==2&&powerTiles.some(p=>p.r===r&&p.c===c))ptBonus+=3;
-      }
-      score+=ptBonus*curConfig.aiSmart;
-    }
+    if(curConfig.powerTiles&&powerTiles.length){let ptBonus=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(sO[r][c]===2&&owner[r][c]!==2&&powerTiles.some(p=>p.r===r&&p.c===c))ptBonus+=3}score+=ptBonus*curConfig.aiSmart;}
     if(doBlock&&ci===playerBestColor) score+=playerBestGain*0.6;
     if(depth>=2){
       let bestFutureGain=0;
@@ -5942,12 +5917,7 @@ function checkEnd(){
   lastP1Count=p1raw;lastP2Count=p2raw;
   if(stalemateTurns>=14){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
-  if(unclaimed===0){
-    ended=true;
-    const reqPct=curConfig.winPct||0;
-    won=reqPct>0?(p1p>=reqPct&&p1n>p2n):p1n>p2n;
-    reason='Board fully claimed';
-  }
+  if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=reqPct>0?(p1p>=reqPct&&p1n>p2n):p1n>p2n;reason='Board fully claimed'}
   if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;won=p1n>p2n;reason='Moves exhausted'}
   if(!ended)return false;
 
