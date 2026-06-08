@@ -19,7 +19,7 @@
   --text:#eef2ff;--muted:#6b7fa8;--dim:#1a2b50;
   --p1:#06d6a0;--p1g:rgba(6,214,160,0.35);--p1bg:#0a2e24;
   --p2:#ef476f;--p2g:rgba(239,71,111,0.35);--p2bg:#2e0a16;
-  --c0:#6b4f8a;--c1:#06d6a0;--c2:#118ab2;--c3:#ffd166;--c4:#ef476f;--c5:#8338ec;
+  --c0:#7c6b9e;--c1:#06d6a0;--c2:#118ab2;--c3:#ffd166;--c4:#ef476f;--c5:#8338ec;
   --gold:#ffd166;--star:#ffd166;--stardim:#1a2b50;
   --bronze:#cd7f32;--silver:#c0c0c0;--platinum:#e5e4e2;--diamond:#b9f2ff;--master:#c084fc;--chroma:#ffd166;
 }
@@ -196,7 +196,7 @@ body{display:flex;align-items:center;justify-content:center;
 .color-btn{width:40px;height:40px;border-radius:10px;border:2px solid transparent;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
 .color-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.2),transparent);border-radius:8px}
 .color-btn:hover{transform:scale(1.1);border-color:rgba(255,255,255,0.3)}
-.color-btn.disabled{opacity:0.15;pointer-events:none;transform:scale(0.85)}
+.color-btn.disabled{opacity:0.35;pointer-events:none;transform:scale(0.85)}
 .powerups{display:flex;gap:5px;padding:0 4px;justify-content:center}
 .pu-btn{padding:5px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all 0.15s;text-transform:uppercase;letter-spacing:1px}
 .pu-btn:hover{border-color:var(--c3);color:var(--c3)}
@@ -2639,7 +2639,7 @@ function getLimitedShopItems(){
     var borders=LIMITED_EDITION_POOL.filter(function(i){return i.type==='border'});
     var effects=LIMITED_EDITION_POOL.filter(function(i){return i.type==='effect'});
     var shuffle=function(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr};
-    var picked=[shuffle(themes)[0].id,shuffle(themes)[1].id,shuffle(themes)[2].id,shuffle(borders)[0].id,shuffle(borders)[1].id,shuffle(effects)[0].id,shuffle(effects)[1].id];
+    var picked=[shuffle(themes)[0].id,shuffle(themes)[1].id,shuffle(borders)[0].id,shuffle(borders)[1].id];
     save.limitedShopRotation=now;
     save.limitedShopItems=picked;
     saveProg();
@@ -6048,7 +6048,7 @@ function checkEnd(){
   detail.textContent=`${p1p}% vs ${p2p}%`;
 
   // XP/Coins earned display
-  const xpEarned=won?30:10;const coinsEarned=won?25:10;
+  const xpEarned=won?65:15;const coinsEarned=won?25:10;addProfileXP(xpEarned);
   const xpBonus=curConfig.isRanked?15:0;
 
   if(curConfig.isRanked){
@@ -6074,7 +6074,7 @@ function checkEnd(){
     eloEl.textContent='';
     if(won&&curChapter>=0){reward.textContent=stars===3?'🟡 Perfect!':stars===2?'Great!':'Passed!';nextBtn.style.display=(curLevel<CHAPTERS[curChapter].levels-1||curChapter<CHAPTERS.length-1)?'block':'none';nextBtn.textContent='Next';nextBtn.onclick=nextLevel}
     else if(won&&curConfig.challengeIdx!==undefined){reward.textContent='🏆 Challenge Complete!';nextBtn.style.display='none'}
-    else{reward.textContent=won?'':'Try again!';nextBtn.textContent=won?'Continue':'Retry';nextBtn.style.display='block';nextBtn.onclick=nextLevel}
+    else{reward.textContent=won?'':'Try again!';nextBtn.textContent=won?'Continue':'Retry';nextBtn.style.display='block';nextBtn.onclick=won?nextLevel:function(){startCampaignLevel(curChapter,curLevel)}}
   }
   playSfx(won?'win':'lose');
   if(won&&save.freeSpinsToday<2){
