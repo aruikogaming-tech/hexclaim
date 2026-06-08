@@ -4520,7 +4520,51 @@ function buildChapters(){
       };}(ch.num),0);
     }
   });
-}function buildLevelGrid(chNum,totalLevels){
+}
+function buildChapters(){
+  var list=document.getElementById('chapterList');list.innerHTML='';
+  var tutDone=save.tutorialDone;
+  var tutCard=document.createElement('div');
+  tutCard.style.cssText='background:var(--surface);border:2px solid '+(tutDone?'rgba(6,214,160,0.3)':'var(--p1)')+';border-radius:14px;padding:14px;margin-bottom:6px;cursor:pointer;transition:all 0.2s;position:relative';
+  tutCard.innerHTML='<div style="font-family:\'IBM Plex Mono\',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase">PROLOGUE</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">'
+    +'<div style="font-size:15px;font-weight:800">'+(tutDone?'✅':'📖')+' How to Play</div>'
+    +'<div style="font-size:10px;font-weight:800;padding:4px 10px;border-radius:6px;background:'+(tutDone?'rgba(6,214,160,0.1)':'var(--p1)')+';color:'+(tutDone?'var(--p1)':'#fff')+'">'+(tutDone?'REPLAY':'REQUIRED')+'</div>'
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--muted);margin-top:4px">'+(tutDone?'Tap to replay anytime.':'Complete the tutorial to unlock Chapter 1.')+'</div>'
+    +(tutDone?'':'<div style="margin-top:6px;font-size:9px;color:var(--c3);font-weight:700">⚠️ Required before Chapter 1</div>');
+  if(!tutDone)tutCard.style.animation='borderPulse 2s ease infinite';
+  tutCard.onclick=function(){playSfx('menuNav');startTutorial();};
+  list.appendChild(tutCard);
+  var chapters=[
+    {num:1,name:'The First Claim',desc:'Learn the basics of territory control. Small board, easy AI.',mechanic:'BASICS',levels:20,color:'var(--p1)'},
+    {num:2,name:'Color Wars',desc:'The AI gets smarter. Master blocking and chain reactions.',mechanic:'BLOCKING',levels:20,color:'var(--c2)'},
+    {num:3,name:'The Surge',desc:'Larger boards, power-ups, and a cunning opponent.',mechanic:'POWER-UPS',levels:20,color:'var(--c5)'},
+    {num:4,name:'Chromatic End',desc:'The ultimate challenge. Prove you are the Chromancer.',mechanic:'ELITE',levels:20,color:'var(--c4)'},
+  ];
+  chapters.forEach(function(ch){
+    var unlocked=ch.num===1?save.tutorialDone:Object.keys(save.cleared||{}).some(function(k){return k.startsWith('ch'+(ch.num-1)+'_')})&&save.tutorialDone;
+    var chCard=document.createElement('div');chCard.className='chapter-card'+(unlocked?'':' locked');
+    var totalStars=0,clearedLevels=0;
+    for(var lv=1;lv<=ch.levels;lv++){totalStars+=(save.stars&&save.stars['ch'+ch.num+'_'+lv])||0;if(save.cleared&&save.cleared['ch'+ch.num+'_'+lv])clearedLevels++;}
+    chCard.innerHTML='<div class="ch-num">CHAPTER '+ch.num+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between"><div class="ch-name">'+ch.name+'</div>'+(unlocked?'':'<div style="font-size:18px">🔒</div>')+'</div>'
+      +'<div class="ch-desc">'+ch.desc+'</div>'
+      +'<span class="ch-mechanic">'+ch.mechanic+'</span>'
+      +'<div style="margin-top:8px;font-size:9px;color:var(--muted)">Progress: '+clearedLevels+'/'+ch.levels+' · ⭐ '+totalStars+'/'+(ch.levels*3)+'</div>'
+      +(unlocked?'<div style="margin-top:6px;width:100%;height:4px;background:var(--dim);border-radius:2px;overflow:hidden"><div style="height:100%;width:'+Math.round(clearedLevels/ch.levels*100)+'%;background:'+ch.color+';border-radius:2px"></div></div>':'')
+      +(unlocked?buildLevelGrid(ch.num,ch.levels):'<div style="margin-top:8px;font-size:9px;color:var(--muted);font-style:italic">'+(ch.num===1?'Complete the tutorial to unlock':'Complete Chapter '+(ch.num-1)+' to unlock')+'</div>');
+    list.appendChild(chCard);
+    if(unlocked){
+      setTimeout(function(chNum){return function(){
+        list.querySelectorAll('.level-dot[data-ch="'+chNum+'"]').forEach(function(dot){
+          dot.onclick=function(e){e.stopPropagation();if(dot.classList.contains('locked'))return;playSfx('menuNav');startLevel(chNum,parseInt(dot.dataset.lv));};
+        });
+      };}(ch.num),0);
+    }
+  });
+}
+function buildLevelGrid(chNum,totalLevels){
   var html='<div class="level-grid" style="margin-top:10px">';
   for(var lv=1;lv<=totalLevels;lv++){
     var key='ch'+chNum+'_'+lv;
