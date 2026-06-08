@@ -4622,7 +4622,6 @@ function buildChallenges(){
 
 // ===== LAUNCH =====
 function startCampaignLevel(ci,li){
-  if(ci===0&&li===0&&!window._tutorialJustDone){startTutorial();return}
   window._tutorialJustDone=false;
   curChapter=ci;curLevel=li;isFreeplay=false;isPVP=false;
   const ch=CHAPTERS[ci];
