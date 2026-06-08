@@ -5969,7 +5969,7 @@ function aiMove(){
 }
 
 function checkEnd(){
-  const p1n=countOwned(1),p2n=countOwned(2),unclaimed=totalCells-p1n-p2n;
+  const p1n=countOwnedRaw(1),p2n=countOwnedRaw(2),unclaimed=totalCells-p1n-p2n;
   const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
   let ended=false,won=false,reason='';
 
