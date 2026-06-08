@@ -2361,54 +2361,6 @@ function tryRankedPVP(){
   showScreen('pvpScreen');buildPVP();
 }
 
-const TUTORIAL_STEPS=[
-  {title:'Welcome, Chromancer!',text:'<div style="font-size:36px;margin-bottom:8px">⬡</div>In HexClaim, you conquer territory by choosing colors.<br><br>Your domain starts in the <span style="color:var(--p1);font-weight:800">bottom-left corner</span>. The enemy SHADE starts in the <span style="color:var(--red);font-weight:800">top-right corner</span>.',action:'Next'},
-  {title:'How to Play',text:'<div style="display:flex;justify-content:center;gap:6px;margin-bottom:10px"><div style="width:28px;height:28px;border-radius:4px;background:#06d6a0;display:flex;align-items:center;justify-content:center;font-size:12px">◆</div><div style="width:28px;height:28px;border-radius:4px;background:#118ab2;display:flex;align-items:center;justify-content:center;font-size:12px">●</div><div style="width:28px;height:28px;border-radius:4px;background:#ffd166;display:flex;align-items:center;justify-content:center;font-size:12px">▲</div><div style="width:28px;height:28px;border-radius:4px;background:#ef476f;display:flex;align-items:center;justify-content:center;font-size:12px">✦</div></div>Pick a color from the palette at the bottom. Your <span style="font-weight:800">entire territory</span> changes to that color, and any adjacent unclaimed cells of that color join your territory.<br><br><span style="color:var(--gold)">Tip:</span> Look for clusters of the same color near your border!',action:'Next'},
-  {title:'The Goal',text:'<div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px"><div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--p1)">75%</div><div style="font-size:8px;color:var(--muted)">TO WIN</div></div></div>Claim <span style="color:var(--p1);font-weight:800">75% or more</span> of the board to win. The score bar at the top shows both territories.<br><br>If neither player reaches 75%, the player with more territory wins when time or moves run out.',action:'Next'},
-  {title:'Color Cooldown',text:'<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px"><div style="width:32px;height:32px;border-radius:6px;background:#06d6a0;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:0.3">⏳</div><div style="font-size:20px">→</div><div style="width:32px;height:32px;border-radius:6px;background:#118ab2;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid var(--gold)">●</div></div>You <span style="font-weight:800">can\'t pick the same color twice in a row</span> — the ⏳ icon marks your cooldown. This forces you to think ahead!<br><br><span style="color:var(--gold)">Tip:</span> Plan two moves ahead. What will you pick NEXT turn?',action:'Next'},
-  {title:'Bonus Cells ◆',text:'<div style="display:flex;align-items:center;justify-content:center;margin-bottom:10px"><div style="width:36px;height:36px;border-radius:6px;background:linear-gradient(135deg,#ffd166,#ffaa00);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 12px rgba(255,209,102,0.4)">◆</div></div>Golden <span style="color:var(--gold);font-weight:800">◆ bonus cells</span> are worth <span style="font-weight:800">2× territory</span>. They\'re placed in contested middle areas.<br><br>Route your expansion to capture them — they can swing the entire game!',action:'Next'},
-  {title:'Territory Decay',text:'<div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:10px"><div style="width:24px;height:24px;border-radius:4px;background:var(--p1);opacity:0.8;font-size:10px;display:flex;align-items:center;justify-content:center">◆</div><div style="width:24px;height:24px;border-radius:4px;background:var(--p1);opacity:0.5;font-size:10px;display:flex;align-items:center;justify-content:center">◆</div><div style="width:24px;height:24px;border-radius:4px;background:var(--p1);opacity:0.2;font-size:10px;display:flex;align-items:center;justify-content:center">◆</div><div style="font-size:14px">💨</div></div>Every <span style="font-weight:800">6 turns</span>, cells exposed on 3+ sides crumble away. Keep your territory <span style="font-weight:800">compact</span> — don\'t overextend into thin lines!',action:'Next'},
-  {title:'Tips for Winning',text:'<div style="text-align:left;line-height:2"><span style="color:var(--p1)">🎯</span> Pick colors that grab the <span style="font-weight:800">most cells</span> at once<br><span style="color:var(--gold)">🛡</span> Sometimes <span style="font-weight:800">blocking</span> the enemy is better than expanding<br><span style="color:var(--red)">⚡</span> Hover over colors to <span style="font-weight:800">preview</span> what you\'d capture<br><span style="color:#8338ec">🏆</span> Win games to earn <span style="font-weight:800">coins, XP, and skins</span></div>',action:'Next'},
-  {title:'Ready to Play!',text:'<div style="font-size:36px;margin-bottom:8px">⚔️</div>Now play your first match against <span style="color:var(--red);font-weight:800">SHADE</span>.<br><br>Win to complete the tutorial and start your journey toward becoming a <span style="color:var(--gold);font-weight:800">Chromancer</span>!<br><br><span style="font-size:10px;color:var(--muted)">Don\'t worry — the first opponent is easy.</span>',action:'Start Match'},
-];
-
-function startTutorial(){
-  showScreen('tutorialScreen');
-  showTutorialStep(0);
-}
-
-function showTutorialStep(idx){
-  const step=TUTORIAL_STEPS[idx];
-  const cont=document.getElementById('tutorialContent');
-  var dots='';
-  for(var d=0;d<TUTORIAL_STEPS.length;d++){
-    var active=d===idx?'background:var(--p1)':'background:var(--dim)';
-    dots+='<div style="width:'+(d===idx?'16px':'6px')+';height:6px;border-radius:3px;'+active+';transition:all 0.2s"></div>';
-  }
-  cont.innerHTML=`
-    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:16px">
-      <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:3px">Tutorial ${idx+1}/${TUTORIAL_STEPS.length}</div>
-      <div style="display:flex;gap:4px;align-items:center">${dots}</div>
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:340px;text-align:center">
-        <div style="font-family:Archivo Black,sans-serif;font-size:20px;margin-bottom:12px;background:linear-gradient(135deg,var(--p1),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${step.title}</div>
-        <div style="font-size:13px;color:var(--muted);line-height:1.7">${step.text}</div>
-      </div>
-      <button class="menu-btn campaign" style="max-width:200px" onclick="playSfx('click');${idx<TUTORIAL_STEPS.length-1?'showTutorialStep('+(idx+1)+')':'finishTutorial()'}">${step.action}</button>
-      <div style="display:flex;gap:12px;align-items:center">
-        ${idx>0?`<button class="back-btn" onclick="showTutorialStep(${idx-1})">← Back</button>`:''}
-        ${idx<TUTORIAL_STEPS.length-1?'<button style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;text-decoration:underline;font-family:Manrope,sans-serif" onclick="finishTutorial()">Skip Tutorial</button>':''}
-      </div>
-    </div>`;
-  playSfx('click');
-}
-
-function finishTutorial(){
-  save.tutorialDone=true;saveProg();
-  window._tutorialJustDone=true;
-  // Start first campaign level
-  startCampaignLevel(0,0);
-}
-
 // ===== UPDATE ALL UI =====
 function updateAllUI(){
   updateMenuStats();
