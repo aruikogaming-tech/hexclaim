@@ -4514,7 +4514,7 @@ function buildChapters(){
     if(unlocked){
       setTimeout(function(chNum){return function(){
         list.querySelectorAll('.level-dot[data-ch="'+chNum+'"]').forEach(function(dot){
-          dot.onclick=function(e){e.stopPropagation();if(dot.classList.contains('locked'))return;playSfx('menuNav');startCampaignLevel(chNum,parseInt(dot.dataset.lv));};
+          dot.onclick=function(e){e.stopPropagation();if(dot.classList.contains('locked'))return;playSfx('menuNav');startCampaignLevel(parseInt(dot.dataset.ch),parseInt(dot.dataset.lv));};
         });
       };}(ch.num),0);
     }
