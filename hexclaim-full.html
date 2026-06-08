@@ -4423,11 +4423,10 @@ function showRankTab(tab,btn){
 // ===== TUTORIAL =====
 const TUTORIAL_STEPS=[
   {icon:'⬡',title:'Welcome to HexClaim!',desc:'You and your opponent each start in opposite corners of a hex grid. Your goal: capture more territory than your enemy.',tip:'🎯 First to reach 75% of the board wins!',btnText:"Let's Go →"},
-  {icon:'🎨',title:'Pick a Color',desc:'Each turn, pick one of the 6 colors at the bottom. Every tile touching your territory that matches that color gets captured instantly.',tip:'🚫 You cannot pick the same color your opponent just used',btnText:'Got It →'},
+  {icon:'🎨',title:'Pick a Color',desc:'Each turn, pick one of the colors at the bottom. Every tile touching your territory that matches that color gets captured instantly.',tip:'🚫 You cannot pick the same color your opponent just used',btnText:'Got It →'},
   {icon:'🌊',title:'Flood Fill',desc:'Your territory spreads like a flood — it captures every connected tile of that color, not just ones next to you. Chain reactions are key!',tip:'💡 Look for large clusters of the same color to grab big territory fast',btnText:'Nice →'},
-  {icon:'⚔️',title:'Block Your Enemy',desc:"Don't just grow — cut off your opponent! If you take a color before they do, you block their expansion route.",tip:'🔥 Sometimes blocking is more powerful than expanding',btnText:'Smart →'},
-  {icon:'⚡',title:'Power-Ups',desc:'You start each game with special power-ups. Use them wisely!\n\n💣 Bomb — destroy enemy tiles\n🔭 Scout — reveal the board\n⚡ Double — take two turns in a row',tip:'✨ Power-ups are rare — save them for critical moments',btnText:'Powerful →'},
-  {icon:'🏆',title:'Win Conditions',desc:'Win by capturing 75% of the board first — OR by having more territory when the turn limit runs out.',tip:'⏱ Keep an eye on the turn counter — endgame territory matters!',btnText:'Ready →'},
+  {icon:'⚔️',title:'Block Your Enemy',desc:"Think ahead — pick colors that expand YOUR territory the most while limiting where your opponent can grow next turn.",tip:'🔥 Sometimes blocking is more powerful than expanding',btnText:'Smart →'},
+  {icon:'🏆',title:'Win Conditions',desc:'The player who captures the most territory when all tiles are claimed wins! Fill the board faster than your opponent.',tip:'⏱ Keep an eye on the turn counter — endgame territory matters!',btnText:'Ready →'},
   {icon:'🌟',title:'Earn Stars & Rewards',desc:'Beat each level to earn up to 3 stars based on how much territory you capture. More stars = more coins and XP!',tip:'💰 Coins unlock skins, borders, and effects in the Shop',btnText:'Awesome →'},
   {icon:'🚀',title:"You're Ready!",desc:'Time to claim your first territory, Commander. Chapter 1 awaits — start small, think big.',tip:null,btnText:'🎮 Start Chapter 1!'}
 ];
@@ -4465,7 +4464,7 @@ function renderTutStep(){
   }
 }
 function completeTutorial(){
-  save.tutorialDone=true;save.coins=(save.coins||0)+100;saveProg();updateShopCurrency();playSfx('win');
+  var firstTime=!save.tutorialDone;save.tutorialDone=true;if(firstTime){save.coins=(save.coins||0)+100;}saveProg();updateShopCurrency();playSfx('win');
   var popup=document.createElement('div');popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:20px;padding:28px;text-align:center;max-width:300px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:48px;margin-bottom:8px">🎉</div>'
