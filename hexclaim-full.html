@@ -187,6 +187,8 @@ body{display:flex;align-items:center;justify-content:center;
 .obj-pill .ov.warn{color:var(--c4)}.obj-pill .ov.ok{color:var(--p1)}
 .obj-pill .ov.critical{color:var(--c4);animation:timerBlink 0.5s ease infinite}
 @keyframes timerBlink{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
+@keyframes tutFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
 .board-wrap{position:relative;width:100%;aspect-ratio:1/1.05;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
 #canvas{width:100%;height:100%;display:block;border-radius:10px;cursor:pointer}
@@ -4466,23 +4468,81 @@ function showRankTab(tab,btn){
 }
 
 // ===== CHAPTERS UI =====
-function buildChapters(){
-  const list=document.getElementById('chapterList');list.innerHTML='';
-
-  CHAPTERS.forEach((ch,ci)=>{
-    const unlocked=ci===0||save.cleared[(ci-1)+'-'+(CHAPTERS[ci-1].levels-1)];
-    const card=document.createElement('div');card.className='chapter-card'+(unlocked?'':' locked');
-    const storeKey='stars';
-    const clearedKey='cleared';
-    let totalChStars=0;for(let l=0;l<ch.levels;l++)totalChStars+=((save[storeKey]||save.stars)[ci+'-'+l]||0);
-    let starsHTML='';for(let i=0;i<3;i++)starsHTML+=i<Math.floor(totalChStars/ch.levels)?'<span style="color:var(--star)">★</span>':'<span style="color:var(--stardim)">★</span>';
-    // Mastery star (4th star) — 95%+ territory
-    let masteryCount=0;for(let l=0;l<ch.levels;l++){if((save.masteryStars||{})[ci+'-'+l])masteryCount++}
-    const masteryHTML=masteryCount>0?' <span style="color:#ffd166;font-size:10px" title="Mastery stars">💎'+masteryCount+'</span>':'';
-    card.innerHTML='<div class="ch-num">Chapter '+(ci+1)+'</div><div class="ch-name">'+ch.name+'</div><div class="ch-desc">'+ch.desc+'</div><div class="ch-mechanic">'+ch.mechanic+'</div><div class="ch-stars">'+starsHTML+' '+totalChStars+'/'+(ch.levels*3)+masteryHTML+'</div>'+(unlocked?'':'<div style="position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted)">🔒</div>');
-    if(unlocked)card.onclick=function(){showChapterLevels(ci)};
-    list.appendChild(card);
+// ===== TUTORIAL =====
+const TUTORIAL_STEPS=[
+  {icon:'⬡',title:'Welcome to HexClaim!',desc:'You and your opponent each start in opposite corners of a hex grid. Your goal: capture more territory than your enemy.',tip:'🎯 First to reach 75% of the board wins!',btnText:"Let's Go →"},
+  {icon:'🎨',title:'Pick a Color',desc:'Each turn, pick one of the 6 colors at the bottom. Every tile touching your territory that matches that color gets captured instantly.',tip:'🚫 You cannot pick the same color your opponent just used',btnText:'Got It →'},
+  {icon:'🌊',title:'Flood Fill',desc:'Your territory spreads like a flood — it captures every connected tile of that color, not just ones next to you. Chain reactions are key!',tip:'💡 Look for large clusters of the same color to grab big territory fast',btnText:'Nice →'},
+  {icon:'⚔️',title:'Block Your Enemy',desc:"Don't just grow — cut off your opponent! If you take a color before they do, you block their expansion route.",tip:'🔥 Sometimes blocking is more powerful than expanding',btnText:'Smart →'},
+  {icon:'⚡',title:'Power-Ups',desc:'You start each game with special power-ups. Use them wisely!\n\n💣 Bomb — destroy enemy tiles\n🔭 Scout — reveal the board\n⚡ Double — take two turns in a row',tip:'✨ Power-ups are rare — save them for critical moments',btnText:'Powerful →'},
+  {icon:'🏆',title:'Win Conditions',desc:'Win by capturing 75% of the board first — OR by having more territory when the turn limit runs out.',tip:'⏱ Keep an eye on the turn counter — endgame territory matters!',btnText:'Ready →'},
+  {icon:'🌟',title:'Earn Stars & Rewards',desc:'Beat each level to earn up to 3 stars based on how much territory you capture. More stars = more coins and XP!',tip:'💰 Coins unlock skins, borders, and effects in the Shop',btnText:'Awesome →'},
+  {icon:'🚀',title:"You're Ready!",desc:'Time to claim your first territory, Commander. Chapter 1 awaits — start small, think big.',tip:null,btnText:'🎮 Start Chapter 1!'}
+];
+var tutStep=0;
+function startTutorial(){tutStep=0;showScreen('tutorialScreen');renderTutStep();}
+function renderTutStep(){
+  var step=TUTORIAL_STEPS[tutStep];
+  var cont=document.getElementById('tutorialContent');
+  cont.innerHTML='';
+  cont.style.cssText='display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:60px 16px 20px;gap:0;background:var(--bg)';
+  var dotsDiv=document.createElement('div');dotsDiv.style.cssText='display:flex;gap:6px;justify-content:center;margin-bottom:16px';
+  TUTORIAL_STEPS.forEach(function(_,i){
+    var dot=document.createElement('div');
+    dot.style.cssText='height:4px;border-radius:2px;transition:all 0.3s;background:'+(i<tutStep?'rgba(6,214,160,0.4)':i===tutStep?'var(--p1)':'var(--border)')+';width:'+(i===tutStep?'36px':'24px');
+    dotsDiv.appendChild(dot);
   });
+  cont.appendChild(dotsDiv);
+  var stepLabel=document.createElement('div');stepLabel.style.cssText='font-family:"IBM Plex Mono",monospace;font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px';
+  stepLabel.textContent='STEP '+(tutStep+1)+' OF '+TUTORIAL_STEPS.length;cont.appendChild(stepLabel);
+  var card=document.createElement('div');card.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:20px;width:100%;max-width:380px;animation:tutFadeIn 0.35s ease;margin-bottom:12px';
+  var iconDiv=document.createElement('div');iconDiv.style.cssText='font-size:48px;text-align:center;margin-bottom:10px';iconDiv.textContent=step.icon;card.appendChild(iconDiv);
+  var title=document.createElement('div');title.style.cssText='font-family:"Archivo Black",sans-serif;font-size:20px;text-align:center;margin-bottom:8px;background:linear-gradient(135deg,var(--p1),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent';title.textContent=step.title;card.appendChild(title);
+  var desc=document.createElement('div');desc.style.cssText='font-size:13px;color:var(--muted);text-align:center;line-height:1.65;margin-bottom:12px;white-space:pre-line';desc.textContent=step.desc;card.appendChild(desc);
+  if(step.tip){var tip=document.createElement('div');tip.style.cssText='background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--c3);font-weight:700;text-align:center;line-height:1.5';tip.textContent=step.tip;card.appendChild(tip);}
+  cont.appendChild(card);
+  var nextBtn=document.createElement('button');nextBtn.style.cssText='width:100%;max-width:380px;padding:16px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--p1),#0ea573);color:#fff;font-family:"Manrope",sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1.5px;text-transform:uppercase;transition:all 0.2s;box-shadow:0 4px 20px rgba(6,214,160,0.3)';
+  nextBtn.textContent=step.btnText;
+  nextBtn.onclick=function(){playSfx('click');if(tutStep<TUTORIAL_STEPS.length-1){tutStep++;renderTutStep();}else{completeTutorial();}};
+  cont.appendChild(nextBtn);
+  if(tutStep<TUTORIAL_STEPS.length-1){
+    var skipBtn=document.createElement('button');skipBtn.style.cssText='background:none;border:none;color:var(--muted);font-size:11px;font-family:"Manrope",sans-serif;cursor:pointer;margin-top:10px;text-decoration:underline';
+    skipBtn.textContent='Skip Tutorial';
+    skipBtn.onclick=function(){showConfirmPopup('Skip Tutorial?','The tutorial helps you understand the game. Are you sure?','Skip',function(){completeTutorial();})};
+    cont.appendChild(skipBtn);
+  }
+}
+function completeTutorial(){
+  save.tutorialDone=true;save.coins=(save.coins||0)+100;saveProg();updateShopCurrency();playSfx('win');
+  var popup=document.createElement('div');popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:20px;padding:28px;text-align:center;max-width:300px;width:90%;animation:popIn 0.3s ease">'
+    +'<div style="font-size:48px;margin-bottom:8px">🎉</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:20px;color:var(--p1);margin-bottom:6px">Tutorial Complete!</div>'
+    +'<div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:16px">You\'ve unlocked Chapter 1. Good luck, Commander!</div>'
+    +'<div style="display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:10px;padding:10px;margin-bottom:16px">'
+    +'<span style="font-size:18px">🟡</span><span style="font-family:\'IBM Plex Mono\',monospace;font-size:14px;font-weight:700;color:var(--gold)">+100 Coins Earned!</span></div>'
+    +'<button id="tutDoneBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--p1),#0ea573);border:none;border-radius:12px;color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:800;cursor:pointer">Start Chapter 1 →</button>'
+    +'</div>';
+  document.body.appendChild(popup);
+  document.getElementById('tutDoneBtn').onclick=function(){popup.remove();showScreen('chapterScreen');buildChapters();};
+}
+function buildLevelGrid(chNum,totalLevels){
+  var html='<div class="level-grid" style="margin-top:10px">';
+  for(var lv=1;lv<=totalLevels;lv++){
+    var key='ch'+chNum+'_'+lv;
+    var cleared=save.cleared&&save.cleared[key];
+    var prevKey='ch'+chNum+'_'+(lv-1);
+    var isUnlocked=lv===1||(save.cleared&&save.cleared[prevKey]);
+    var stars=(save.stars&&save.stars[key])||0;
+    var starsStr=stars>=3?'⭐⭐⭐':stars===2?'⭐⭐':stars===1?'⭐':'';
+    html+='<div class="level-dot'+(isUnlocked?'':' locked')+'" data-ch="'+chNum+'" data-lv="'+lv+'" style="'+(cleared?'background:rgba(6,214,160,0.08);border-color:rgba(6,214,160,0.3)':'')+'">'
+      +'<div class="ln" style="color:'+(cleared?'var(--p1)':isUnlocked?'var(--text)':'var(--muted)')+'">'+lv+'</div>'
+      +(starsStr?'<div class="ls">'+starsStr+'</div>':'')
+      +'</div>';
+  }
+  html+='</div>';return html;
+}
+function buildChapters(){
 }
 
 function showChapterLevels(ci){
