@@ -2462,16 +2462,7 @@ const SHOP_THEMES=[
   {tier:4,id:'divine',name:'Divine Ascension',desc:'Blinding holy light and golden aura',price:4000,rankReq:'Chromancer',currency:'coins',preview:'😇',colors:['#0a0818','#ffd700','#ffffff','#ffaa44','#ff66aa','#88aaff','#44ff88','#ff4444'],symbols:['✡','☬','✙','✞','❈','☸','☯','✠']},
 ];
 
-// Limited edition seasonal rank skins — EARNED at end of season based on highest rank achieved
-const SEASONAL_SKINS=[
-  {id:'s1_bronze',name:'S1 Bronze Ember',desc:'Season 1 Reward — Reach Bronze by season end',preview:'🥉',colors:['#1a0f05','#cd7f32','#a0522d','#d2691e','#8b4513','#deb887'],rank:'Bronze',season:1},
-  {id:'s1_silver',name:'S1 Silver Frost',desc:'Season 1 Reward — Reach Silver by season end',preview:'🥈',colors:['#0f0f1a','#c0c0c0','#808080','#d3d3d3','#696969','#a9a9a9'],rank:'Silver',season:1},
-  {id:'s1_gold',name:'S1 Golden Crown',desc:'Season 1 Reward — Reach Gold by season end',preview:'🥇',colors:['#1a1505','#ffd700','#ffb700','#ffa500','#ff8c00','#daa520'],rank:'Gold',season:1},
-  {id:'s1_plat',name:'S1 Platinum Surge',desc:'Season 1 Reward — Reach Platinum by season end',preview:'💎',colors:['#050510','#e5e4e2','#b0c4de','#87ceeb','#4682b4','#708090'],rank:'Platinum',season:1},
-  {id:'s1_diamond',name:'S1 Diamond Aura',desc:'Season 1 Reward — Reach Diamond by season end',preview:'💠',colors:['#000a14','#b9f2ff','#00e5ff','#00b0ff','#0091ea','#01579b'],rank:'Diamond',season:1},
-  {id:'s1_master',name:'S1 Master Eclipse',desc:'Season 1 Reward — Reach Master by season end',preview:'👑',colors:['#0a0014','#c084fc','#9333ea','#7c3aed','#6d28d9','#4c1d95'],rank:'Master',season:1},
-  {id:'s1_chroma',name:'S1 Chromancer Void',desc:'Season 1 Reward — Reach Chromancer by season end',preview:'🔮',colors:['#000000','#ffd166','#ff6b6b','#06d6a0','#8338ec','#118ab2'],rank:'Chromancer',season:1},
-];
+const SEASONAL_SKINS=[];
 
 // Challenge-exclusive skins — EARNED by completing specific challenges, cannot be bought
 const CHALLENGE_SKINS=[
@@ -2524,14 +2515,14 @@ function checkSeasonEnd(){
     const playerRankIdx=RANKS.indexOf(playerRank);
     // Rank rewards
     const rankRewards={
-      'Unranked':{coins:25,  diamonds:5,   title:null,           skin:null,              border:null},
-      'Bronze':  {coins:50,  diamonds:10,  title:null,           skin:null,              border:null},
-      'Silver':  {coins:100, diamonds:25,  title:null,           skin:null,              border:null},
-      'Gold':    {coins:200, diamonds:50,  title:'Season Gold',  skin:null,              border:null},
-      'Platinum':{coins:400, diamonds:100, title:null,           skin:'season_platinum', border:null},
-      'Diamond': {coins:600, diamonds:150, title:null,           skin:null,              border:'season_diamond'},
-      'Master':  {coins:800, diamonds:200, title:'Season Master',skin:'season_master',   border:null},
-      'Chromancer':{coins:1000,diamonds:300,title:'Chromancer',  skin:'season_chroma',   border:'season_chroma_border'},
+      'Unranked':  {coins:25,  diamonds:5,   medal:'🔘',title:null,           skin:null,               border:null},
+      'Bronze':    {coins:50,  diamonds:10,  medal:'🥉',title:null,           skin:null,               border:'season_bronze_border'},
+      'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,               border:'season_silver_border'},
+      'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:'Season Gold',  skin:null,               border:'season_gold_border'},
+      'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,               border:'season_plat_border'},
+      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:null,           skin:'season_diamond_skin',border:'season_diamond_border'},
+      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Season Master',skin:'season_master_skin', border:'season_master_border'},
+      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromancer',   skin:'season_chroma_skin', border:'season_chroma_border'},
     };
     const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
     // Grant coins and diamonds
@@ -4424,14 +4415,14 @@ function showRankTab(tab,btn){
     wrap.appendChild(header);
 
     var rankRewardDefs={
-      'Unranked': {coins:25,  diamonds:5,   title:null,            skin:null,             border:null},
-      'Bronze':   {coins:50,  diamonds:10,  title:null,            skin:null,             border:null},
-      'Silver':   {coins:100, diamonds:25,  title:null,            skin:null,             border:null},
-      'Gold':     {coins:200, diamonds:50,  title:'Season Gold',   skin:null,             border:null},
-      'Platinum': {coins:400, diamonds:100, title:null,            skin:'season_platinum',border:null},
-      'Diamond':  {coins:600, diamonds:150, title:null,            skin:null,             border:'season_diamond'},
-      'Master':   {coins:800, diamonds:200, title:'Season Master', skin:'season_master',  border:null},
-      'Chromancer':{coins:1000,diamonds:300,title:'Chromancer',    skin:'season_chroma',  border:'season_chroma_border'},
+      'Unranked':  {coins:25,  diamonds:5,   medal:'🔘',title:null,           skin:null,  border:null},
+      'Bronze':    {coins:50,  diamonds:10,  medal:'🥉',title:null,           skin:null,  border:'Season Border'},
+      'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,  border:'Season Border'},
+      'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:'Season Gold',  skin:null,  border:'Season Border'},
+      'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,  border:'Season Border'},
+      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:null,           skin:'Exclusive Skin', border:'Season Border'},
+      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Season Master',skin:'Exclusive Skin',  border:'Season Border'},
+      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromancer',   skin:'Exclusive Skin',  border:'Season Border'},
     };
     RANKS.forEach(function(rank){
       var rdef=rankRewardDefs[rank.name];if(!rdef)return;
@@ -4440,11 +4431,12 @@ function showRankTab(tab,btn){
       var el=document.createElement('div');
       el.style.cssText='background:var(--surface);border:1px solid '+(willEarn?rank.color:'var(--border)')+';border-radius:12px;padding:12px;margin-bottom:6px;opacity:'+(willEarn?'1':'0.45');
       var rewardItems='';
+      rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">'+rdef.medal+' Medal</span> ';
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">🟡 +'+rdef.coins+'</span> ';
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--diamond)">💎 +'+rdef.diamonds+'</span> ';
       if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏅 '+rdef.title+'</span> ';
-      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 Exclusive Skin</span> ';
-      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 Exclusive Border</span> ';
+      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 '+rdef.skin+'</span> ';
+      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 '+rdef.border+'</span> ';
       el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
         +'<div style="font-size:13px;font-weight:800;color:'+rank.color+'">'+rank.icon+' '+rank.name+'</div>'
         +(willEarn?'<div style="font-size:9px;color:var(--p1);font-weight:700">✓ You will earn this</div>':'<div style="font-size:9px;color:var(--muted)">'+rank.min+' ELO needed</div>')
@@ -4452,7 +4444,7 @@ function showRankTab(tab,btn){
         +'<div style="display:flex;flex-wrap:wrap;gap:6px">'+rewardItems+'</div>';
       wrap.appendChild(el);
     });
-    var seasonSkins=SEASONAL_SKINS.filter(function(s){return s.season===save.season});
+    var seasonSkins=[];
     if(seasonSkins.length){
       var sh=document.createElement('div');sh.style.cssText='font-size:11px;color:var(--muted);margin:10px 0 4px;font-weight:700';
       sh.textContent='✨ Seasonal Exclusive Skins';wrap.appendChild(sh);
