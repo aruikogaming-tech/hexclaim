@@ -4805,13 +4805,41 @@ function startCampaignLevel(ci,li){
   curChapter=ci;curLevel=li;isFreeplay=false;isPVP=false;
   const ch=CHAPTERS[ci];
   const levelProgression=[
-    [{cols:10,rows:12,colors:4,aiSmart:0.30,baseMoves:999},{cols:11,rows:13,colors:4,aiSmart:0.38,baseMoves:999},{cols:11,rows:13,colors:5,aiSmart:0.45,baseMoves:999},{cols:12,rows:14,colors:5,aiSmart:0.52,baseMoves:999},{cols:12,rows:14,colors:5,aiSmart:0.60,baseMoves:999}],
-    [{cols:10,rows:12,colors:4,aiSmart:0.55,baseMoves:999},{cols:11,rows:13,colors:4,aiSmart:0.60,baseMoves:999},{cols:11,rows:13,colors:5,aiSmart:0.65,baseMoves:999},{cols:12,rows:14,colors:5,aiSmart:0.70,baseMoves:999},{cols:12,rows:14,colors:6,aiSmart:0.75,baseMoves:999}],
-    [{cols:11,rows:13,colors:4,aiSmart:0.65,baseMoves:999},{cols:12,rows:14,colors:5,aiSmart:0.70,baseMoves:999},{cols:12,rows:14,colors:5,aiSmart:0.75,baseMoves:999},{cols:13,rows:15,colors:6,aiSmart:0.80,baseMoves:999},{cols:13,rows:15,colors:6,aiSmart:0.85,baseMoves:999}],
-    [{cols:12,rows:14,colors:5,aiSmart:0.88,baseMoves:120},{cols:13,rows:15,colors:5,aiSmart:0.91,baseMoves:110},{cols:13,rows:15,colors:6,aiSmart:0.94,baseMoves:105},{cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:100},{cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:90}]
+    // Chapter 1 — BASICS: small boards, no fog, no powers, easy AI
+    [
+      {cols:10,rows:12,colors:4,aiSmart:0.25,baseMoves:999,fog:false,powerTiles:false},
+      {cols:10,rows:12,colors:4,aiSmart:0.32,baseMoves:999,fog:false,powerTiles:false},
+      {cols:11,rows:13,colors:4,aiSmart:0.40,baseMoves:999,fog:false,powerTiles:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.48,baseMoves:999,fog:false,powerTiles:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.55,baseMoves:999,fog:false,powerTiles:false}
+    ],
+    // Chapter 2 — BLOCKING: fog introduced level 3+, smarter AI
+    [
+      {cols:11,rows:13,colors:4,aiSmart:0.58,baseMoves:999,fog:false,powerTiles:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.63,baseMoves:999,fog:false,powerTiles:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.68,baseMoves:999,fog:true,powerTiles:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.72,baseMoves:999,fog:true,powerTiles:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.77,baseMoves:999,fog:true,powerTiles:false}
+    ],
+    // Chapter 3 — POWER-UPS: power tiles from level 1, fog throughout
+    [
+      {cols:12,rows:14,colors:5,aiSmart:0.75,baseMoves:999,fog:true,powerTiles:true},
+      {cols:12,rows:14,colors:5,aiSmart:0.80,baseMoves:999,fog:true,powerTiles:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.83,baseMoves:999,fog:true,powerTiles:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.87,baseMoves:999,fog:true,powerTiles:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:true,powerTiles:true}
+    ],
+    // Chapter 4 — ELITE: move limit, fog, powers, brutal AI
+    [
+      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:120,fog:true,powerTiles:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:110,fog:true,powerTiles:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.95,baseMoves:105,fog:true,powerTiles:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:100,fog:true,powerTiles:true},
+      {cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:90,fog:true,powerTiles:true}
+    ]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
-  curConfig={cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),fog:ch.fog||false,powerTiles:ch.powerTiles||false,moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,baseMoves:lp.baseMoves||999,starThresholds:ch.starThresholds,winPct:75,chapterIdx:ci,levelIdx:li};
+  curConfig={cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),fog:lp.fog!=null?lp.fog:ch.fog||false,powerTiles:lp.powerTiles!=null?lp.powerTiles:ch.powerTiles||false,moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,baseMoves:lp.baseMoves||999,starThresholds:ch.starThresholds,winPct:0,chapterIdx:ci,levelIdx:li};
   if(li===0){showStory(ch,ci)}else{launchLevel()}
 }
 function startChallenge(i){
