@@ -3641,6 +3641,8 @@ function showScreen(id){
     console.error('BLOCKED screen switch to '+id+' while game locked.');
     return;
   }
+  // Remove tutorial overlay when leaving game screen
+  if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   var el=document.getElementById(id);
   if(!el){console.error('Screen not found: '+id);return}
