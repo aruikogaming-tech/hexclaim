@@ -3193,6 +3193,12 @@ function renderShopTab(tab){
         el.innerHTML='<div class="si-preview" style="background:'+(item.colors?item.colors[0]:'var(--dim)')+';padding:2px">'+makeSkinPreview(item.colors||['#333'],16,item.symbols)+'</div>'
           +'<div class="si-info"><div class="si-name" style="color:var(--c4)">'+item.name+'</div><div class="si-desc">'+item.desc+'</div></div>'
           +(owned?'<div class="si-equipped">Owned ✓</div>':'<div class="si-price" style="color:var(--diamond)">💎 '+item.price+'</div>');
+      } else if(item.type==='border'){
+        var borderMap2={le_phoenix:'border:2px solid #e94560;box-shadow:0 0 6px rgba(233,69,96,0.5)',le_frost_crown:'border:2px solid #88ddff;box-shadow:0 0 8px rgba(136,221,255,0.5)',le_shadow_claw:'border:2px solid #6c757d;box-shadow:0 0 10px rgba(0,0,0,0.8)',le_rainbow_ring:'border:3px solid var(--p1);box-shadow:0 0 8px rgba(6,214,160,0.5)',le_dragon_scale:'border:3px solid #ff4400;box-shadow:0 0 10px rgba(255,68,0,0.5)',le_void_rift:'border:3px solid #8800ff;box-shadow:0 0 12px rgba(136,0,255,0.6)',le_crown_jewel:'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.6)',le_sakura_frame:'border:2px solid #ffb7c5;box-shadow:0 0 8px rgba(255,183,197,0.5)'};
+        var prevStyle2='width:36px;height:36px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;'+(borderMap2[item.id]||'border:2px solid var(--border)');
+        el.innerHTML='<div style="'+prevStyle2+'">'+item.preview+'</div>'
+          +'<div class="si-info"><div class="si-name" style="color:var(--c4)">'+item.name+'</div><div class="si-desc">'+item.desc+'</div></div>'
+          +(owned?'<div class="si-equipped">Owned ✓</div>':'<div class="si-price" style="color:var(--diamond)">💎 '+item.price+'</div>');
       } else {
         el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+item.preview+'</div>'
           +'<div class="si-info"><div class="si-name" style="color:var(--c4)">'+item.name+'</div><div class="si-desc">'+item.desc+'</div></div>'
