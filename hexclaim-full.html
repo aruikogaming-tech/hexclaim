@@ -4827,7 +4827,7 @@ function exitLevel(){
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP)showScreen('pvpScreen'),buildPVP();
-  else if(curChapter>=0)showScreen('chapterScreen'),buildChapters(),showChapterLevels(curChapter);
+  else if(curChapter>=0)showScreen('chapterScreen'),buildChapters();
   else if(curConfig&&curConfig.challengeIdx!==undefined)showScreen('challengeScreen'),buildChallenges();
   else showScreen('menuScreen');
 }
