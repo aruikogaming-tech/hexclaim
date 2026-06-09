@@ -6219,8 +6219,34 @@ function checkEnd(){
   let stars=0;
   if(won&&curConfig.starThresholds){if(p1p>=curConfig.starThresholds[0])stars=1;if(p1p>=curConfig.starThresholds[1])stars=2;if(p1p>=curConfig.starThresholds[2])stars=3}
   if(won&&curChapter>=0){const key=`${curChapter}-${curLevel}`;
-    save.cleared[key]=true;var oldStars=save.stars[key]||0;save.stars[key]=Math.max(oldStars,stars);if(stars>oldStars)trackQuest('weeklyStars',stars-oldStars)
+    var isFirstClear=!save.cleared[key];
+    save.cleared[key]=true;var oldStars=save.stars[key]||0;save.stars[key]=Math.max(oldStars,stars);if(stars>oldStars)trackQuest('weeklyStars',stars-oldStars);
     if(p1p>=95){if(!save.masteryStars)save.masteryStars={};save.masteryStars[key]=true}
+    // First clear bonus coins per chapter
+    if(isFirstClear){
+      var chapterBonus=[50,100,150,250];
+      var starBonus=[0,25,75,150];
+var diamondBonus=[0,15,40,75];
+var dBonus=Math.max(0,(diamondBonus[stars]||0)-(diamondBonus[oldStars]||0));
+save.chromas=(save.chromas||0)+dBonus;
+if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?'s':'')+' earned for 3 stars!',3000);},1500);
+      var lvBonus=chapterBonus[curChapter]||50;
+      var sBonus=starBonus[stars]||0;
+      var totalBonus=lvBonus+sBonus;
+      save.coins=(save.coins||0)+totalBonus;
+      // Check if entire chapter cleared
+      var chLevels=[5,5,5,5];
+      var allCleared=true;
+      for(var cl=0;cl<chLevels[curChapter];cl++){if(!save.cleared[curChapter+'-'+cl]){allCleared=false;break;}}
+      if(allCleared){
+        var chapterCompleteBonus=[200,400,600,1000];
+        var compBonus=chapterCompleteBonus[curChapter]||200;
+        save.coins=(save.coins||0)+compBonus;
+        setTimeout(function(){showToast('🏆 Chapter Complete! +'+compBonus+'🟡 bonus!',4000);},2000);
+      }
+      saveProg();updateShopCurrency();
+      coinsEarned+=totalBonus;
+    }
   }
   if(won&&curConfig.challengeIdx!==undefined){
     save.challengesDone[curConfig.challengeIdx]=true;
