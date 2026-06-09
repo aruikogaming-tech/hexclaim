@@ -189,6 +189,17 @@ body{display:flex;align-items:center;justify-content:center;
 @keyframes timerBlink{0%,100%{opacity:1}50%{opacity:0.3}}
 @keyframes popIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}
 @keyframes tutFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tutSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.tut-overlay{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(96vw,420px);z-index:500;padding:0 12px 12px;pointer-events:none}
+.tut-bubble{background:rgba(15,23,41,0.97);border:1.5px solid var(--p1);border-radius:16px;padding:14px 16px;animation:tutSlideUp 0.3s ease;pointer-events:all;box-shadow:0 -4px 30px rgba(6,214,160,0.15)}
+.tut-bubble .tb-step{font-family:'IBM Plex Mono',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.tut-bubble .tb-title{font-family:'Archivo Black',sans-serif;font-size:15px;color:var(--p1);margin-bottom:4px}
+.tut-bubble .tb-desc{font-size:12px;color:var(--text);line-height:1.55;margin-bottom:8px}
+.tut-bubble .tb-action{font-size:11px;color:var(--c3);font-weight:700;display:flex;align-items:center;gap:6px}
+.tut-bubble .tb-progress{display:flex;gap:4px;margin-top:10px}
+.tut-bubble .tb-dot{height:3px;border-radius:2px;flex:1;background:var(--border);transition:all 0.3s}
+.tut-bubble .tb-dot.done{background:rgba(6,214,160,0.5)}
+.tut-bubble .tb-dot.active{background:var(--p1)}
 
 .board-wrap{position:relative;width:100%;aspect-ratio:1/1.05;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:6px;box-shadow:0 8px 32px rgba(0,0,0,0.5)}
 #canvas{width:100%;height:100%;display:block;border-radius:10px;cursor:pointer}
@@ -3011,7 +3022,8 @@ function buildShop(){
   tabs.innerHTML='';
   ['Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
     const btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
-    btn.textContent=t;btn.onclick=()=>{tabs.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderShopTab(t.toLowerCase());document.getElementById('shopContent').scrollTop=0;playSfx('click')};
+    var tabKey=t==='Tiles'?'skins':t.toLowerCase();
+    btn.textContent=t;btn.onclick=()=>{tabs.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderShopTab(tabKey);document.getElementById('shopContent').scrollTop=0;playSfx('click')};
     tabs.appendChild(btn);
   });
   renderShopTab('skins');
@@ -4431,7 +4443,104 @@ const TUTORIAL_STEPS=[
   {icon:'🚀',title:"You're Ready!",desc:'Time to claim your first territory, Commander. Chapter 1 awaits — start small, think big.',tip:null,btnText:'🎮 Start Chapter 1!'}
 ];
 var tutStep=0;
-function startTutorial(){tutStep=0;showScreen('tutorialScreen');renderTutStep();}
+// ===== INTERACTIVE TUTORIAL GAME =====
+var tutGameStep=0;
+var tutGameSteps=[
+  {
+    title:'Pick Any Color',
+    desc:'Tap one of the colored buttons at the bottom to claim tiles connected to your starting corner.',
+    action:'Make your first move — tap any color!',
+    trigger:'anyMove',
+    count:1
+  },
+  {
+    title:'Make 2 More Moves',
+    desc:'Each move captures all tiles of that color connected to your territory. Keep expanding!',
+    action:'Make 2 more moves to grow your territory.',
+    trigger:'moves',
+    count:2
+  },
+  {
+    title:'Capture More Than the AI',
+    desc:'You can see your territory % in the top bar. The player with the most tiles when the board is full wins!',
+    action:'Keep playing until you beat the AI!',
+    trigger:'lead',
+    count:1
+  },
+  {
+    title:'Win the Game!',
+    desc:'Fill the board and claim more territory than SHADE. You\'re ready for Chapter 1!',
+    action:'Finish the game to complete the tutorial.',
+    trigger:'gameEnd',
+    count:1
+  }
+];
+var tutMovesThisStep=0;
+var tutOverlayEl=null;
+
+function startTutorial(){
+  // Launch a small tutorial game then show overlay
+  tutGameStep=0;tutMovesThisStep=0;
+  // Start a small campaign-style game
+  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
+  curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:0,isTutorial:true};
+  COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
+  gameLocked=true;showScreen('gameScreen');
+  canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
+  setMusicMode('game');
+  comboCount=0;bestCombo=0;shakeAmount=0;
+  stalemeTurns=0;lastP1Count=0;lastP2Count=0;
+  movesLeft=999;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
+  document.getElementById('gChapter').textContent='TUTORIAL';
+  document.getElementById('gLevel').textContent='How to Play';
+  resize();initGame();playSfx('menuOpen');
+  setTimeout(function(){gameLocked=false;showTutGameOverlay();},600);
+}
+
+function showTutGameOverlay(){
+  // Remove existing overlay
+  if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
+  if(tutGameStep>=tutGameSteps.length)return;
+  var step=tutGameSteps[tutGameStep];
+  var ol=document.createElement('div');ol.className='tut-overlay';
+  var dotsHtml='<div class="tb-progress">';
+  tutGameSteps.forEach(function(_,i){dotsHtml+='<div class="tb-dot'+(i<tutGameStep?' done':i===tutGameStep?' active':'')+'"></div>';});
+  dotsHtml+='</div>';
+  ol.innerHTML='<div class="tut-bubble">'
+    +'<div class="tb-step">STEP '+(tutGameStep+1)+' OF '+tutGameSteps.length+'</div>'
+    +'<div class="tb-title">'+step.title+'</div>'
+    +'<div class="tb-desc">'+step.desc+'</div>'
+    +'<div class="tb-action">👆 '+step.action+'</div>'
+    +dotsHtml
+    +'</div>';
+  document.body.appendChild(ol);
+  tutOverlayEl=ol;
+}
+
+function tutOnPlayerMove(){
+  if(!curConfig||!curConfig.isTutorial)return;
+  if(tutGameStep>=tutGameSteps.length)return;
+  var step=tutGameSteps[tutGameStep];
+  tutMovesThisStep++;
+  if(step.trigger==='anyMove'&&tutMovesThisStep>=1){
+    tutGameStep++;tutMovesThisStep=0;
+    setTimeout(showTutGameOverlay,800);
+  } else if(step.trigger==='moves'&&tutMovesThisStep>=step.count){
+    tutGameStep++;tutMovesThisStep=0;
+    setTimeout(showTutGameOverlay,800);
+  } else if(step.trigger==='lead'){
+    var p1=countOwnedRaw(1),p2=countOwnedRaw(2);
+    if(p1>p2){tutGameStep++;tutMovesThisStep=0;setTimeout(showTutGameOverlay,800);}
+  }
+}
+
+function tutOnGameEnd(){
+  if(!curConfig||!curConfig.isTutorial)return;
+  if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
+  completeTutorial();
+}
+
+function startTutorial(){tutGameStep=0;showScreen('tutorialScreen');renderTutStep();}
 function renderTutStep(){
   var step=TUTORIAL_STEPS[tutStep];
   var cont=document.getElementById('tutorialContent');
@@ -5833,6 +5942,7 @@ async function playerMove(colorIdx){
   if(gameOver||turn!==1)return;
   if(colorIdx===p1Color||colorIdx===p2Color)return;
   if(colorIdx===p1LastColor)return; // Cooldown — can't repeat last color
+  tutOnPlayerMove();
   if(activePower)usePower(activePower);
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
@@ -5989,6 +6099,7 @@ function checkEnd(){
 
   gameOver=true;
   stopGameTimer();
+  if(curConfig&&curConfig.isTutorial){setTimeout(tutOnGameEnd,1500);return;}
 
   // ELO calculation for ranked
   let eloChange=0;
