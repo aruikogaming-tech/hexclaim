@@ -4478,6 +4478,7 @@ function showRankTab(tab,btn){
       };
       wrap.appendChild(el);
     });
+    }
 
     var expired=SEASONAL_SKINS.filter(function(s){return s.season!==save.season&&save.owned['theme_'+s.id]});
     if(expired.length){
