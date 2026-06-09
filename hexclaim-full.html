@@ -2650,7 +2650,7 @@ function getLimitedShopItems(){
     var borders=LIMITED_EDITION_POOL.filter(function(i){return i.type==='border'});
     var effects=LIMITED_EDITION_POOL.filter(function(i){return i.type==='effect'});
     var shuffle=function(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr};
-    var picked=[shuffle(themes)[0].id,shuffle(themes)[1].id,shuffle(borders)[0].id,shuffle(borders)[1].id];
+    var picked=[shuffle(themes)[0].id,shuffle(themes)[1].id,shuffle(borders)[0].id,shuffle(borders)[1].id,shuffle(effects)[0].id,shuffle(effects)[1].id];
     save.limitedShopRotation=now;
     save.limitedShopItems=picked;
     saveProg();
