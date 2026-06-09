@@ -2028,7 +2028,7 @@ function renderProfileTab(tab){
 
   else if(tab==='season'){
     // Current season rewards
-    var daysLeft=Math.max(0,Math.floor(30-((Date.now()-save.seasonStart)/(1000*60*60*24))));
+    var daysLeft=Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))));
     var highElo=save.seasonHighElo||save.elo;
     var highRank=getRank(highElo);
     var highRankIdx=RANKS.indexOf(highRank);
@@ -2513,7 +2513,7 @@ function getAvailableSeasonalSkins(){
 
 // Check if season has ended and grant earned skins
 function checkSeasonEnd(){
-  const SEASON_DURATION=30*24*60*60*1000; // 30 days
+  const SEASON_DURATION=60*24*60*60*1000; // 60 days (2 months)
   const elapsed=Date.now()-save.seasonStart;
   if(elapsed>=SEASON_DURATION && !save.seasonClaimed){
     // Season ended! Grant skins based on highest rank achieved this season
@@ -2529,9 +2529,21 @@ function checkSeasonEnd(){
       }
     });
     save.seasonClaimed=true;
+    // 50% soft ELO reset toward 1000
+    const oldElo=save.elo;
+    save.elo=Math.round(oldElo+(1000-oldElo)*0.5);
+    save.elo=Math.max(0,save.elo);
+    // Advance season
+    save.season=(save.season||1)+1;
+    save.seasonStart=Date.now();
+    save.seasonClaimed=false;
+    save.seasonHighElo=save.elo;
     saveProg();
     if(earned>0){
       showSeasonRewardPopup(earned,playerRank);
+    } else {
+      // Show reset notification even with no skin rewards
+      showToast('Season ended! ELO reset: '+oldElo+' → '+save.elo);
     }
   }
   // Track highest ELO this season
