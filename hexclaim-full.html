@@ -5653,7 +5653,7 @@ function applyDecay(player){
     owner[d.r][d.c]=0;
     grid[d.r][d.c]=Math.floor(Math.random()*NUM_COLORS);
   });
-  if(toDecay.length>0&&player===1){showToast('💨 Territory decayed!');playSfx('decay')};
+  if(toDecay.length>0&&player===1){playSfx('decay')};
 }
 
 function computePreview(colorIdx){
