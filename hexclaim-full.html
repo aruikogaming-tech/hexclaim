@@ -2353,7 +2353,7 @@ function adminUnlockAll(){
   PROFILE_ICONS.forEach(i=>save.owned['icon_'+i.id]=true);
   SHOP_TITLES.forEach(t=>save.owned['title_'+t.id]=true);
   save.bpPremium=true;
-  for(let i=0;i<4;i++)for(let l=0;l<5;l++){save.cleared[i+'-'+l]=true;save.stars[i+'-'+l]=3}
+  var chLevels=[5,20,20,20];for(var ci=0;ci<4;ci++)for(var li=1;li<=chLevels[ci];li++){save.cleared['ch'+(ci+1)+'_'+li]=true;save.stars['ch'+(ci+1)+'_'+li]=3;}
   CHALLENGES.forEach((_,i)=>save.challengesDone[i]=true);
   saveProg();updateAllUI();playSfx('win');
 }
