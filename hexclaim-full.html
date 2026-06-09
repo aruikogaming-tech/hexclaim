@@ -3049,7 +3049,7 @@ function renderShopTab(tab){
   var cont=document.getElementById('shopContent');
   cont.innerHTML='';cont.style.cssText='display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;scrollbar-width:none;-webkit-overflow-scrolling:touch';
 
-  if(tab==='tiles'){
+  if(tab==='skins'||tab==='tiles'){
     var activeSkin=getAllSkins().find(function(s){return s.id===save.activeSkin})||SHOP_THEMES[0];
     var preview=document.createElement('div');preview.className='card';preview.style.cssText='margin-bottom:8px;text-align:center';
     preview.innerHTML=makeActiveSkinPreview(activeSkin);
