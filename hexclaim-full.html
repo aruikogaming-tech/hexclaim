@@ -4584,6 +4584,13 @@ function showTutGameOverlay(){
     +'</div>';
   document.body.appendChild(ol);
   tutOverlayEl=ol;
+  document.getElementById('tutOkBtn').onclick=function(){
+    ol.remove();tutOverlayEl=null;
+    playSfx('click');
+    if(!gameTimerInterval&&!gameOver)startGameTimer();
+  };
+  stopGameTimer();
+}
 
 function tutOnPlayerMove(){
   if(!curConfig||!curConfig.isTutorial)return;
