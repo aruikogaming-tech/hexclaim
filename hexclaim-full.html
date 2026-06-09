@@ -4410,7 +4410,7 @@ function showRankTab(tab,btn){
     // Skins section
     cont.innerHTML='';cont.appendChild(wrap);
   } else if(tab==='rewards'){
-    const daysLeft=Math.max(0,Math.floor(30-((Date.now()-save.seasonStart)/(1000*60*60*24))));
+    const daysLeft=Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))));
     const highElo=save.seasonHighElo||save.elo;
     const highRank=getRank(highElo);
     const highRankIdx=RANKS.indexOf(highRank);
@@ -4423,7 +4423,40 @@ function showRankTab(tab,btn){
       +'<div style="font-size:10px;color:var(--text);margin-top:4px">Your peak: <span style="color:'+highRank.color+';font-weight:800">'+highRank.icon+' '+highRank.name+'</span> ('+highElo+' ELO)</div>';
     wrap.appendChild(header);
 
-    SEASONAL_SKINS.filter(function(s){return s.season===save.season}).forEach(function(item){
+    var rankRewardDefs={
+      'Unranked': {coins:25,  diamonds:5,   title:null,            skin:null,             border:null},
+      'Bronze':   {coins:50,  diamonds:10,  title:null,            skin:null,             border:null},
+      'Silver':   {coins:100, diamonds:25,  title:null,            skin:null,             border:null},
+      'Gold':     {coins:200, diamonds:50,  title:'Season Gold',   skin:null,             border:null},
+      'Platinum': {coins:400, diamonds:100, title:null,            skin:'season_platinum',border:null},
+      'Diamond':  {coins:600, diamonds:150, title:null,            skin:null,             border:'season_diamond'},
+      'Master':   {coins:800, diamonds:200, title:'Season Master', skin:'season_master',  border:null},
+      'Chromancer':{coins:1000,diamonds:300,title:'Chromancer',    skin:'season_chroma',  border:'season_chroma_border'},
+    };
+    RANKS.forEach(function(rank){
+      var rdef=rankRewardDefs[rank.name];if(!rdef)return;
+      var rankIdx=RANKS.indexOf(rank);
+      var willEarn=highRankIdx>=rankIdx;
+      var el=document.createElement('div');
+      el.style.cssText='background:var(--surface);border:1px solid '+(willEarn?rank.color:'var(--border)')+';border-radius:12px;padding:12px;margin-bottom:6px;opacity:'+(willEarn?'1':'0.45');
+      var rewardItems='';
+      rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">🟡 +'+rdef.coins+'</span> ';
+      rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--diamond)">💎 +'+rdef.diamonds+'</span> ';
+      if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏅 '+rdef.title+'</span> ';
+      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 Exclusive Skin</span> ';
+      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 Exclusive Border</span> ';
+      el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+        +'<div style="font-size:13px;font-weight:800;color:'+rank.color+'">'+rank.icon+' '+rank.name+'</div>'
+        +(willEarn?'<div style="font-size:9px;color:var(--p1);font-weight:700">✓ You will earn this</div>':'<div style="font-size:9px;color:var(--muted)">'+rank.min+' ELO needed</div>')
+        +'</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px">'+rewardItems+'</div>';
+      wrap.appendChild(el);
+    });
+    var seasonSkins=SEASONAL_SKINS.filter(function(s){return s.season===save.season});
+    if(seasonSkins.length){
+      var sh=document.createElement('div');sh.style.cssText='font-size:11px;color:var(--muted);margin:10px 0 4px;font-weight:700';
+      sh.textContent='✨ Seasonal Exclusive Skins';wrap.appendChild(sh);
+      seasonSkins.forEach(function(item){
       var owned=save.owned['theme_'+item.id];
       var rankIdx=RANKS.findIndex(function(r){return r.name===item.rank});
       var willEarn=highRankIdx>=rankIdx;
