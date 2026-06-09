@@ -2515,57 +2515,72 @@ function getAvailableSeasonalSkins(){
 
 // Check if season has ended and grant earned skins
 function checkSeasonEnd(){
-  const SEASON_DURATION=60*24*60*60*1000; // 60 days (2 months)
+  const SEASON_DURATION=60*24*60*60*1000;
   const elapsed=Date.now()-save.seasonStart;
-  if(elapsed>=SEASON_DURATION && !save.seasonClaimed){
-    // Season ended! Grant skins based on highest rank achieved this season
+  if(elapsed>=SEASON_DURATION&&!save.seasonClaimed){
     const highestElo=save.seasonHighElo||save.elo;
     const playerRank=getRank(highestElo);
     const playerRankIdx=RANKS.indexOf(playerRank);
-    let earned=0;
+    // Rank rewards
+    const rankRewards={
+      'Bronze':  {coins:50,  diamonds:10,  title:null,           skin:null,              border:null},
+      'Silver':  {coins:100, diamonds:25,  title:null,           skin:null,              border:null},
+      'Gold':    {coins:200, diamonds:50,  title:'Season Gold',  skin:null,              border:null},
+      'Platinum':{coins:400, diamonds:100, title:null,           skin:'season_platinum', border:null},
+      'Diamond': {coins:600, diamonds:150, title:null,           skin:null,              border:'season_diamond'},
+      'Master':  {coins:800, diamonds:200, title:'Season Master',skin:'season_master',   border:null},
+      'Chromancer':{coins:1000,diamonds:300,title:'Chromancer',  skin:'season_chroma',   border:'season_chroma_border'},
+    };
+    const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
+    // Grant coins and diamonds
+    save.coins=(save.coins||0)+reward.coins;
+    save.chromas=(save.chromas||0)+reward.diamonds;
+    // Grant title
+    if(reward.title&&!save.owned['title_'+reward.title]){save.owned['title_'+reward.title]=true;}
+    // Grant skin
+    if(reward.skin&&!save.owned['theme_'+reward.skin]){save.owned['theme_'+reward.skin]=true;}
+    // Grant border
+    if(reward.border&&!save.owned['border_'+reward.border]){save.owned['border_'+reward.border]=true;}
+    // Grant seasonal skins
+    let skinsEarned=0;
     SEASONAL_SKINS.filter(s=>s.season===save.season).forEach(s=>{
       const rankIdx=RANKS.findIndex(r=>r.name===s.rank);
-      if(playerRankIdx>=rankIdx){
-        save.owned['theme_'+s.id]=true;
-        earned++;
-      }
+      if(playerRankIdx>=rankIdx&&!save.owned['theme_'+s.id]){save.owned['theme_'+s.id]=true;skinsEarned++;}
     });
     save.seasonClaimed=true;
-    // 50% soft ELO reset toward 1000
+    // 50% soft ELO reset
     const oldElo=save.elo;
     save.elo=Math.round(oldElo+(1000-oldElo)*0.5);
     save.elo=Math.max(0,save.elo);
-    // Advance season
     save.season=(save.season||1)+1;
     save.seasonStart=Date.now();
     save.seasonClaimed=false;
     save.seasonHighElo=save.elo;
-    saveProg();
-    if(earned>0){
-      showSeasonRewardPopup(earned,playerRank);
-    } else {
-      // Show reset notification even with no skin rewards
-      showToast('Season ended! ELO reset: '+oldElo+' → '+save.elo);
-    }
+    saveProg();updateShopCurrency();
+    showSeasonRewardPopup(playerRank,reward,skinsEarned,oldElo);
   }
-  // Track highest ELO this season
-  if(!save.seasonHighElo||save.elo>save.seasonHighElo){
-    save.seasonHighElo=save.elo;
-    saveProg();
-  }
+  if(!save.seasonHighElo||save.elo>save.seasonHighElo){save.seasonHighElo=save.elo;saveProg();}
 }
 
-function showSeasonRewardPopup(count,rank){
+function showSeasonRewardPopup(rank,reward,skinsEarned,oldElo){
   const popup=document.createElement('div');
-  popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8)';
-  popup.innerHTML=`<div style="background:var(--surface);border:2px solid var(--gold);border-radius:16px;padding:24px;text-align:center;max-width:320px;animation:popIn 0.3s ease">
-    <div style="font-size:36px;margin-bottom:8px">🏆</div>
-    <div style="font-family:'Archivo Black',sans-serif;font-size:18px;color:var(--gold);margin-bottom:6px">Season ${save.season} Complete!</div>
-    <div style="font-size:13px;color:var(--text);margin-bottom:4px">Highest Rank: <span style="color:${rank.color};font-weight:800">${rank.icon} ${rank.name}</span></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">You earned <span style="color:var(--p1);font-weight:800">${count} exclusive skin${count>1?'s':''}</span> that will never be available again!</div>
-    <div style="font-size:10px;color:var(--muted);margin-bottom:12px">Check the Rewards tab in your Rank screen to equip them.</div>
-    <button onclick="this.parentElement.parentElement.remove();playSfx('click')" style="padding:10px 28px;background:var(--gold);border:none;border-radius:8px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Claim Rewards!</button>
-  </div>`;
+  popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  var extraHtml='';
+  if(reward.title)extraHtml+='<div style="font-size:11px;color:var(--c3);font-weight:700;margin-top:4px">🏅 Title Unlocked: '+reward.title+'</div>';
+  if(reward.skin)extraHtml+='<div style="font-size:11px;color:var(--p1);font-weight:700;margin-top:4px">🎨 Exclusive Tile Skin Unlocked!</div>';
+  if(reward.border)extraHtml+='<div style="font-size:11px;color:var(--c2);font-weight:700;margin-top:4px">🖼 Exclusive Border Unlocked!</div>';
+  if(skinsEarned>0)extraHtml+='<div style="font-size:11px;color:var(--p1);font-weight:700;margin-top:4px">✨ '+skinsEarned+' Seasonal Skin'+(skinsEarned>1?'s':'')+' Unlocked!</div>';
+  popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--gold);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:90%;animation:popIn 0.3s ease">'
+    +'<div style="font-size:40px;margin-bottom:8px">🏆</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:18px;color:var(--gold);margin-bottom:6px">Season '+(save.season-1)+' Complete!</div>'
+    +'<div style="font-size:13px;color:var(--text);margin-bottom:8px">Peak Rank: <span style="color:'+rank.color+';font-weight:800">'+rank.icon+' '+rank.name+'</span></div>'
+    +'<div style="background:var(--dim);border-radius:12px;padding:12px;margin-bottom:10px">'
+    +'<div style="font-size:13px;font-weight:800;color:var(--gold)">🟡 +'+reward.coins+' Coins</div>'
+    +'<div style="font-size:13px;font-weight:800;color:var(--diamond)">💎 +'+reward.diamonds+' Diamonds</div>'
+    +extraHtml+'</div>'
+    +'<div style="font-size:10px;color:var(--muted);margin-bottom:12px">ELO reset: '+oldElo+' → '+save.elo+' · Season '+(save.season)+' begins now!</div>'
+    +'<button onclick="this.parentElement.parentElement.remove();playSfx(\'click\')" style="width:100%;padding:12px;background:var(--gold);border:none;border-radius:10px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Claim Rewards!</button>'
+    +'</div>';
   document.body.appendChild(popup);
   playSfx('win');
 }
