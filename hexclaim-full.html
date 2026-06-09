@@ -4584,10 +4584,14 @@ function showTutGameOverlay(){
     +'</div>';
   document.body.appendChild(ol);
   tutOverlayEl=ol;
-  document.getElementById('tutOkBtn').onclick=function(){
-    ol.remove();tutOverlayEl=null;
-    playSfx('click');
-  };
+  function pauseGameTimer(){
+  if(gameTimerInterval){clearInterval(gameTimerInterval);gameTimerInterval=null}
+}
+function resumeGameTimer(){
+  if(!gameTimerInterval&&!gameOver)startGameTimer();
+}
+function stopGameTimer(){
+  if(gameTimerInterval){clearInterval(gameTimerInterval);gameTimerInterval=null}
 }
 
 function tutOnPlayerMove(){
