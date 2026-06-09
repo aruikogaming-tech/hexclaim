@@ -4447,30 +4447,62 @@ var tutStep=0;
 var tutGameStep=0;
 var tutGameSteps=[
   {
-    title:'Pick Any Color',
-    desc:'Tap one of the colored buttons at the bottom to claim tiles connected to your starting corner.',
-    action:'Make your first move — tap any color!',
+    title:'Welcome, Commander!',
+    desc:'This is your game board. You start in the bottom-left corner (green) and SHADE starts in the top-right (red). The board is filled with colored tiles — your mission is to capture as many as possible.',
+    action:'Tap any color button at the bottom to make your first move!',
     trigger:'anyMove',
     count:1
   },
   {
-    title:'Make 2 More Moves',
-    desc:'Each move captures all tiles of that color connected to your territory. Keep expanding!',
-    action:'Make 2 more moves to grow your territory.',
+    title:'How Capturing Works',
+    desc:'Every tile of the color you picked that is connected to your territory gets captured instantly. This is called Flood Fill — chains of the same color all get claimed at once. The bigger the chain, the better!',
+    action:'Make 2 more moves to keep expanding.',
     trigger:'moves',
     count:2
   },
   {
-    title:'Capture More Than the AI',
-    desc:'You can see your territory % in the top bar. The player with the most tiles when the board is full wins!',
-    action:'Keep playing until you beat the AI!',
+    title:'The Color Cooldown',
+    desc:'See the color buttons dimming after you use them? You cannot pick the same color twice in a row — it goes on cooldown for 1 turn. This stops repetitive play and makes every move a real decision.',
+    action:'Make 3 more moves — try different colors each time!',
+    trigger:'moves',
+    count:3
+  },
+  {
+    title:'Score Bar & Territory %',
+    desc:'Look at the top of the screen — the green bar shows YOUR territory % and the red shows SHADE\'s. The player who claims the most tiles when the board is completely full wins the game. Watch those numbers!',
+    action:'Make 2 more moves and watch your % grow.',
+    trigger:'moves',
+    count:2
+  },
+  {
+    title:'The ✦ Bonus Tiles',
+    desc:'See tiles with a glowing yellow symbol on them? Those are Bonus Tiles — they count as 2 tiles instead of 1 when captured. Grabbing them early gives you a big territory advantage. Prioritize them!',
+    action:'Make 3 more moves — try to grab a bonus tile!',
+    trigger:'moves',
+    count:3
+  },
+  {
+    title:'The Game Clocks',
+    desc:'Each player has a game clock (top bar) and a per-turn timer. If your turn timer runs out, your turn is skipped. If your total game clock hits zero, you lose — even if you have more territory! Play fast but smart.',
+    action:'Make 2 more moves.',
+    trigger:'moves',
+    count:2
+  },
+  {
+    title:'Beat SHADE to Win!',
+    desc:'SHADE is an AI opponent that gets smarter each chapter. Right now it is easy — but it will learn to block you, steal bonus tiles, and cut off your expansion routes. Think ahead!',
+    action:'Get more territory than SHADE to advance!',
     trigger:'lead',
     count:1
   },
   {
-    title:'Win the Game!',
-    desc:'Fill the board and claim more territory than SHADE. You\'re ready for Chapter 1!',
-    action:'Finish the game to complete the tutorial.',
+    title:'Finish the Board!',
+    desc:'The game ends when every tile on the board is claimed. No tiles left = game over. Whoever has more territory wins. You earn up to 3 stars based on how much you capture — more stars = more coins!',
+    action:'Finish the game to complete your tutorial!',
+    trigger:'gameEnd',
+    count:1
+  }
+];orial.',
     trigger:'gameEnd',
     count:1
   }
