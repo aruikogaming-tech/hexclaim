@@ -2353,7 +2353,7 @@ function adminUnlockAll(){
   PROFILE_ICONS.forEach(i=>save.owned['icon_'+i.id]=true);
   SHOP_TITLES.forEach(t=>save.owned['title_'+t.id]=true);
   save.bpPremium=true;
-  var chLevels=[5,20,20,20];for(var ci=0;ci<4;ci++)for(var li=1;li<=chLevels[ci];li++){save.cleared['ch'+(ci+1)+'_'+li]=true;save.stars['ch'+(ci+1)+'_'+li]=3;}
+  var chLevels=[5,5,5,5];for(var ci=0;ci<4;ci++)for(var li=1;li<=chLevels[ci];li++){save.cleared['ch'+(ci+1)+'_'+li]=true;save.stars['ch'+(ci+1)+'_'+li]=3;}
   CHALLENGES.forEach((_,i)=>save.challengesDone[i]=true);
   saveProg();updateAllUI();playSfx('win');
 }
@@ -4673,9 +4673,9 @@ function buildChapters(){
   list.appendChild(tutCard);
   var chapters=[
     {num:1,name:'The First Claim',desc:'Learn the basics of territory control. Small board, easy AI.',mechanic:'BASICS',levels:5,color:'var(--p1)'},
-    {num:2,name:'Color Wars',desc:'The AI gets smarter. Master blocking and chain reactions.',mechanic:'BLOCKING',levels:20,color:'var(--c2)'},
-    {num:3,name:'The Surge',desc:'Larger boards, power-ups, and a cunning opponent.',mechanic:'POWER-UPS',levels:20,color:'var(--c5)'},
-    {num:4,name:'Chromatic End',desc:'The ultimate challenge. Prove you are the Chromancer.',mechanic:'ELITE',levels:20,color:'var(--c4)'},
+    {num:2,name:'Color Wars',desc:'The AI gets smarter. Master blocking and chain reactions.',mechanic:'BLOCKING',levels:5,color:'var(--c2)'},
+    {num:3,name:'The Surge',desc:'Larger boards, power-ups, and a cunning opponent.',mechanic:'POWER-UPS',levels:5,color:'var(--c5)'},
+    {num:4,name:'Chromatic End',desc:'The ultimate challenge. Prove you are the Chromancer.',mechanic:'ELITE',levels:5,color:'var(--c4)'},
   ];
   chapters.forEach(function(ch){
     var unlocked=ch.num===1?save.tutorialDone:Object.keys(save.cleared||{}).some(function(k){return k.startsWith('ch'+(ch.num-1)+'_')})&&save.tutorialDone;
