@@ -4551,23 +4551,29 @@ function startTutorial(){
 }
 
 function showTutGameOverlay(){
-  // Remove existing overlay
   if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
   if(tutGameStep>=tutGameSteps.length)return;
   var step=tutGameSteps[tutGameStep];
-  var ol=document.createElement('div');ol.className='tut-overlay';
-  var dotsHtml='<div class="tb-progress">';
-  tutGameSteps.forEach(function(_,i){dotsHtml+='<div class="tb-dot'+(i<tutGameStep?' done':i===tutGameStep?' active':'')+'"></div>';});
+  // Full screen popup with OK button
+  var ol=document.createElement('div');
+  ol.style.cssText='position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);padding:20px';
+  var dotsHtml='<div style="display:flex;gap:4px;justify-content:center;margin-top:12px">';
+  tutGameSteps.forEach(function(_,i){dotsHtml+='<div style="height:3px;width:'+(i===tutGameStep?'28px':'16px')+';border-radius:2px;background:'+(i<tutGameStep?'rgba(6,214,160,0.5)':i===tutGameStep?'var(--p1)':'var(--border)')+';transition:all 0.3s"></div>';});
   dotsHtml+='</div>';
-  ol.innerHTML='<div class="tut-bubble">'
-    +'<div class="tb-step">STEP '+(tutGameStep+1)+' OF '+tutGameSteps.length+'</div>'
-    +'<div class="tb-title">'+step.title+'</div>'
-    +'<div class="tb-desc">'+step.desc+'</div>'
-    +'<div class="tb-action">👆 '+step.action+'</div>'
+  ol.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:20px;padding:24px;max-width:340px;width:100%;animation:popIn 0.3s ease">'
+    +'<div style="font-family:\'IBM Plex Mono\',monospace;font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">STEP '+(tutGameStep+1)+' OF '+tutGameSteps.length+'</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:18px;color:var(--p1);margin-bottom:10px">'+step.title+'</div>'
+    +'<div style="font-size:13px;color:var(--text);line-height:1.6;margin-bottom:12px">'+step.desc+'</div>'
+    +'<div style="background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:10px;padding:10px;font-size:11px;color:var(--c3);font-weight:700;margin-bottom:16px">👆 '+step.action+'</div>'
     +dotsHtml
+    +'<button id="tutOkBtn" style="width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,var(--p1),#0ea573);border:none;border-radius:12px;color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1px">Got It!</button>'
     +'</div>';
   document.body.appendChild(ol);
   tutOverlayEl=ol;
+  document.getElementById('tutOkBtn').onclick=function(){
+    ol.remove();tutOverlayEl=null;
+    playSfx('click');
+  };
 }
 
 function tutOnPlayerMove(){
