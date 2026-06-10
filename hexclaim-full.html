@@ -1931,7 +1931,15 @@ function renderProfileTab(tab){
       +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'Chromancer')+'</div>'
       +'<div style="font-size:9px;color:var(--c4);margin-top:2px">Border: '+borderName.name+'</div>'
       +'<div style="font-size:10px;margin-top:4px;color:'+r.color+';font-weight:700">'+r.icon+' '+r.name+' — '+save.elo+' ELO</div>'
-      +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>';
+      +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>'
+      +(function(){
+        var medals=save.seasonMedals||[];
+        if(!medals.length)return'';
+        var html='<div style="margin-top:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px">';
+        medals.forEach(function(m){html+='<span title="Season '+m.season+' — '+m.rank+'" style="font-size:18px;cursor:default">'+m.icon+'</span>';});
+        html+='</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Season Medals</div>';
+        return html;
+      })();
     cont.appendChild(preview);
 
     // Currently equipped items summary
@@ -2540,6 +2548,8 @@ function checkSeasonEnd(){
       const rankIdx=RANKS.findIndex(r=>r.name===s.rank);
       if(playerRankIdx>=rankIdx&&!save.owned['theme_'+s.id]){save.owned['theme_'+s.id]=true;skinsEarned++;}
     });
+    if(!save.seasonMedals)save.seasonMedals=[];
+    save.seasonMedals.push({season:save.season,rank:playerRank.name,icon:reward.medal});
     save.seasonClaimed=true;
     // 50% soft ELO reset
     const oldElo=save.elo;
@@ -4355,7 +4365,15 @@ function showRankTab(tab,btn){
       +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'Chromancer')+'</div>'
       +'<div style="font-size:9px;color:var(--c4);margin-top:2px">Border: '+borderName.name+'</div>'
       +'<div style="font-size:10px;margin-top:4px;color:'+r.color+';font-weight:700">'+r.icon+' '+r.name+' — '+save.elo+' ELO</div>'
-      +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>';
+      +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>'
+      +(function(){
+        var medals=save.seasonMedals||[];
+        if(!medals.length)return'';
+        var html='<div style="margin-top:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px">';
+        medals.forEach(function(m){html+='<span title="Season '+m.season+' — '+m.rank+'" style="font-size:18px;cursor:default">'+m.icon+'</span>';});
+        html+='</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Season Medals</div>';
+        return html;
+      })();
     wrap.appendChild(preview);
 
     // Icons section
