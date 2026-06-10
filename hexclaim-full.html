@@ -2608,6 +2608,14 @@ const SHOP_BORDERS=[
   {id:'cosmic_border',name:'Cosmic Orbit',price:3300,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'dragon_border',name:'Dragon Crest',price:3600,currency:'coins',preview:'🐉',rankReq:'Chromancer'},
   {id:'void_border',name:'Void Rift',price:4000,currency:'coins',preview:'🕳️',rankReq:'Chromancer'},
+  // Season exclusive borders — earned at season end
+  {id:'season_bronze_border',name:'Bronze Season Frame',price:0,currency:'free',preview:'🥉',seasonal:true,season:1},
+  {id:'season_silver_border',name:'Silver Season Frame',price:0,currency:'free',preview:'🥈',seasonal:true,season:1},
+  {id:'season_gold_border',name:'Gold Season Frame',price:0,currency:'free',preview:'🥇',seasonal:true,season:1},
+  {id:'season_plat_border',name:'Platinum Season Frame',price:0,currency:'free',preview:'💎',seasonal:true,season:1},
+  {id:'season_diamond_border',name:'Diamond Season Frame',price:0,currency:'free',preview:'💠',seasonal:true,season:1},
+  {id:'season_master_border',name:'Master Season Frame',price:0,currency:'free',preview:'👑',seasonal:true,season:1},
+  {id:'season_chroma_border',name:'Chromancer Season Frame',price:0,currency:'free',preview:'🔮',seasonal:true,season:1},
 ];
 
 const SHOP_EFFECTS=[
@@ -2852,6 +2860,14 @@ function getBorderStyle(){
   if(b==='le_void_rift')return 'border:3px solid #9933ff;box-shadow:0 0 18px rgba(153,51,255,0.8),0 0 36px rgba(80,0,200,0.4),0 0 6px rgba(255,0,255,0.3);animation:borderFlicker 0.3s ease infinite';
   if(b==='le_crown_jewel')return 'border:3px solid #ffd700;box-shadow:0 0 16px rgba(255,215,0,0.7),0 0 32px rgba(255,215,0,0.3),0 0 6px rgba(255,255,255,0.4);animation:borderPulse 2.5s ease infinite;--bc:255,215,0';
   if(b==='le_sakura_frame')return 'border:3px solid #ff88aa;box-shadow:0 0 12px rgba(255,136,170,0.6),0 0 24px rgba(255,136,170,0.2);animation:borderBreathe 3s ease infinite';
+  // Season exclusive borders
+  if(b==='season_bronze_border')return 'border:3px solid #cd7f32;box-shadow:0 0 10px rgba(205,127,50,0.6),0 0 20px rgba(205,127,50,0.2);animation:borderPulse 2s ease infinite;--bc:205,127,50';
+  if(b==='season_silver_border')return 'border:3px solid #c0c0c0;box-shadow:0 0 10px rgba(192,192,192,0.6),0 0 20px rgba(192,192,192,0.2);animation:borderPulse 2s ease infinite;--bc:192,192,192';
+  if(b==='season_gold_border')return 'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.7),0 0 24px rgba(255,215,0,0.3);animation:borderPulse 1.8s ease infinite;--bc:255,215,0';
+  if(b==='season_plat_border')return 'border:3px solid #e5e4e2;box-shadow:0 0 14px rgba(229,228,226,0.7),0 0 28px rgba(180,200,220,0.3);animation:borderBreathe 2.5s ease infinite';
+  if(b==='season_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8),0 0 28px rgba(0,200,255,0.4);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
+  if(b==='season_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8),0 0 32px rgba(120,0,255,0.3);animation:borderRotate 4s linear infinite';
+  if(b==='season_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(255,100,0,0.3),0 0 6px rgba(6,214,160,0.4);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
   return 'border:2px solid var(--p1)';
 }
 
