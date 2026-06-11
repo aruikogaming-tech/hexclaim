@@ -2383,6 +2383,7 @@ function tryRankedPVP(){
 }
 
 // ===== UPDATE ALL UI =====
+registerAchievementCosmetics();
 function updateAllUI(){
   updateMenuStats();
   updateTopBar();
@@ -2982,7 +2983,91 @@ function getBorderDecoHTML(size){
   return html;
 }
 
+// Achievement rewards — unlocked automatically when achievement is met
+const ACHIEVEMENT_REWARDS={
+  // Win milestones → skins
+  'win_1':   {type:'theme', id:'achieve_win1',   name:'Victory Rush',    desc:'Won first game',     colors:['#0a1628','#06d6a0','#00b388','#00e5a0','#00ff88','#04c47a'],symbols:['★','◆','▲','✦','●','⬡']},
+  'win_10':  {type:'theme', id:'achieve_win10',  name:'Tenacious',       desc:'Won 10 games',       colors:['#0d1a2e','#118ab2','#0099cc','#00bbee','#0077aa','#33aadd'],symbols:['◎','◈','◉','◌','○','●']},
+  'win_25':  {type:'theme', id:'achieve_win25',  name:'Battle-Worn',     desc:'Won 25 games',       colors:['#1a0a0a','#ef476f','#cc2244','#ff6688','#ff4466','#dd3355'],symbols:['✖','◥','▼','◣','⬥','▲']},
+  'win_50':  {type:'theme', id:'achieve_win50',  name:'War Paint',       desc:'Won 50 games',       colors:['#0f0a1a','#8338ec','#6622cc','#aa55ff','#9944ee','#7733bb'],symbols:['⬟','◈','✧','◆','◉','✦']},
+  'win_100': {type:'theme', id:'achieve_win100', name:'Century',         desc:'Won 100 games',      colors:['#0d1205','#aacc00','#88ff00','#ccee22','#99bb00','#bbdd33'],symbols:['✿','❧','♣','❦','✾','♠']},
+  'win_200': {type:'theme', id:'achieve_win200', name:'Legend Tiles',    desc:'Won 200 games',      colors:['#0a0a14','#ffd166','#ffaa00','#ffcc44','#ff8800','#ffdd88'],symbols:['👑','★','◆','✦','⬡','●']},
+  // Streaks → effects
+  'streak_5':  {type:'effect', id:'achieve_streak5',  name:'Hot Streak',   desc:'Win 5 in a row'},
+  'streak_10': {type:'effect', id:'achieve_streak10', name:'Unstoppable',  desc:'Win 10 in a row'},
+  // Campaign → borders
+  'chapter_1': {type:'border', id:'achieve_ch1', name:'Explorer Frame',  desc:'Complete Chapter 1'},
+  'chapter_2': {type:'border', id:'achieve_ch2', name:'Adventurer Frame',desc:'Complete Chapter 2'},
+  'chapter_3': {type:'border', id:'achieve_ch3', name:'Conqueror Frame', desc:'Complete Chapter 3'},
+  'chapter_4': {type:'border', id:'achieve_ch4', name:'Warlord Frame',   desc:'Complete Chapter 4'},
+  // Stars → skins
+  'stars_30':  {type:'theme', id:'achieve_stars30',  name:'Star Forge',    desc:'Earn 30 stars',     colors:['#0a0a1a','#ffd700','#ffaa00','#ff8800','#ffcc00','#ffee44'],symbols:['★','☆','✦','✧','⭐','✩']},
+  'stars_60':  {type:'theme', id:'achieve_stars60',  name:'Perfect Storm', desc:'Earn 60 stars',     colors:['#000510','#b9f2ff','#00e5ff','#88ddff','#00bbff','#aaeeff'],symbols:['❆','❅','✵','❋','✧','◈']},
+  // VS AI → borders
+  'vsai_hard':  {type:'border', id:'achieve_vsai_hard',  name:'AI Hunter Frame',   desc:'Beat Hard AI'},
+  'vsai_insane':{type:'border', id:'achieve_vsai_insane',name:'Machine Breaker Frame',desc:'Beat Impossible AI'},
+  // Combo → effects
+  'combo_5':  {type:'effect', id:'achieve_combo5',  name:'Combo Burst',  desc:'Get a 5x combo'},
+  'combo_10': {type:'effect', id:'achieve_combo10', name:'Mega Combo',   desc:'Get a 10x combo'},
+  // Level → borders
+  'level_25': {type:'border', id:'achieve_level25', name:'Grinder Frame', desc:'Reach Level 25'},
+  'level_50': {type:'border', id:'achieve_level50', name:'Veteran Frame', desc:'Reach Level 50'},
+  // Rank → titles only
+  'rank_gold':      {type:'title', id:'Gold Star',       name:'Gold Star'},
+  'rank_platinum':  {type:'title', id:'Platinum Elite',  name:'Platinum Elite'},
+  'rank_diamond':   {type:'title', id:'Diamond Hands',   name:'Diamond Hands'},
+  'rank_master':    {type:'title', id:'Grand Master',    name:'Grand Master'},
+  'rank_chromancer':{type:'title', id:'Chromatic God',   name:'Chromatic God'},
+  // Challenge → titles only
+  'challenge_perfect': {type:'title', id:'The Perfect',   name:'The Perfect'},
+  'challenge_deathless':{type:'title',id:'Deathless',     name:'Deathless'},
+  'challenge_iron':    {type:'title', id:'Iron Wall',     name:'Iron Wall'},
+  'challenge_nexus':   {type:'title', id:'Nexus Lord',    name:'Nexus Lord'},
+  'challenge_chroma':  {type:'title', id:'Chromancer Supreme',name:'Chromancer Supreme'},
+};
+
+// Add achievement border IDs to SHOP_BORDERS after definition
+function registerAchievementCosmetics(){
+  Object.values(ACHIEVEMENT_REWARDS).forEach(function(r){
+    if(r.type==='border'&&!SHOP_BORDERS.find(function(b){return b.id===r.id})){
+      SHOP_BORDERS.push({id:r.id,name:r.name,price:0,currency:'free',preview:'🏆',achievement:true});
+    }
+    if(r.type==='theme'&&r.colors&&!SHOP_THEMES.find(function(t){return t.id===r.id})){
+      SHOP_THEMES.push({tier:1,id:r.id,name:r.name,desc:r.desc,price:0,currency:'free',preview:'🏆',colors:r.colors,symbols:r.symbols||['◆','●','▲','✦','✚','⬡'],achievement:true});
+    }
+    if(r.type==='effect'&&!SHOP_EFFECTS.find(function(e){return e.id===r.id})){
+      SHOP_EFFECTS.push({id:r.id,name:r.name,desc:r.desc,price:0,currency:'free',preview:'🏆',achievement:true});
+    }
+  });
+}
+
+function grantAchievementReward(key){
+  var r=ACHIEVEMENT_REWARDS[key];if(!r)return;
+  if(r.type==='title'){
+    if(!save.owned['title_'+r.id]){save.owned['title_'+r.id]=true;saveProg();showToast('🏅 Title Unlocked: "'+r.name+'"',4000);}
+  } else if(r.type==='theme'){
+    if(!save.owned['theme_'+r.id]){save.owned['theme_'+r.id]=true;saveProg();showToast('🎨 Skin Unlocked: '+r.name+'!',4000);}
+  } else if(r.type==='border'){
+    if(!save.owned['border_'+r.id]){save.owned['border_'+r.id]=true;saveProg();showToast('🖼 Border Unlocked: '+r.name+'!',4000);}
+  } else if(r.type==='effect'){
+    if(!save.owned['effect_'+r.id]){save.owned['effect_'+r.id]=true;saveProg();showToast('✨ Effect Unlocked: '+r.name+'!',4000);}
+  }
+}
+
 const SHOP_TITLES=[
+  // Rank titles — earned through rank achievements
+  {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient'},
+  {id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold'},
+  {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient'},
+  {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient'},
+  {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient'},
+  {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow'},
+  // Challenge titles — hardest to get
+  {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#ef476f',style:'bold'},
+  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ef476f',style:'gradient'},
+  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#b0c4de',style:'bold'},
+  {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#8338ec',style:'gradient'},
+  {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'🔮 Reach Chromancer rank',color:'#ffd166',style:'rainbow'},
   // Default
   {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient'},
   // Win milestones
@@ -6313,6 +6398,26 @@ function checkEnd(){
 
   let stars=0;
   if(won&&curConfig.starThresholds){if(p1p>=curConfig.starThresholds[0])stars=1;if(p1p>=curConfig.starThresholds[1])stars=2;if(p1p>=curConfig.starThresholds[2])stars=3}
+  // Grant achievement rewards
+  if(won){
+    var totalWins=save.pvpWins+save.totalWins;
+    if(totalWins===1)grantAchievementReward('win_1');
+    if(totalWins===10)grantAchievementReward('win_10');
+    if(totalWins===25)grantAchievementReward('win_25');
+    if(totalWins===50)grantAchievementReward('win_50');
+    if(totalWins===100)grantAchievementReward('win_100');
+    if(totalWins===200)grantAchievementReward('win_200');
+    if(save.pvpStreak===5)grantAchievementReward('streak_5');
+    if(save.pvpStreak===10)grantAchievementReward('streak_10');
+    if(save.bestCombo>=5)grantAchievementReward('combo_5');
+    if(save.bestCombo>=10)grantAchievementReward('combo_10');
+    var r=getRank(save.elo);
+    if(r.name==='Gold')grantAchievementReward('rank_gold');
+    if(r.name==='Platinum')grantAchievementReward('rank_platinum');
+    if(r.name==='Diamond')grantAchievementReward('rank_diamond');
+    if(r.name==='Master')grantAchievementReward('rank_master');
+    if(r.name==='Chromancer')grantAchievementReward('rank_chromancer');
+  }
   if(won&&curChapter>=0){const key=`${curChapter}-${curLevel}`;const newKey='ch'+(curChapter+1)+'_'+(curLevel+1);
     var isFirstClear=!save.cleared[key]&&!save.cleared[newKey];
     save.cleared[key]=true;save.cleared[newKey]=true;
@@ -6339,6 +6444,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
         var compBonus=chapterCompleteBonus[curChapter]||200;
         save.coins=(save.coins||0)+compBonus;
         setTimeout(function(){showToast('🏆 Chapter Complete! +'+compBonus+'🟡 bonus!',4000);},2000);
+        grantAchievementReward('chapter_'+(curChapter+1));
       }
       saveProg();updateShopCurrency();
       if(typeof coinsEarned!=='undefined')coinsEarned+=totalBonus;
