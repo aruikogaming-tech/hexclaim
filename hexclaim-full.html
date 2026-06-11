@@ -4342,11 +4342,11 @@ function buildRankScreen(){
       <div class="sc-time">Season ends in ${Math.floor(30-((Date.now()-save.seasonStart)/(1000*60*60*24)))} days</div>
     </div>
     <div class="tabs" style="margin-top:4px">
-      <button class="tab active" onclick="showRankTab('lb',this)">LB</button>
-      <button class="tab" onclick="showRankTab('rewards',this)">Rewards</button>
-      <button class="tab" onclick="showRankTab('history',this)">History</button>
-      <button class="tab" onclick="showRankTab('equipped',this)">Equipped</button>
-      <button class="tab" onclick="showRankTab('owned',this)">Owned</button>
+      <button class="tab active" onclick="showRankTab('lb',this)" style="font-size:9px;padding:6px 8px">Leaderboard</button>
+      <button class="tab" onclick="showRankTab('rewards',this)" style="font-size:9px;padding:6px 8px">Rewards</button>
+      <button class="tab" onclick="showRankTab('history',this)" style="font-size:9px;padding:6px 8px">History</button>
+      <button class="tab" onclick="showRankTab('equipped',this)" style="font-size:9px;padding:6px 8px">Equipped</button>
+      <button class="tab" onclick="showRankTab('owned',this)" style="font-size:9px;padding:6px 8px">Owned</button>
     </div>
     <div id="rankTabContent"></div>`;
   c.innerHTML=html;
@@ -5159,9 +5159,14 @@ function initGame(){
       owner[r][c]=0;fogRevealed[r][c]=!curConfig.fog;
     }
   }
-  owner[ROWS-1][0]=1;p1Color=grid[ROWS-1][0];
-  owner[0][COLS-1]=2;p2Color=grid[0][COLS-1];
-  if(p1Color===p2Color){p2Color=(p2Color+1)%NUM_COLORS;grid[0][COLS-1]=p2Color}
+  // Random starting corners — pick 2 opposite corners randomly
+  var corners=[[ROWS-1,0],[0,COLS-1],[0,0],[ROWS-1,COLS-1]];
+  var p1corner=corners[Math.floor(Math.random()*4)];
+  var opposites=[[0,COLS-1],[ROWS-1,0],[ROWS-1,COLS-1],[0,0]];
+  var p2corner=opposites[corners.indexOf(p1corner)];
+  owner[p1corner[0]][p1corner[1]]=1;p1Color=grid[p1corner[0]][p1corner[1]];
+  owner[p2corner[0]][p2corner[1]]=2;p2Color=grid[p2corner[0]][p2corner[1]];
+  if(p1Color===p2Color){p2Color=(p2Color+1)%NUM_COLORS;grid[p2corner[0]][p2corner[1]]=p2Color}
 
   if(curConfig.powerTiles){const cnt=3+Math.floor(Math.random()*3);for(let i=0;i<cnt;i++){let pr,pc;do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS)}while(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc));powerTiles.push({r:pr,c:pc,type:['bomb','scout','double'][Math.floor(Math.random()*3)]})}}
   turn=1;gameOver=false;totalCells=ROWS*COLS;
@@ -6297,9 +6302,10 @@ function checkEnd(){
 
   let stars=0;
   if(won&&curConfig.starThresholds){if(p1p>=curConfig.starThresholds[0])stars=1;if(p1p>=curConfig.starThresholds[1])stars=2;if(p1p>=curConfig.starThresholds[2])stars=3}
-  if(won&&curChapter>=0){const key=`${curChapter}-${curLevel}`;
-    var isFirstClear=!save.cleared[key];
-    save.cleared[key]=true;var oldStars=save.stars[key]||0;save.stars[key]=Math.max(oldStars,stars);if(stars>oldStars)trackQuest('weeklyStars',stars-oldStars);
+  if(won&&curChapter>=0){const key=`${curChapter}-${curLevel}`;const newKey='ch'+(curChapter+1)+'_'+(curLevel+1);
+    var isFirstClear=!save.cleared[key]&&!save.cleared[newKey];
+    save.cleared[key]=true;save.cleared[newKey]=true;
+    var oldStars=save.stars[key]||0;save.stars[key]=Math.max(oldStars,stars);save.stars[newKey]=Math.max(oldStars,stars);if(stars>oldStars)trackQuest('weeklyStars',stars-oldStars);
     if(p1p>=95){if(!save.masteryStars)save.masteryStars={};save.masteryStars[key]=true}
     // First clear bonus coins per chapter
     if(isFirstClear){
@@ -6316,7 +6322,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
       // Check if entire chapter cleared
       var chLevels=[5,5,5,5];
       var allCleared=true;
-      for(var cl=0;cl<chLevels[curChapter];cl++){if(!save.cleared[curChapter+'-'+cl]){allCleared=false;break;}}
+      for(var cl=1;cl<=chLevels[curChapter];cl++){if(!save.cleared['ch'+(curChapter+1)+'_'+cl]){allCleared=false;break;}}
       if(allCleared){
         var chapterCompleteBonus=[200,400,600,1000];
         var compBonus=chapterCompleteBonus[curChapter]||200;
