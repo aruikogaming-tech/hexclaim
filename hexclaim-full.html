@@ -5168,6 +5168,16 @@ function initGame(){
   owner[p1corner[0]][p1corner[1]]=1;p1Color=grid[p1corner[0]][p1corner[1]];
   owner[p2corner[0]][p2corner[1]]=2;p2Color=grid[p2corner[0]][p2corner[1]];
   if(p1Color===p2Color){p2Color=(p2Color+1)%NUM_COLORS;grid[p2corner[0]][p2corner[1]]=p2Color}
+  // Make surrounding corner tiles different colors to prevent auto-capture on first expand
+  [[p1corner[0],p1corner[1]],[p2corner[0],p2corner[1]]].forEach(function(pos){
+    var r=pos[0],c=pos[1],myColor=owner[r][c]===1?p1Color:p2Color;
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(function(d){
+      var nr=r+d[0],nc=c+d[1];
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===0&&grid[nr][nc]===myColor){
+        grid[nr][nc]=(myColor+1)%NUM_COLORS;
+      }
+    });
+  });
 
   if(curConfig.powerTiles){const cnt=3+Math.floor(Math.random()*3);for(let i=0;i<cnt;i++){let pr,pc;do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS)}while(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc));powerTiles.push({r:pr,c:pc,type:['bomb','scout','double'][Math.floor(Math.random()*3)]})}}
   turn=1;gameOver=false;totalCells=ROWS*COLS;
