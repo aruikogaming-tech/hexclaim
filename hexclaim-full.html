@@ -2383,7 +2383,6 @@ function tryRankedPVP(){
 }
 
 // ===== UPDATE ALL UI =====
-registerAchievementCosmetics();
 function updateAllUI(){
   updateMenuStats();
   updateTopBar();
@@ -3041,6 +3040,7 @@ function registerAchievementCosmetics(){
   });
 }
 
+registerAchievementCosmetics();
 function grantAchievementReward(key){
   var r=ACHIEVEMENT_REWARDS[key];if(!r)return;
   if(r.type==='title'){
