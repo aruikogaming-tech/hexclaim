@@ -6123,13 +6123,13 @@ async function playerMove(colorIdx){
   // Campaign / offline — animated
   if(gameOver||turn!==1)return;
   if(colorIdx===p1Color||colorIdx===p2Color)return;
-  if(colorIdx===p1LastColor)return; // Cooldown — can't repeat last color
+  if(colorIdx===p1LastColor&&colorIdx!==p1Color)return; // Cooldown — can't repeat last color
   tutOnPlayerMove();
   if(activePower)usePower(activePower);
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
-  p1LastColor=p1Color; // Save OLD color as cooldown before updating
   p1Color=colorIdx;
+  p1LastColor=colorIdx; // Lock the color just picked
   newlyClaimed=[];
   resetTurnTimer();
 
