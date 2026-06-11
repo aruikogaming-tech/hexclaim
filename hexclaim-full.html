@@ -1987,7 +1987,7 @@ function renderProfileTab(tab,externalCont){
         +(owned?'':'<div style="font-size:8px;color:var(--c4);margin-top:2px">🔒 '+item.achievement+'</div>')
         +'</div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div style="font-size:9px;color:var(--muted)">🔒</div>');
-      if(owned)el.onclick=function(){if(equipped)return;save.equipped.title=item.id;saveProg();renderProfileTab('equipped');playSfx('click')};
+      if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();renderProfileTab('equipped');playSfx('click')};})(item.id);}
       cont.appendChild(el);
     });
   }
