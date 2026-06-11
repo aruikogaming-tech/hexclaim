@@ -5886,7 +5886,7 @@ function buildColorPicker(){
     if(isOwn||isCooldown)b.classList.add('disabled');
     if(isSelectable)b.classList.add('selectable');
 
-    if(isCooldown&&!isOwn){
+    if(isCooldown){
       const cd=document.createElement('span');
       cd.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;background:rgba(0,0,0,0.6);border-radius:8px;z-index:3';
       cd.textContent='🔒';b.appendChild(cd);}
@@ -6128,8 +6128,8 @@ async function playerMove(colorIdx){
   if(activePower)usePower(activePower);
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
+  p1LastColor=p1Color; // Save OLD color as cooldown before updating
   p1Color=colorIdx;
-  p1LastColor=colorIdx; // Track cooldown — lock the color just picked
   newlyClaimed=[];
   resetTurnTimer();
 
