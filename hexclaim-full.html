@@ -4536,6 +4536,7 @@ function showRankTab(tab,btn){
         <div class="mh-elo-change ${m.eloChange>=0?'pos':'neg'}">${m.eloChange>=0?'+':''}${m.eloChange}</div></div>`;
     });
   } else if(tab==='equipped'||tab==='owned'){
+    cont.innerHTML='';
     var wrap=document.createElement('div');wrap.style.marginTop='6px';
     cont.appendChild(wrap);
     renderProfileTab(tab,wrap);
