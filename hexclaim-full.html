@@ -530,7 +530,7 @@ body{display:flex;align-items:center;justify-content:center;
 <!-- RANK SCREEN -->
 <div class="screen" id="rankScreen">
   <button class="back-btn" onclick="showScreen('menuScreen');playSfx('menuBack')">← Back</button>
-  <div class="section-title">Rankings</div>
+  <div class="section-title">Profile</div>
   <div id="rankContent"></div>
 </div>
 
@@ -1916,8 +1916,8 @@ function buildProfileScreen(){
   renderProfileTab('equipped');
 }
 
-function renderProfileTab(tab){
-  var cont=document.getElementById('profileContent');cont.innerHTML='';
+function renderProfileTab(tab,externalCont){
+  var cont=externalCont||document.getElementById('profileContent');cont.innerHTML='';
 
   if(tab==='equipped'){
     // Profile preview
@@ -4344,7 +4344,8 @@ function buildRankScreen(){
       <button class="tab active" onclick="showRankTab('lb',this)">Leaderboard</button>
       <button class="tab" onclick="showRankTab('rewards',this)">Rewards</button>
       <button class="tab" onclick="showRankTab('history',this)">History</button>
-      <button class="tab" onclick="showRankTab('tiers',this)">Tiers</button>
+      <button class="tab" onclick="showRankTab('equipped',this)">Equipped</button>
+      <button class="tab" onclick="showRankTab('owned',this)">Owned</button>
     </div>
     <div id="rankTabContent"></div>`;
   c.innerHTML=html;
@@ -4533,17 +4534,10 @@ function showRankTab(tab,btn){
         <div class="mh-info"><div class="mh-opp">vs ${m.opponent}</div><div class="mh-score">${m.p1pct}% — ${m.p2pct}%</div></div>
         <div class="mh-elo-change ${m.eloChange>=0?'pos':'neg'}">${m.eloChange>=0?'+':''}${m.eloChange}</div></div>`;
     });
-  } else if(tab==='tiers'){
-    let html='<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px">';
-    RANKS.forEach(r=>{
-      const isCur=getRank(save.elo)===r;
-      html+=`<div class="card" style="display:flex;align-items:center;gap:10px;${isCur?'border-color:'+r.color:''}">
-        <span style="font-size:22px">${r.icon}</span>
-        <div style="flex:1"><div style="font-size:12px;font-weight:800;color:${r.color}">${r.name}</div>
-        <div style="font-size:9px;color:var(--muted)">${r.min} — ${r.max===9999?'∞':r.max} ELO</div></div>
-        ${isCur?'<span style="font-size:9px;color:'+r.color+';font-weight:800">CURRENT</span>':''}</div>`;
-    });
-    cont.innerHTML=html+'</div>';
+  } else if(tab==='equipped'||tab==='owned'){
+    var wrap=document.createElement('div');wrap.style.marginTop='6px';
+    cont.appendChild(wrap);
+    renderProfileTab(tab,wrap);
   }
 }
 
