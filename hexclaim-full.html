@@ -2316,6 +2316,7 @@ function addProfileXP(amount){
 }
 
 function showLevelUpPopup(){
+  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'Title: Grinder'},50:{desc:'Title: No Life'},100:{desc:'Profile Icon: Crystal Ball'},999:{desc:'MAX LEVEL!'}};
   const reward=LEVEL_REWARDS[save.profileLevel];
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(8,8,16,0.95);border:1px solid var(--gold);border-radius:16px;padding:24px;text-align:center;min-width:240px;animation:cellGainPop 0.5s ease';
@@ -6323,7 +6324,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
         setTimeout(function(){showToast('🏆 Chapter Complete! +'+compBonus+'🟡 bonus!',4000);},2000);
       }
       saveProg();updateShopCurrency();
-      coinsEarned+=totalBonus;
+      if(typeof coinsEarned!=='undefined')coinsEarned+=totalBonus;
     }
   }
   if(won&&curConfig.challengeIdx!==undefined){
