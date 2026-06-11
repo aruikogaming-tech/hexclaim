@@ -1987,7 +1987,7 @@ function renderProfileTab(tab,externalCont){
         +(owned?'':'<div style="font-size:8px;color:var(--c4);margin-top:2px">🔒 '+item.achievement+'</div>')
         +'</div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div style="font-size:9px;color:var(--muted)">🔒</div>');
-      if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();renderProfileTab('equipped');playSfx('click')};})(item.id);}
+      if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();updateTopBar();renderProfileTab('equipped');playSfx('click')};})(item.id);}
       cont.appendChild(el);
     });
   }
@@ -4511,7 +4511,7 @@ function showRankTab(tab,btn){
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
       el.onclick=function(){
         if(equipped)return;
-        if(owned){save.equipped.title=item.id;saveProg();showRankTab('profile');playSfx('click');return}
+        if(owned){save.equipped.title=item.id;saveProg();updateTopBar();renderProfileTab('equipped',document.getElementById('rankTabContent'));playSfx('click');return}
         if(!buyItem('title',item))return;showRankTab('profile');
       };
       wrap.appendChild(el);
