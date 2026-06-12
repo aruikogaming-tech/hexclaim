@@ -2435,38 +2435,18 @@ function setVolume(type,val){
 
 // ===== MONETIZATION DATA =====
 const SHOP_THEMES=[
-  // === COMMON (Free - 100) ===
   {tier:0,id:'default',name:'Default',desc:'Classic chromatic tiles',price:0,currency:'free',preview:'🎨',colors:['#3a3660','#06d6a0','#118ab2','#ffd166','#ef476f','#8338ec','#ff8c42','#2ec4b6'],symbols:['◆','●','▲','✦','✚','⬡','◐','◈']},
-  {tier:0,id:'candy',name:'Sugar Rush',desc:'Sweet pastel candy tones',price:150,currency:'coins',preview:'🍬',colors:['#1a0030','#ff88dd','#55ccff','#ffee44','#ff5588','#bb88ff','#88ff88','#ffaa66'],symbols:['♥','★','●','♦','✿','○','♡','☆']},
-  {tier:0,id:'ocean',name:'Deep Sea',desc:'Calm underwater blues',price:200,currency:'coins',preview:'🌊',colors:['#020c1b','#00ccaa','#0066dd','#33dd88','#dd3366','#6622ee','#ff6622','#22ccff'],symbols:['〰','◎','▽','≋','◇','⌇','≈','◌']},
-  {tier:0,id:'autumn',name:'Autumn Leaf',desc:'Warm earthy harvest tones',price:300,currency:'coins',preview:'🍂',colors:['#1a1008','#cc8844','#993322','#ddaa44','#cc5533','#225544','#668833','#aa6655'],symbols:['❧','✿','♣','❦','✾','♠','♧','❀']},
-  // === UNCOMMON (120 - 200) ===
-  {tier:1,id:'ice',name:'Frozen Tundra',desc:'Crystalline arctic glow',price:400,currency:'coins',preview:'❄️',colors:['#000820','#00ddff','#3366ff','#66eeff','#ee3366','#0033aa','#ff9944','#44ffaa'],symbols:['❋','✧','◈','❆','✵','◇','❅','✦']},
-  {tier:1,id:'neon',name:'Neon Rush',desc:'Blazing electric glow',price:500,currency:'coins',preview:'💜',colors:['#0a0020','#00ff87','#00bbdd','#ffee55','#ff0066','#bb11aa','#ff7722','#22ffcc'],symbols:['⚡','◉','▶','◈','✧','⬟','◆','◎']},
-  {tier:1,id:'sunset',name:'Solar Flare',desc:'Exploding supernova burst',price:600,currency:'coins',preview:'🌅',colors:['#0d001a','#ff4400','#ff00aa','#ffaa00','#00ff66','#aa44ff','#00aaff','#ffff00'],symbols:['☀','✺','◐','✹','❂','◑','✷','◉']},
-  {tier:1,id:'vaporwave',name:'Vaporwave',desc:'Retro-future neon aesthetic',price:700,currency:'coins',preview:'🌴',colors:['#120025','#ff66cc','#00ccff','#00ff99','#bb55ff','#ffff88','#ff8844','#44ddff'],symbols:['♡','☆','△','♢','✩','▽','♤','♧']},
-  {tier:1,id:'fire',name:'Hellfire',desc:'Molten lava and brimstone',price:800,currency:'coins',preview:'🔥',colors:['#1a0000','#ff3300','#ff8800','#ffcc00','#ff0066','#880000','#ff44aa','#cc6600'],symbols:['⬥','▲','◆','☠','✖','◥','◣','▼']},
-  // === RARE (220 - 350) ===
-  {tier:2,id:'toxic',name:'Toxic Meltdown',desc:'Radioactive biohazard glow',price:1200,currency:'coins',preview:'☢️',colors:['#001100','#00ff00','#aaff00','#ff4400','#00ffaa','#ff00ff','#ffff00','#0088ff'],symbols:['☣','◉','⬟','⚠','◬','✦','◈','⊕']},
-  {tier:2,id:'midnight',name:'Void Storm',desc:'Deep space lightning bolts',price:1500,currency:'coins',preview:'🌩️',colors:['#000008','#4444ff','#aa00ff','#ff0088','#00ffcc','#ff6600','#aaff00','#ff44ff'],symbols:['⚡','◎','✧','⊛','◈','⊕','⊗','⊘']},
+  {tier:0,id:'ocean',name:'Deep Sea',desc:'Calm underwater blues',price:300,currency:'coins',preview:'🌊',colors:['#020c1b','#00ccaa','#0066dd','#33dd88','#dd3366','#6622ee','#ff6622','#22ccff'],symbols:['〰','◎','▽','≋','◇','⌇','≈','◌']},
+  {tier:1,id:'neon',name:'Neon Rush',desc:'Blazing electric glow',price:600,currency:'coins',preview:'💜',colors:['#0a0020','#00ff87','#00bbdd','#ffee55','#ff0066','#bb11aa','#ff7722','#22ffcc'],symbols:['⚡','◉','▶','◈','✧','⬟','◆','◎']},
+  {tier:1,id:'fire',name:'Hellfire',desc:'Molten lava and brimstone',price:900,currency:'coins',preview:'🔥',colors:['#1a0000','#ff3300','#ff8800','#ffcc00','#ff0066','#880000','#ff44aa','#cc6600'],symbols:['⬥','▲','◆','☠','✖','◥','◣','▼']},
+  {tier:2,id:'galaxy',name:'Galaxy Nebula',desc:'Cosmic stardust swirl',price:1400,currency:'coins',preview:'🌌',colors:['#000010','#cc44ff','#4488ff','#ff44aa','#44ffcc','#ffaa22','#ff6644','#44ff88'],symbols:['✦','⊹','✵','⋆','✷','⊛','⊕','✶']},
   {tier:2,id:'blood',name:'Bloodmoon',desc:'Dark crimson shadow ritual',price:1800,currency:'coins',preview:'🩸',colors:['#0a0000','#cc0000','#ff3333','#ff6644','#880044','#ff0088','#ff8800','#440022'],symbols:['☽','✠','◆','❖','✟','◇','☾','✝']},
-  {tier:2,id:'matrix',name:'Cyberpunk',desc:'Hacker terminal vibes',price:2000,currency:'coins',preview:'👾',colors:['#000000','#00ff41','#ff00ff','#00ffff','#ffff00','#ff3333','#0088ff','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
-  {tier:2,id:'galaxy',name:'Galaxy Nebula',desc:'Cosmic stardust swirl',price:2500,currency:'coins',preview:'🌌',colors:['#000010','#cc44ff','#4488ff','#ff44aa','#44ffcc','#ffaa22','#ff6644','#44ff88'],symbols:['✦','⊹','✵','⋆','✷','⊛','⊕','✶']},
-  // === EPIC (400 - 600) ===
-  {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:1500,rankReq:'Gold',currency:'coins',preview:'🪩',colors:['#0a0a1a','#ff88cc','#88ffee','#ffee88','#88aaff','#ff8844','#aa88ff','#88ff88'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
-  {tier:3,id:'gold',name:'Royal Dynasty',desc:'Pure opulent gold and jewels',price:1700,rankReq:'Gold',currency:'coins',preview:'👑',colors:['#1a1000','#ffd700','#ff6600','#00ff88','#ff0055','#aa00ff','#00aaff','#ffaa44'],symbols:['♛','⚜','♚','✠','♕','❖','♔','⚝']},
-  {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:1900,rankReq:'Platinum',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
-  {tier:3,id:'volcanic',name:'Volcanic Eruption',desc:'Magma flows through obsidian cracks',price:2100,rankReq:'Platinum',currency:'coins',preview:'🌋',colors:['#0a0000','#ff4400','#cc2200','#ffaa00','#ff6600','#880000','#ff0044','#aa2200'],symbols:['▲','◆','✦','▼','◥','◣','⬥','◈']},
-  // === DIAMOND RANK (Diamond required) ===
-  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:2400,currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦'],rankReq:'Diamond'},
-  {tier:3,id:'phantom',name:'Phantom Realm',desc:'Ghostly ethereal spectral dimension',price:2700,currency:'coins',preview:'👻',colors:['#050510','#aabbff','#667799','#ddeeff','#8899bb','#445577','#99aacc','#bbccee'],symbols:['◇','◎','▽','✧','◈','△','○','◆'],rankReq:'Diamond'},
-  // === MASTER RANK (Master required) ===
-  {tier:3,id:'abyssal',name:'Abyssal Depths',desc:'Crushing ocean trench darkness',price:3000,currency:'coins',preview:'🦑',colors:['#000008','#003366','#006699','#0099cc','#00ccff','#003355','#005588','#0077aa'],symbols:['≋','◎','▽','〰','◇','⌇','≈','◌'],rankReq:'Master'},
-  {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:3300,currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶'],rankReq:'Master'},
-  // === LEGENDARY (Chromancer required) ===
-  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:3600,rankReq:'Chromancer',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
-  {tier:4,id:'void',name:'Event Horizon',desc:'Black hole gravity distortion',price:3000,rankReq:'Chromancer',currency:'coins',preview:'🕳️',colors:['#000000','#8800ff','#0044ff','#ff0044','#00ffaa','#ff8800','#ffff00','#00ffff'],symbols:['⊘','⊗','⊖','⊛','⊜','⊝','⊕','⊙']},
-  {tier:4,id:'divine',name:'Divine Ascension',desc:'Blinding holy light and golden aura',price:4000,rankReq:'Chromancer',currency:'coins',preview:'😇',colors:['#0a0818','#ffd700','#ffffff','#ffaa44','#ff66aa','#88aaff','#44ff88','#ff4444'],symbols:['✡','☬','✙','✞','❈','☸','☯','✠']},
+  {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:2200,rankReq:'Gold',currency:'coins',preview:'🪩',colors:['#0a0a1a','#ff88cc','#88ffee','#ffee88','#88aaff','#ff8844','#aa88ff','#88ff88'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
+  {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:2600,rankReq:'Platinum',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
+  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:3000,currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦'],rankReq:'Diamond'},
+  {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:3500,currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶'],rankReq:'Master'},
+  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:4000,rankReq:'Chromancer',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
+  {tier:4,id:'divine',name:'Divine Ascension',desc:'Blinding holy light and golden aura',price:4500,rankReq:'Chromancer',currency:'coins',preview:'😇',colors:['#0a0818','#ffd700','#ffffff','#ffaa44','#ff66aa','#88aaff','#44ff88','#ff4444'],symbols:['✡','☬','✙','✞','❈','☸','☯','✠']},
 ];
 
 const SEASONAL_SKINS=[
