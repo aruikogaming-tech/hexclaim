@@ -2469,7 +2469,11 @@ const SHOP_THEMES=[
   {tier:4,id:'divine',name:'Divine Ascension',desc:'Blinding holy light and golden aura',price:4000,rankReq:'Chromancer',currency:'coins',preview:'😇',colors:['#0a0818','#ffd700','#ffffff','#ffaa44','#ff66aa','#88aaff','#44ff88','#ff4444'],symbols:['✡','☬','✙','✞','❈','☸','☯','✠']},
 ];
 
-const SEASONAL_SKINS=[];
+const SEASONAL_SKINS=[
+  {id:'season_diamond_skin',name:'Diamond Season',desc:'Season exclusive — Diamond rank reward',preview:'💠',season:1,colors:['#000a14','#b9f2ff','#00e5ff','#88ddff','#00bbff','#aaeeff','#66ccff','#33aaee'],symbols:['❆','◈','✧','❅','◇','✵','❋','◎'],tier:4,rankReq:'Diamond'},
+  {id:'season_master_skin',name:'Master Season',desc:'Season exclusive — Master rank reward',preview:'👑',season:1,colors:['#0a0014','#c084fc','#9333ea','#d8b4fe','#7c3aed','#a855f7','#e879f9','#8b5cf6'],symbols:['👑','◆','✦','◉','⬡','◈','✧','⊕'],tier:4,rankReq:'Master'},
+  {id:'season_chroma_skin',name:'Chromancer Season',desc:'Season exclusive — Chromancer rank reward',preview:'🔮',season:1,colors:['#000000','#ffd166','#06d6a0','#ef476f','#8338ec','#118ab2','#ff9f1c','#ffffff'],symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],tier:4,rankReq:'Chromancer'},
+];
 
 // Challenge-exclusive skins — EARNED by completing specific challenges, cannot be bought
 const CHALLENGE_SKINS=[
@@ -2527,9 +2531,9 @@ function checkSeasonEnd(){
       'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,               border:'season_silver_border'},
       'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:null,           skin:null,               border:'season_gold_border'},
       'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,               border:'season_plat_border'},
-      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:null,           skin:'season_diamond_skin',border:'season_diamond_border'},
-      'Master':    {coins:800, diamonds:200, medal:'👑',title:null,           skin:'season_master_skin', border:'season_master_border'},
-      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:null,skin:'season_chroma_skin',border:'season_chroma_border'},
+      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:'Diamond Hands', skin:'season_diamond_skin',border:'season_diamond_border',effect:'season_diamond_fx'},
+      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Grand Master',  skin:'season_master_skin', border:'season_master_border', effect:'season_master_fx'},
+      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromatic God', skin:'season_chroma_skin',  border:'season_chroma_border', effect:'season_chroma_fx'},
     };
     const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
     // Grant coins and diamonds
@@ -2541,6 +2545,7 @@ function checkSeasonEnd(){
     if(reward.skin&&!save.owned['theme_'+reward.skin]){save.owned['theme_'+reward.skin]=true;}
     // Grant border
     if(reward.border&&!save.owned['border_'+reward.border]){save.owned['border_'+reward.border]=true;}
+    if(reward.effect&&!save.owned['effect_'+reward.effect]){save.owned['effect_'+reward.effect]=true;}
     // Grant seasonal skins
     let skinsEarned=0;
     SEASONAL_SKINS.filter(s=>s.season===save.season).forEach(s=>{
@@ -2620,6 +2625,10 @@ const SHOP_EFFECTS=[
   {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:3000,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
   {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:3600,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:4000,currency:'coins',preview:'💥',rankReq:'Chromancer'},
+  // Season exclusive effects
+  {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'free',preview:'💠',seasonal:true},
+  {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'free',preview:'👑',seasonal:true},
+  {id:'season_chroma_fx',name:'Chromancer Nova',desc:'Season exclusive — Chromancer rank reward',price:0,currency:'free',preview:'🔮',seasonal:true},
 ];
 
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
@@ -4529,9 +4538,9 @@ function showRankTab(tab,btn){
       'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,  border:'Season Border'},
       'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:null,skin:null,border:'Season Border'},
       'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,  border:'Season Border'},
-      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:null,           skin:'Exclusive Skin', border:'Season Border'},
-      'Master':    {coins:800, diamonds:200, medal:'👑',title:null,skin:'Exclusive Skin',border:'Season Border'},
-      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:null,skin:'Exclusive Skin',border:'Season Border'},
+      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:'Diamond Hands',skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
+      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Grand Master', skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
+      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromatic God',skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
     };
     RANKS.forEach(function(rank){
       var rdef=rankRewardDefs[rank.name];if(!rdef)return;
@@ -4544,8 +4553,10 @@ function showRankTab(tab,btn){
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">🟡 +'+rdef.coins+'</span> ';
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--diamond)">💎 +'+rdef.diamonds+'</span> ';
       if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏅 '+rdef.title+'</span> ';
-      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 '+rdef.skin+'</span> ';
-      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 '+rdef.border+'</span> ';
+      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 Exclusive Skin</span> ';
+      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 Exclusive Border</span> ';
+      if(rdef.effect)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">✨ Exclusive Effect</span> ';
+      if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏷 '+rdef.title+'</span> ';
       el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
         +'<div style="font-size:13px;font-weight:800;color:'+rank.color+'">'+rank.icon+' '+rank.name+'</div>'
         +(willEarn?'<div style="font-size:9px;color:var(--p1);font-weight:700">✓ You will earn this</div>':'<div style="font-size:9px;color:var(--muted)">'+rank.min+' ELO needed</div>')
