@@ -2507,14 +2507,14 @@ function checkSeasonEnd(){
     const playerRankIdx=RANKS.indexOf(playerRank);
     // Rank rewards
     const rankRewards={
-      'Unranked':  {coins:25,  diamonds:5,   medal:'🔘',title:null,           skin:null,               border:null},
-      'Bronze':    {coins:50,  diamonds:10,  medal:'🥉',title:null,           skin:null,               border:'season_bronze_border'},
-      'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,               border:'season_silver_border'},
-      'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:null,           skin:null,               border:'season_gold_border'},
-      'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,               border:'season_plat_border'},
-      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:'Diamond Hands', skin:'season_diamond_skin',border:'season_diamond_border',effect:'season_diamond_fx'},
-      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Grand Master',  skin:'season_master_skin', border:'season_master_border', effect:'season_master_fx'},
-      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromatic God', skin:'season_chroma_skin',  border:'season_chroma_border', effect:'season_chroma_fx'},
+      'Unranked':  {coins:25,  diamonds:15,  medal:'🔘',title:null,           skin:null,               border:null},
+      'Bronze':    {coins:50,  diamonds:30,  medal:'🥉',title:null,           skin:null,               border:'season_bronze_border'},
+      'Silver':    {coins:100, diamonds:60,  medal:'🥈',title:null,           skin:null,               border:'season_silver_border'},
+      'Gold':      {coins:200, diamonds:120, medal:'🥇',title:null,           skin:null,               border:'season_gold_border'},
+      'Platinum':  {coins:400, diamonds:250, medal:'💎',title:null,           skin:null,               border:'season_plat_border'},
+      'Diamond':   {coins:600, diamonds:400, medal:'💠',title:'Diamond Hands', skin:'season_diamond_skin',border:'season_diamond_border',effect:'season_diamond_fx'},
+      'Master':    {coins:800, diamonds:600, medal:'👑',title:'Grand Master',  skin:'season_master_skin', border:'season_master_border', effect:'season_master_fx'},
+      'Chromancer':{coins:1000,diamonds:900, medal:'🔮',title:'Chromatic God', skin:'season_chroma_skin',  border:'season_chroma_border', effect:'season_chroma_fx'},
     };
     const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
     // Grant coins and diamonds
@@ -4485,14 +4485,14 @@ function showRankTab(tab,btn){
     wrap.appendChild(header);
 
     var rankRewardDefs={
-      'Unranked':  {coins:25,  diamonds:5,   medal:'🔘',title:null,           skin:null,  border:null},
-      'Bronze':    {coins:50,  diamonds:10,  medal:'🥉',title:null,           skin:null,  border:'Season Border'},
-      'Silver':    {coins:100, diamonds:25,  medal:'🥈',title:null,           skin:null,  border:'Season Border'},
-      'Gold':      {coins:200, diamonds:50,  medal:'🥇',title:null,skin:null,border:'Season Border'},
-      'Platinum':  {coins:400, diamonds:100, medal:'💎',title:null,           skin:null,  border:'Season Border'},
-      'Diamond':   {coins:600, diamonds:150, medal:'💠',title:'Diamond Hands',skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
-      'Master':    {coins:800, diamonds:200, medal:'👑',title:'Grand Master', skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
-      'Chromancer':{coins:1000,diamonds:300, medal:'🔮',title:'Chromatic God',skin:'Exclusive Skin',border:'Season Border',effect:'Exclusive Effect'},
+      'Unranked':  {coins:25,  diamonds:15,  medal:'🔘',title:null,           skin:null,             border:null},
+      'Bronze':    {coins:50,  diamonds:30,  medal:'🥉',title:null,           skin:null,             border:'Season Border'},
+      'Silver':    {coins:100, diamonds:60,  medal:'🥈',title:null,           skin:null,             border:'Season Border'},
+      'Gold':      {coins:200, diamonds:120, medal:'🥇',title:null,           skin:null,             border:'Season Border'},
+      'Platinum':  {coins:400, diamonds:250, medal:'💎',title:null,           skin:null,             border:'Season Border'},
+      'Diamond':   {coins:600, diamonds:400, medal:'💠',title:'Diamond Hands',skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
+      'Master':    {coins:800, diamonds:600, medal:'👑',title:'Grand Master', skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
+      'Chromancer':{coins:1000,diamonds:900, medal:'🔮',title:'Chromatic God',skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
     };
     RANKS.forEach(function(rank){
       var rdef=rankRewardDefs[rank.name];if(!rdef)return;
