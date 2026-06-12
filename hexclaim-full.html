@@ -1994,7 +1994,7 @@ function renderProfileTab(tab,externalCont){
 
   else if(tab==='owned'){
     // All owned skins grouped by type
-    var ownedThemes=SHOP_THEMES.filter(function(s){return s.price===0||save.owned['theme_'+s.id]});
+    var ownedThemes=SHOP_THEMES.filter(function(s){return (s.price===0&&!s.achievement&&!s.hidden)||save.owned['theme_'+s.id]});
     var seasonOwned=SEASONAL_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
     var limitedOwned=LIMITED_EDITION_POOL.filter(function(s){return s.type==='theme'&&save.owned['theme_'+s.id]});
     var challengeOwned=CHALLENGE_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
@@ -2011,7 +2011,7 @@ function renderProfileTab(tab,externalCont){
     });
 
     var borderHead=document.createElement('div');borderHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px';
-        var ownedBordersList=SHOP_BORDERS.filter(function(b){return b.price===0||save.owned['border_'+b.id]}).concat(LIMITED_EDITION_POOL.filter(function(b){return b.type==='border'&&save.owned['border_'+b.id]}));
+        var ownedBordersList=SHOP_BORDERS.filter(function(b){return (b.price===0&&b.currency!=='season')||save.owned['border_'+b.id]}).concat(LIMITED_EDITION_POOL.filter(function(b){return b.type==='border'&&save.owned['border_'+b.id]}));
     borderHead.textContent='🖼️ Owned Borders ('+ownedBordersList.length+')';cont.appendChild(borderHead);
     ownedBordersList.forEach(function(item){
       var equipped=save.equipped.border===item.id;
@@ -2023,7 +2023,7 @@ function renderProfileTab(tab,externalCont){
     });
 
     var effectHead=document.createElement('div');effectHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px';
-    var ownedEffectsList=SHOP_EFFECTS.filter(function(e){return e.price===0||save.owned['effect_'+e.id]}).concat(LIMITED_EDITION_POOL.filter(function(e){return e.type==='effect'&&save.owned['effect_'+e.id]}));
+    var ownedEffectsList=SHOP_EFFECTS.filter(function(e){return (e.price===0&&e.currency!=='season')||save.owned['effect_'+e.id]}).concat(LIMITED_EDITION_POOL.filter(function(e){return e.type==='effect'&&save.owned['effect_'+e.id]}));
     effectHead.textContent='✨ Owned Effects ('+ownedEffectsList.length+')';cont.appendChild(effectHead);
     ownedEffectsList.forEach(function(item){
       var equipped=save.equipped.effect===item.id;
@@ -2606,9 +2606,13 @@ const SHOP_EFFECTS=[
   {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:3600,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:4000,currency:'coins',preview:'💥',rankReq:'Chromancer'},
   // Season exclusive effects
-  {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'free',preview:'💠',seasonal:true},
-  {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'free',preview:'👑',seasonal:true},
-  {id:'season_chroma_fx',name:'Chromancer Nova',desc:'Season exclusive — Chromancer rank reward',price:0,currency:'free',preview:'🔮',seasonal:true},
+  {id:'season_bronze_border',name:'Bronze Season Frame',price:0,currency:'season',preview:'🥉',seasonal:true,season:1},
+  {id:'season_silver_border',name:'Silver Season Frame',price:0,currency:'season',preview:'🥈',seasonal:true,season:1},
+  {id:'season_gold_border',name:'Gold Season Frame',price:0,currency:'season',preview:'🥇',seasonal:true,season:1},
+  {id:'season_plat_border',name:'Platinum Season Frame',price:0,currency:'season',preview:'💎',seasonal:true,season:1},
+  {id:'season_diamond_border',name:'Diamond Season Frame',price:0,currency:'season',preview:'💠',seasonal:true,season:1},
+  {id:'season_master_border',name:'Master Season Frame',price:0,currency:'season',preview:'👑',seasonal:true,season:1},
+  {id:'season_chroma_border',name:'Chromancer Season Frame',price:0,currency:'season',preview:'🔮',seasonal:true,season:1},
 ];
 
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
