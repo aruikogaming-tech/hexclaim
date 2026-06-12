@@ -1983,7 +1983,9 @@ function renderProfileTab(tab,externalCont){
       var equipped=save.equipped.title===item.id;
       var el=document.createElement('div');el.className='shop-item';
       if(!owned)el.style.opacity='0.5';
-      el.innerHTML='<div class="si-preview" style="background:'+(owned?'var(--dim)':'rgba(255,255,255,0.03)')+'">🏷</div><div class="si-info"><div class="si-name">"'+item.name+'"</div>'
+      var tc=item.color||'var(--text)';
+      var tStyle=item.style==='rainbow'?'background:linear-gradient(90deg,#ff6b6b,#ffd166,#06d6a0,#118ab2,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;font-family:\'Archivo Black\',sans-serif':item.style==='gradient'?'background:linear-gradient(135deg,'+tc+',#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-family:\'Archivo Black\',sans-serif':item.style==='bold'?'color:'+tc+';font-weight:900;text-shadow:0 0 10px '+tc+'66;font-family:\'Archivo Black\',sans-serif':'color:'+tc+';font-weight:700';
+      el.innerHTML='<div class="si-preview" style="background:'+(owned?'var(--dim)':'rgba(255,255,255,0.03)')+'"><div style="font-size:10px;'+tStyle+'">'+item.name+'</div></div><div class="si-info"><div class="si-name" style="'+tStyle+'">"'+item.name+'"</div>'
         +(owned?'':'<div style="font-size:8px;color:var(--c4);margin-top:2px">🔒 '+item.achievement+'</div>')
         +'</div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div style="font-size:9px;color:var(--muted)">🔒</div>');
