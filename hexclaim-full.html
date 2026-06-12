@@ -2614,13 +2614,9 @@ const SHOP_EFFECTS=[
   {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:3600,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:4000,currency:'coins',preview:'💥',rankReq:'Chromancer'},
   // Season exclusive effects
-  {id:'season_bronze_border',name:'Bronze Season Frame',price:0,currency:'season',preview:'🥉',seasonal:true,season:1},
-  {id:'season_silver_border',name:'Silver Season Frame',price:0,currency:'season',preview:'🥈',seasonal:true,season:1},
-  {id:'season_gold_border',name:'Gold Season Frame',price:0,currency:'season',preview:'🥇',seasonal:true,season:1},
-  {id:'season_plat_border',name:'Platinum Season Frame',price:0,currency:'season',preview:'💎',seasonal:true,season:1},
-  {id:'season_diamond_border',name:'Diamond Season Frame',price:0,currency:'season',preview:'💠',seasonal:true,season:1},
-  {id:'season_master_border',name:'Master Season Frame',price:0,currency:'season',preview:'👑',seasonal:true,season:1},
-  {id:'season_chroma_border',name:'Chromancer Season Frame',price:0,currency:'season',preview:'🔮',seasonal:true,season:1},
+  {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'season',preview:'💠',seasonal:true},
+  {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'season',preview:'👑',seasonal:true},
+  {id:'season_chroma_fx',name:'Chromancer Nova',desc:'Season exclusive — Chromancer rank reward',price:0,currency:'season',preview:'🔮',seasonal:true},
 ];
 
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
@@ -3178,7 +3174,7 @@ function renderShopTab(tab){
   }
 
   else if(tab==='borders'){
-    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq});
+    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup&&!s.achievement});
     var rankBorderGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Platinum'})},
