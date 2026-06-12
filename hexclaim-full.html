@@ -463,7 +463,7 @@ body{display:flex;align-items:center;justify-content:center;
     <div id="adminSection" style="display:none">
     <div style="font-size:12px;font-weight:800;margin-bottom:6px">🔒 Admin Panel</div>
     <div style="font-size:9px;color:var(--muted);margin-bottom:6px">Developer tools — enter admin code to unlock</div>
-    <div style="display:flex;gap:4px">
+    <div style="display:none">
       <input id="adminCode" type="password" placeholder="Admin code" style="flex:1;padding:6px;background:var(--dim);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;outline:none">
       <button onclick="tryAdmin()" style="padding:6px 12px;background:var(--p1);border:none;border-radius:6px;color:#fff;font-size:10px;font-weight:700;cursor:pointer">Enter</button>
     </div>
@@ -490,7 +490,7 @@ body{display:flex;align-items:center;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:8px;color:var(--dim);text-align:center;margin-top:6px;cursor:default" id="versionText" onclick="secretAdminTap()">HexClaim v1.0 — Made with ❤️</div>
+  <div style="font-size:8px;color:var(--dim);text-align:center;margin-top:6px;cursor:default" id="versionText" onclick="">HexClaim v1.0 — Made with ❤️</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
