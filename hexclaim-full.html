@@ -3032,7 +3032,7 @@ function registerAchievementCosmetics(){
       SHOP_BORDERS.push({id:r.id,name:r.name,price:0,currency:'free',preview:'🏆',achievement:true});
     }
     if(r.type==='theme'&&r.colors&&!SHOP_THEMES.find(function(t){return t.id===r.id})){
-      SHOP_THEMES.push({tier:1,id:r.id,name:r.name,desc:r.desc,price:0,currency:'free',preview:'🏆',colors:r.colors,symbols:r.symbols||['◆','●','▲','✦','✚','⬡'],achievement:true});
+      SHOP_THEMES.push({tier:1,id:r.id,name:r.name,desc:r.desc,price:0,currency:'free',preview:'🏆',colors:r.colors,symbols:r.symbols||['◆','●','▲','✦','✚','⬡'],achievement:true,hidden:true});
     }
     if(r.type==='effect'&&!SHOP_EFFECTS.find(function(e){return e.id===r.id})){
       SHOP_EFFECTS.push({id:r.id,name:r.name,desc:r.desc,price:0,currency:'free',preview:'🏆',achievement:true});
@@ -3189,7 +3189,7 @@ function renderShopTab(tab){
     cont.appendChild(preview);
 
     // Group skins: unlocked first, then by rank
-    var allSkins=getAllSkins();
+    var allSkins=getAllSkins().filter(function(s){return !s.hidden;});
     var noRank=allSkins.filter(function(s){return !s.rankReq});
     var rankGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:allSkins.filter(function(s){return s.rankReq==='Gold'})},
