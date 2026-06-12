@@ -2399,6 +2399,18 @@ function updateAllUI(){
   if(pvpBtn){pvpBtn.style.opacity='0.4';pvpBtn.style.pointerEvents='none';pvpBtn.innerHTML='⚔ Ranked PVP <span style="font-size:8px;background:var(--gold);color:#0d0b14;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:800">COMING SOON</span>';}
 }
 
+function getTitleDisplayStyle(titleId){
+  var t=SHOP_TITLES.find(function(t){return t.id===titleId});
+  if(!t)return 'color:var(--gold);font-weight:700';
+  var c=t.color||'var(--gold)';
+  var g=t.glow||0;
+  var glowStyles=['','filter:drop-shadow(0 0 4px '+c+'99)','filter:drop-shadow(0 0 6px '+c+'bb)','filter:drop-shadow(0 0 8px '+c+') drop-shadow(0 0 16px '+c+'66)','filter:drop-shadow(0 0 10px '+c+') drop-shadow(0 0 20px '+c+'88);animation:titleGlow 2s ease infinite','filter:drop-shadow(0 0 14px '+c+') drop-shadow(0 0 28px '+c+'aa) drop-shadow(0 0 42px '+c+'55);animation:titleGlow 1.5s ease infinite'];
+  var glowStr=glowStyles[g]||'';
+  if(t.style==='rainbow'){var ra=g>=5?'animation:titleRainbow 2s linear infinite':'animation:titleRainbow 3s linear infinite';return 'background:linear-gradient(90deg,#ff6b6b,#ffd166,#06d6a0,#118ab2,#8338ec);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:900;font-family:\'Archivo Black\',sans-serif;'+ra+';'+glowStr;}
+  if(t.style==='gradient')return 'background:linear-gradient(135deg,'+c+',#ffffff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-family:\'Archivo Black\',sans-serif;'+glowStr;
+  if(t.style==='bold')return 'color:'+c+';font-weight:900;font-family:\'Archivo Black\',sans-serif;text-shadow:0 0 8px '+c+',0 0 16px '+c+'88,0 0 24px '+c+'44;'+glowStr;
+  return 'color:'+c+';font-weight:700;'+glowStr;
+}
 function updateTopBar(){
   const tb=document.getElementById('topBar');
   const onGame=document.getElementById('gameScreen').classList.contains('active');
@@ -3053,17 +3065,17 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
-  {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient'},
-  {id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold'},
-  {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient'},
-  {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient'},
-  {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient'},
-  {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow'},
-  {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#ef476f',style:'bold'},
-  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ef476f',style:'gradient'},
-  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#b0c4de',style:'bold'},
-  {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#8338ec',style:'gradient'},
-  {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow'},
+  {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient',glow:0},
+  {id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold',glow:0},
+  {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient',glow:0},
+  {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient',glow:0},
+  {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient',glow:0},
+  {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow',glow:4},
+  {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#ef476f',style:'bold',glow:1},
+  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ef476f',style:'gradient',glow:2},
+  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#b0c4de',style:'bold',glow:3},
+  {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#8338ec',style:'gradient',glow:4},
+  {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',glow:5},
 ];
 
 const CHROMA_BUNDLES=[
