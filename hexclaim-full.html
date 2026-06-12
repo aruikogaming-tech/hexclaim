@@ -2867,6 +2867,15 @@ function getBorderStyle(){
   if(b==='season_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8),0 0 28px rgba(0,200,255,0.4);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
   if(b==='season_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8),0 0 32px rgba(120,0,255,0.3);animation:borderRotate 4s linear infinite';
   if(b==='season_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(255,100,0,0.3),0 0 6px rgba(6,214,160,0.4);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
+  // Achievement borders
+  if(b==='achieve_ch1')return 'border:2px solid #06d6a0;box-shadow:0 0 8px rgba(6,214,160,0.5)';
+  if(b==='achieve_ch2')return 'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)';
+  if(b==='achieve_ch3')return 'border:2px solid #ff9f1c;box-shadow:0 0 10px rgba(255,159,28,0.6)';
+  if(b==='achieve_ch4')return 'border:2px solid #ef476f;box-shadow:0 0 12px rgba(239,71,111,0.6);animation:borderPulse 2s ease infinite;--bc:239,71,111';
+  if(b==='achieve_vsai_hard')return 'border:2px solid #06d6a0;box-shadow:0 0 10px rgba(6,214,160,0.6);animation:borderBreathe 2.5s ease infinite';
+  if(b==='achieve_vsai_insane')return 'border:3px solid #ef476f;box-shadow:0 0 14px rgba(239,71,111,0.8);animation:borderPulse 1.5s ease infinite;--bc:239,71,111';
+  if(b==='achieve_level25')return 'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5);animation:borderBreathe 3s ease infinite';
+  if(b==='achieve_level50')return 'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7);animation:borderPulse 2s ease infinite;--bc:131,56,236';
   return 'border:2px solid var(--p1)';
 }
 
@@ -3326,7 +3335,7 @@ function renderShopTab(tab){
           +'<div class="si-info"><div class="si-name" style="color:var(--c4)">'+item.name+'</div><div class="si-desc">'+item.desc+'</div></div>'
           +(owned?'<div class="si-equipped">Owned ✓</div>':'<div class="si-price" style="color:var(--diamond)">💎 '+item.price+'</div>');
       } else if(item.type==='border'){
-        var borderMap2={le_phoenix:'border:2px solid #e94560;box-shadow:0 0 6px rgba(233,69,96,0.5)',le_frost_crown:'border:2px solid #88ddff;box-shadow:0 0 8px rgba(136,221,255,0.5)',le_shadow_claw:'border:2px solid #6c757d;box-shadow:0 0 10px rgba(0,0,0,0.8)',le_rainbow_ring:'border:3px solid var(--p1);box-shadow:0 0 8px rgba(6,214,160,0.5)',le_dragon_scale:'border:3px solid #ff4400;box-shadow:0 0 10px rgba(255,68,0,0.5)',le_void_rift:'border:3px solid #8800ff;box-shadow:0 0 12px rgba(136,0,255,0.6)',le_crown_jewel:'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.6)',le_sakura_frame:'border:2px solid #ffb7c5;box-shadow:0 0 8px rgba(255,183,197,0.5)'};
+        var borderMap2={achieve_ch1:'border:2px solid #06d6a0;box-shadow:0 0 8px rgba(6,214,160,0.5)',achieve_ch2:'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)',achieve_ch3:'border:2px solid #ff9f1c;box-shadow:0 0 10px rgba(255,159,28,0.6)',achieve_ch4:'border:2px solid #ef476f;box-shadow:0 0 12px rgba(239,71,111,0.6)',achieve_vsai_hard:'border:2px solid #06d6a0;box-shadow:0 0 10px rgba(6,214,160,0.6)',achieve_vsai_insane:'border:3px solid #ef476f;box-shadow:0 0 14px rgba(239,71,111,0.8)',achieve_level25:'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)',achieve_level50:'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7)',le_phoenix:'border:2px solid #e94560;box-shadow:0 0 6px rgba(233,69,96,0.5)',le_frost_crown:'border:2px solid #88ddff;box-shadow:0 0 8px rgba(136,221,255,0.5)',le_shadow_claw:'border:2px solid #6c757d;box-shadow:0 0 10px rgba(0,0,0,0.8)',le_rainbow_ring:'border:3px solid var(--p1);box-shadow:0 0 8px rgba(6,214,160,0.5)',le_dragon_scale:'border:3px solid #ff4400;box-shadow:0 0 10px rgba(255,68,0,0.5)',le_void_rift:'border:3px solid #8800ff;box-shadow:0 0 12px rgba(136,0,255,0.6)',le_crown_jewel:'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.6)',le_sakura_frame:'border:2px solid #ffb7c5;box-shadow:0 0 8px rgba(255,183,197,0.5)'};
         var prevStyle2='width:36px;height:36px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;'+(borderMap2[item.id]||'border:2px solid var(--border)');
         el.innerHTML='<div style="'+prevStyle2+'">'+item.preview+'</div>'
           +'<div class="si-info"><div class="si-name" style="color:var(--c4)">'+item.name+'</div><div class="si-desc">'+item.desc+'</div></div>'
