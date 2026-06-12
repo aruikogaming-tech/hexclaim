@@ -2006,7 +2006,7 @@ function renderProfileTab(tab,externalCont){
       var el=document.createElement('div');el.className='shop-item';
       el.innerHTML='<div class="si-preview" style="background:'+(item.colors?item.colors[0]:'var(--dim)')+';padding:2px">'+makeSkinPreview(item.colors||['#333','#666'],16,item.symbols)+'</div><div class="si-info"><div class="si-name">'+item.name+(item.season?' <span style="font-size:8px;color:var(--gold)">S'+item.season+'</span>':'')+'</div></div>'
         +(isActive?'<div class="si-equipped">Active ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
-      el.onclick=function(){if(isActive)return;save.activeSkin=item.id;save.equipped.theme=item.id;saveProg();renderProfileTab('owned');playSfx('click')};
+      (function(id){el.onclick=function(){if(save.activeSkin===id)return;save.activeSkin=id;save.equipped.theme=id;saveProg();updateTopBar();renderProfileTab('owned');playSfx('click')};})(item.id);
       cont.appendChild(el);
     });
 
@@ -2018,7 +2018,7 @@ function renderProfileTab(tab,externalCont){
       var el=document.createElement('div');el.className='shop-item';
       el.innerHTML='<div class="si-preview" style="background:var(--dim)">'+item.preview+'</div><div class="si-info"><div class="si-name">'+item.name+'</div></div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
-      el.onclick=function(){if(equipped)return;save.equipped.border=item.id;saveProg();updateTopBar();renderProfileTab('owned');playSfx('click')};
+      (function(id){el.onclick=function(){if(save.equipped.border===id)return;save.equipped.border=id;saveProg();updateTopBar();renderProfileTab('owned');playSfx('click')};})(item.id);
       cont.appendChild(el);
     });
 
@@ -2030,7 +2030,7 @@ function renderProfileTab(tab,externalCont){
       var el=document.createElement('div');el.className='shop-item';
       el.innerHTML='<div class="si-preview" style="background:var(--dim)">'+item.preview+'</div><div class="si-info"><div class="si-name">'+item.name+'</div></div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
-      el.onclick=function(){if(equipped)return;save.equipped.effect=item.id;saveProg();renderProfileTab('owned');playSfx('click')};
+      (function(id){el.onclick=function(){if(save.equipped.effect===id)return;save.equipped.effect=id;saveProg();renderProfileTab('owned');playSfx('click')};})(item.id);
       cont.appendChild(el);
     });
   }
@@ -2589,23 +2589,14 @@ function showSeasonRewardPopup(rank,reward,skinsEarned,oldElo){
 
 const SHOP_BORDERS=[
   {id:'default',name:'Standard',price:0,currency:'free',preview:'⬜'},
-  {id:'flame',name:'Flame Border',price:150,currency:'coins',preview:'🔥'},
-  {id:'electric',name:'Electric Spark',price:300,currency:'coins',preview:'⚡'},
-  {id:'rainbow',name:'Rainbow Glow',price:450,currency:'coins',preview:'🌈'},
+  {id:'flame',name:'Flame Border',price:200,currency:'coins',preview:'🔥'},
+  {id:'electric',name:'Electric Spark',price:400,currency:'coins',preview:'⚡'},
   {id:'frost',name:'Frostbite',price:600,currency:'coins',preview:'❄️'},
-  {id:'shadow',name:'Shadow Pulse',price:750,currency:'coins',preview:'🌑'},
-  {id:'diamond',name:'Diamond Edge',price:900,currency:'coins',preview:'💎'},
-  {id:'toxic_border',name:'Toxic Aura',price:1100,currency:'coins',preview:'☢️'},
-  {id:'blood_border',name:'Blood Ring',price:1300,currency:'coins',preview:'🩸'},
-  {id:'neon_pulse',name:'Neon Pulse',price:1500,currency:'coins',preview:'💜',rankReq:'Gold'},
-  {id:'crystal_border',name:'Crystal Edge',price:1700,currency:'coins',preview:'💠',rankReq:'Gold'},
-  {id:'galaxy_border',name:'Galaxy Swirl',price:1900,currency:'coins',preview:'🌌',rankReq:'Platinum'},
-  {id:'magma_border',name:'Magma Flow',price:2100,currency:'coins',preview:'🌋',rankReq:'Platinum'},
+  {id:'shadow',name:'Shadow Pulse',price:800,currency:'coins',preview:'🌑'},
+  {id:'neon_pulse',name:'Neon Pulse',price:1200,currency:'coins',preview:'💜',rankReq:'Gold'},
+  {id:'galaxy_border',name:'Galaxy Swirl',price:1800,currency:'coins',preview:'🌌',rankReq:'Platinum'},
   {id:'storm_border',name:'Storm Ring',price:2400,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
-  {id:'thunder_border',name:'Thunder Crown',price:2700,currency:'coins',preview:'⚡',rankReq:'Diamond'},
-  {id:'abyssal_border',name:'Abyssal Frame',price:3000,currency:'coins',preview:'🦑',rankReq:'Master'},
-  {id:'cosmic_border',name:'Cosmic Orbit',price:3300,currency:'coins',preview:'🪐',rankReq:'Master'},
-  {id:'dragon_border',name:'Dragon Crest',price:3600,currency:'coins',preview:'🐉',rankReq:'Chromancer'},
+  {id:'cosmic_border',name:'Cosmic Orbit',price:3200,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'void_border',name:'Void Rift',price:4000,currency:'coins',preview:'🕳️',rankReq:'Chromancer'},
   // Season exclusive borders — earned at season end
   {id:'season_bronze_border',name:'Bronze Season Frame',price:0,currency:'free',preview:'🥉',seasonal:true,season:1},
@@ -2619,23 +2610,15 @@ const SHOP_BORDERS=[
 
 const SHOP_EFFECTS=[
   {id:'none',name:'No Effect',desc:'Clean, no visual effects',price:0,currency:'free',preview:'⬜'},
-  {id:'confetti',name:'Confetti Pop',desc:'Colorful celebration burst',price:100,currency:'coins',preview:'🎉'},
-  {id:'sparkle',name:'Stardust Burst',desc:'Exploding diamond stars scatter',price:200,currency:'coins',preview:'✨'},
-  {id:'hex_glow',name:'Arcane Ritual',desc:'Mystic runes with purple vortex',price:350,currency:'coins',preview:'🔮'},
-  {id:'ice_crack',name:'Permafrost Shatter',desc:'Violent branching ice fractures',price:500,currency:'coins',preview:'❄️'},
+  {id:'confetti',name:'Confetti Pop',desc:'Colorful celebration burst',price:200,currency:'coins',preview:'🎉'},
+  {id:'sparkle',name:'Stardust Burst',desc:'Exploding diamond stars scatter',price:400,currency:'coins',preview:'✨'},
   {id:'pulse',name:'Shockwave',desc:'Massive expanding energy rings',price:700,currency:'coins',preview:'💫'},
-  {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:900,currency:'coins',preview:'🔥'},
-  {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:1100,currency:'coins',preview:'⚡'},
-  {id:'shadow_mist',name:'Void Corruption',desc:'Consuming darkness with tendrils',price:1300,currency:'coins',preview:'🌑'},
-  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:1500,currency:'coins',preview:'🌈',rankReq:'Gold'},
-  {id:'crystal_fx',name:'Crystal Bloom',desc:'Sparkling crystal growth from center',price:1700,currency:'coins',preview:'💠',rankReq:'Gold'},
-  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:1900,currency:'coins',preview:'⚛️',rankReq:'Platinum'},
-  {id:'magma_fx',name:'Lava Flow',desc:'Molten lava spreading from tile',price:2100,currency:'coins',preview:'🌋',rankReq:'Platinum'},
-  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:2400,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
-  {id:'sonic_fx',name:'Sonic Boom',desc:'Shockwave rings with speed lines',price:2700,currency:'coins',preview:'💨',rankReq:'Diamond'},
-  {id:'gravity_fx',name:'Gravity Well',desc:'Space-time bending distortion',price:3000,currency:'coins',preview:'🕳️',rankReq:'Master'},
-  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:3300,currency:'coins',preview:'🪐',rankReq:'Master'},
-  {id:'dragon_fx',name:'Dragon Breath',desc:'Ancient dragon fire engulfs the board',price:3600,currency:'coins',preview:'🐉',rankReq:'Chromancer'},
+  {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:1000,currency:'coins',preview:'🔥'},
+  {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:1400,currency:'coins',preview:'⚡'},
+  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:1800,currency:'coins',preview:'🌈',rankReq:'Gold'},
+  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:2400,currency:'coins',preview:'⚛️',rankReq:'Platinum'},
+  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:3000,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
+  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:3600,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:4000,currency:'coins',preview:'💥',rankReq:'Chromancer'},
 ];
 
@@ -2863,7 +2846,7 @@ function getBorderStyle(){
   if(b==='season_bronze_border')return 'border:3px solid #cd7f32;box-shadow:0 0 10px rgba(205,127,50,0.6),0 0 20px rgba(205,127,50,0.2);animation:borderPulse 2s ease infinite;--bc:205,127,50';
   if(b==='season_silver_border')return 'border:3px solid #c0c0c0;box-shadow:0 0 10px rgba(192,192,192,0.6),0 0 20px rgba(192,192,192,0.2);animation:borderPulse 2s ease infinite;--bc:192,192,192';
   if(b==='season_gold_border')return 'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.7),0 0 24px rgba(255,215,0,0.3);animation:borderPulse 1.8s ease infinite;--bc:255,215,0';
-  if(b==='season_plat_border')return 'border:3px solid #e5e4e2;box-shadow:0 0 14px rgba(229,228,226,0.7),0 0 28px rgba(180,200,220,0.3);animation:borderBreathe 2.5s ease infinite';
+  if(b==='season_plat_border')return 'border:3px solid #00c8aa;box-shadow:0 0 14px rgba(0,200,170,0.8),0 0 28px rgba(0,180,150,0.4);animation:borderPulse 2s ease infinite;--bc:0,200,170';
   if(b==='season_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8),0 0 28px rgba(0,200,255,0.4);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
   if(b==='season_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8),0 0 32px rgba(120,0,255,0.3);animation:borderRotate 4s linear infinite';
   if(b==='season_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(255,100,0,0.3),0 0 6px rgba(6,214,160,0.4);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
@@ -3064,14 +3047,12 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
-  // Rank titles — earned through rank achievements
   {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient'},
   {id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold'},
   {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient'},
   {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient'},
   {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient'},
   {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow'},
-  // Challenge titles — hardest to get
   {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#ef476f',style:'bold'},
   {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ef476f',style:'gradient'},
   {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#b0c4de',style:'bold'},
