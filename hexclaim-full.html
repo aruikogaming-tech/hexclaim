@@ -2722,7 +2722,7 @@ const PROFILE_ICONS=[
 function checkIconUnlocks(){
   var totalWins=save.totalWins+save.pvpWins;
   var totalStars=0;Object.values(save.stars).forEach(function(s){totalStars+=s});
-  var ch2Done=true;for(var l=0;l<5;l++){if(!save.cleared['1-'+l])ch2Done=false}
+  var ch2Done=true;for(var l=1;l<=5;l++){if(!save.cleared['ch2_'+l])ch2Done=false}
   var allChallenges=true;CHALLENGES.forEach(function(_,i){if(!save.challengesDone[i])allChallenges=false});
   var hardWins=save.aiHardWins||0;
   var streak=save.winStreak||0;
@@ -2763,10 +2763,10 @@ function checkTitleUnlocks(){
   var hardWins=save.aiHardWins||0;
   var totalTiles=save.totalTilesCaptured||0;
   var bestCombo=save.bestComboEver||0;
-  var ch1Done=true;for(var l=0;l<5;l++){if(!save.cleared['0-'+l])ch1Done=false}
-  var ch2Done=true;for(var l=0;l<5;l++){if(!save.cleared['1-'+l])ch2Done=false}
-  var ch3Done=true;for(var l=0;l<5;l++){if(!save.cleared['2-'+l])ch3Done=false}
-  var ch4Done=true;for(var l=0;l<5;l++){if(!save.cleared['3-'+l])ch4Done=false}
+  var ch1Done=true;for(var l=1;l<=5;l++){if(!save.cleared['ch1_'+l])ch1Done=false}
+  var ch2Done=true;for(var l=1;l<=5;l++){if(!save.cleared['ch2_'+l])ch2Done=false}
+  var ch3Done=true;for(var l=1;l<=5;l++){if(!save.cleared['ch3_'+l])ch3Done=false}
+  var ch4Done=true;for(var l=1;l<=5;l++){if(!save.cleared['ch4_'+l])ch4Done=false}
   var allChallenges=true;CHALLENGES.forEach(function(_,i){if(!save.challengesDone[i])allChallenges=false});
   var ch3Star=false;
   for(var ch=0;ch<4;ch++){var all3=true;for(var lv=0;lv<5;lv++){if((save.stars[ch+'-'+lv]||0)<3)all3=false}if(all3)ch3Star=true}
