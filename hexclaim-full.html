@@ -2583,6 +2583,14 @@ const SHOP_BORDERS=[
   {id:'storm_border',name:'Storm Ring',price:2400,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
   {id:'cosmic_border',name:'Cosmic Orbit',price:3200,currency:'coins',preview:'🪐',rankReq:'Master'},
   {id:'void_border',name:'Void Rift',price:4000,currency:'coins',preview:'🕳️',rankReq:'Chromancer'},
+  // Rank-up exclusive borders — earned first time reaching each rank
+  {id:'rankup_bronze_border',name:'Bronze Champion',price:0,currency:'season',preview:'🥉',rankup:true},
+  {id:'rankup_silver_border',name:'Silver Champion',price:0,currency:'season',preview:'🥈',rankup:true},
+  {id:'rankup_gold_border',name:'Gold Champion',price:0,currency:'season',preview:'🥇',rankup:true},
+  {id:'rankup_plat_border',name:'Platinum Champion',price:0,currency:'season',preview:'💎',rankup:true},
+  {id:'rankup_diamond_border',name:'Diamond Champion',price:0,currency:'season',preview:'💠',rankup:true},
+  {id:'rankup_master_border',name:'Master Champion',price:0,currency:'season',preview:'👑',rankup:true},
+  {id:'rankup_chroma_border',name:'Chromancer Champion',price:0,currency:'season',preview:'🔮',rankup:true},
   // Season exclusive borders — earned at season end
   {id:'season_bronze_border',name:'Bronze Season Frame',price:0,currency:'free',preview:'🥉',seasonal:true,season:1},
   {id:'season_silver_border',name:'Silver Season Frame',price:0,currency:'free',preview:'🥈',seasonal:true,season:1},
@@ -2843,6 +2851,14 @@ function getBorderStyle(){
   if(b==='season_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8),0 0 28px rgba(0,200,255,0.4);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
   if(b==='season_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8),0 0 32px rgba(120,0,255,0.3);animation:borderRotate 4s linear infinite';
   if(b==='season_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(255,100,0,0.3),0 0 6px rgba(6,214,160,0.4);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
+  // Rank-up borders
+  if(b==='rankup_bronze_border')return 'border:2px solid #cd7f32;box-shadow:0 0 8px rgba(205,127,50,0.5)';
+  if(b==='rankup_silver_border')return 'border:2px solid #c0c0c0;box-shadow:0 0 8px rgba(192,192,192,0.5)';
+  if(b==='rankup_gold_border')return 'border:2px solid #ffd700;box-shadow:0 0 10px rgba(255,215,0,0.6);animation:borderPulse 2s ease infinite;--bc:255,215,0';
+  if(b==='rankup_plat_border')return 'border:2px solid #00c8aa;box-shadow:0 0 12px rgba(0,200,170,0.7);animation:borderBreathe 2.5s ease infinite';
+  if(b==='rankup_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
+  if(b==='rankup_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8);animation:borderRotate 4s linear infinite';
+  if(b==='rankup_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(6,214,160,0.3);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
   // Achievement borders
   if(b==='achieve_ch1')return 'border:2px solid #06d6a0;box-shadow:0 0 8px rgba(6,214,160,0.5)';
   if(b==='achieve_ch2')return 'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)';
@@ -3559,12 +3575,13 @@ function checkRankUp(oldElo,newElo){
 
   // Rank-up rewards
   const rewards={
-    'Silver':{coins:200,chromas:50,title:null,skin:null},
-    'Gold':{coins:500,chromas:100,title:null,skin:null},
-    'Platinum':{coins:1000,chromas:200,title:null,skin:null},
-    'Diamond':{coins:2000,chromas:350,title:null,skin:null},
-    'Master':{coins:3000,chromas:500,title:null,skin:null},
-    'Chromancer':{coins:5000,chromas:1000,title:'Chromancer Supreme',skin:'chromancer_ascended'},
+    'Bronze':    {coins:100, chromas:10,  title:null,           skin:null,                    border:'rankup_bronze_border',  effect:null},
+    'Silver':    {coins:200, chromas:50,  title:null,           skin:null,                    border:'rankup_silver_border',  effect:null},
+    'Gold':      {coins:500, chromas:100, title:'Gold Star',    skin:null,                    border:'rankup_gold_border',    effect:null},
+    'Platinum':  {coins:1000,chromas:200, title:'Platinum Elite',skin:null,                   border:'rankup_plat_border',    effect:null},
+    'Diamond':   {coins:2000,chromas:350, title:'Diamond Hands',skin:'season_diamond_skin',   border:'rankup_diamond_border', effect:'season_diamond_fx'},
+    'Master':    {coins:3000,chromas:500, title:'Grand Master', skin:'season_master_skin',    border:'rankup_master_border',  effect:'season_master_fx'},
+    'Chromancer':{coins:5000,chromas:1000,title:'Chromatic God',skin:'chromancer_ascended',   border:'rankup_chroma_border',  effect:'season_chroma_fx'},
   };
 
   const reward=rewards[newRank.name];
@@ -3573,8 +3590,10 @@ function checkRankUp(oldElo,newElo){
   // Grant rewards
   save.coins+=reward.coins;
   save.chromas+=reward.chromas;
-  if(reward.title)save.owned['title_'+reward.title]=true;
-  if(reward.skin)save.owned['theme_'+reward.skin]=true;
+  if(reward.title&&!save.owned['title_'+reward.title]){save.owned['title_'+reward.title]=true;}
+  if(reward.skin&&!save.owned['theme_'+reward.skin]){save.owned['theme_'+reward.skin]=true;}
+  if(reward.border&&!save.owned['border_'+reward.border]){save.owned['border_'+reward.border]=true;}
+  if(reward.effect&&!save.owned['effect_'+reward.effect]){save.owned['effect_'+reward.effect]=true;}
   saveProg();
 
   // Build celebration popup
@@ -3606,13 +3625,10 @@ function checkRankUp(oldElo,newElo){
     html+='<div style="font-size:13px;color:var(--text);line-height:2">';
     html+='🟡 +'+reward.coins+' Coins<br>';
     html+='💎 +'+reward.chromas+' Chromas';
-    if(reward.skin){
-      var skinData=CHALLENGE_SKINS.find(s=>s.id===reward.skin);
-      html+='<br>🎨 '+skinData.name+' (Exclusive Skin!)';
-    }
-    if(reward.title){
-      html+='<br>🏅 Title: '+reward.title;
-    }
+    if(reward.title)html+='<br>🏷 Title: '+reward.title;
+    if(reward.border)html+='<br>🖼 Exclusive Border';
+    if(reward.effect)html+='<br>✨ Exclusive Effect';
+    if(reward.skin)html+='<br>🎨 Exclusive Skin';
     html+='</div></div>';
 
     // Chromancer special message
