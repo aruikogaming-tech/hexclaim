@@ -3346,12 +3346,6 @@ function renderShopTab(tab){
       el.onclick=function(){buyChromaBundle(b)};
       cont.appendChild(el);
     });
-    var today=getGameDay();
-    var claimed=save.dailyReward&&(function(){var rd=new Date(save.dailyReward);var rdET=new Date(rd.toLocaleString('en-US',{timeZone:'America/New_York'}));if(rdET.getHours()<19)rdET.setDate(rdET.getDate()-1);return rdET.toDateString()===today})();
-    var daily=document.createElement('div');daily.className='chroma-bundle';daily.style.gridColumn='span 2';
-    daily.innerHTML='<div class="cb-amount">\u{1f381} Daily Reward</div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+(claimed?'Claimed today! Come back tomorrow.':'Claim 🟡75 Coins FREE')+'</div>'+(claimed?'':'<div class="cb-price" style="color:var(--p1)">FREE</div>');
-    if(!claimed)daily.onclick=function(){save.coins+=75;save.dailyReward=Date.now();saveProg();updateShopCurrency();renderShopTab('diamonds')};
-    cont.appendChild(daily);
 
     var nameSection=document.createElement('div');nameSection.style.cssText='grid-column:span 2;margin-top:6px';nameSection.className='card';
     var nameInner=document.createElement('div');nameInner.style.cssText='text-align:center;padding:12px';
