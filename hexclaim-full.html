@@ -4826,10 +4826,10 @@ var tutGameSteps=[
     count:1
   },
   {
-    title:'Finish the Board!',
-    desc:'The game ends when every tile on the board is claimed. No tiles left = game over. Whoever has more territory wins. You earn up to 3 stars based on how much you capture — more stars = more coins!',
-    action:'Finish the game to complete your tutorial!',
-    trigger:'gameEnd',
+    title:'You\'re Ready!',
+    desc:'You now know how to play HexClaim! Keep expanding your territory and outsmart SHADE. Good luck, Commander!',
+    action:'Tap Got It! to complete the tutorial and start your adventure!',
+    trigger:'anyMove',
     count:1
   }
   ];
@@ -4903,7 +4903,8 @@ function tutOnPlayerMove(){
 function tutOnGameEnd(){
   if(!curConfig||!curConfig.isTutorial)return;
   if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
-  completeTutorial();
+  tutGameStep=tutGameSteps.length-1;
+  showTutGameOverlay();
 }
 
 function renderTutStep(){
