@@ -743,6 +743,29 @@ const STREAK_REWARDS=[
   {day:5,coins:130,chromas:50,label:'Day 5'},
   {day:6,coins:175,chromas:75,label:'Day 6'},
   {day:7,coins:350,chromas:150,label:'Day 7 🎉'},
+  {day:8,coins:60,chromas:25,label:'Day 8'},
+  {day:9,coins:75,chromas:30,label:'Day 9'},
+  {day:10,coins:100,chromas:50,label:'Day 10'},
+  {day:11,coins:75,chromas:30,label:'Day 11'},
+  {day:12,coins:80,chromas:35,label:'Day 12'},
+  {day:13,coins:90,chromas:40,label:'Day 13'},
+  {day:14,coins:400,chromas:175,label:'Day 14 🎉'},
+  {day:15,coins:80,chromas:35,label:'Day 15'},
+  {day:16,coins:90,chromas:40,label:'Day 16'},
+  {day:17,coins:100,chromas:45,label:'Day 17'},
+  {day:18,coins:110,chromas:50,label:'Day 18'},
+  {day:19,coins:120,chromas:55,label:'Day 19'},
+  {day:20,coins:150,chromas:75,label:'Day 20'},
+  {day:21,coins:450,chromas:200,label:'Day 21 🎉'},
+  {day:22,coins:100,chromas:50,label:'Day 22'},
+  {day:23,coins:110,chromas:55,label:'Day 23'},
+  {day:24,coins:125,chromas:60,label:'Day 24'},
+  {day:25,coins:150,chromas:75,label:'Day 25'},
+  {day:26,coins:175,chromas:80,label:'Day 26'},
+  {day:27,coins:200,chromas:90,label:'Day 27'},
+  {day:28,coins:225,chromas:100,label:'Day 28'},
+  {day:29,coins:250,chromas:110,label:'Day 29'},
+  {day:30,coins:600,chromas:300,label:'Day 30 🏆'},
 ];
 
 function checkDailyLogin(){
@@ -762,7 +785,7 @@ function checkDailyLogin(){
   if(yestET.getHours()<19)yestET.setDate(yestET.getDate()-1);
   var yesterday=yestET.toDateString();
   if(save.lastLoginDate===yesterday){
-    save.loginStreak=Math.min(save.loginStreak+1,7);
+    save.loginStreak=Math.min(save.loginStreak+1,30);
   } else if(save.lastLoginDate){
     save.loginStreak=1; // Streak broken
   } else {
@@ -971,10 +994,10 @@ function formatCountdown(ms){
 const DAILY_QUESTS=[
   {id:'d_play3',name:'Play 3 Games',desc:'Play any 3 games today',target:3,track:'dailyGamesPlayed',reward:{coins:50,bpXP:30},icon:'🎮'},
   {id:'d_win1',name:'First Victory',desc:'Win 1 game today',target:1,track:'dailyWins',reward:{coins:35,bpXP:25},icon:'🏆'},
-  {id:'d_win3',name:'Triple Threat',desc:'Win 3 games today',target:3,track:'dailyWins',reward:{coins:100,bpXP:50},icon:'⚔️'},
+  {id:'d_win3',name:'Triple Threat',desc:'Win 3 games today',target:3,track:'dailyWins',reward:{coins:100,chromas:5,bpXP:50},icon:'⚔️'},
   {id:'d_campaign',name:'Campaign Run',desc:'Complete 1 campaign level',target:1,track:'dailyCampaign',reward:{coins:65,bpXP:20},icon:'📖'},
   {id:'d_vsai',name:'AI Challenger',desc:'Play 2 VS AI matches',target:2,track:'dailyVsAi',reward:{coins:40,bpXP:20},icon:'🤖'},
-  {id:'d_combo',name:'Combo Hunter',desc:'Get a 3× combo in any game',target:1,track:'dailyCombo',reward:{coins:65,bpXP:35},icon:'🔥'},
+  {id:'d_combo',name:'Combo Hunter',desc:'Get a 3× combo in any game',target:1,track:'dailyCombo',reward:{coins:65,chromas:5,bpXP:35},icon:'🔥'},
 ];
 
 const WEEKLY_QUESTS=[
@@ -2569,24 +2592,24 @@ const SHOP_EFFECTS=[
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
 const LIMITED_EDITION_POOL=[
   // ===== THEMES (18 total) =====
-  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Burning throne of fire',price:1500,currency:'chromas',preview:'👹',tier:4,colors:['#0a0000','#ff2200','#ff6600','#ffcc00','#ff0044','#cc0000','#ff8800','#aa0000'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
-  {type:'theme',id:'le_arctic',name:'Arctic Phantom',desc:'LIMITED — Frozen ghost realm',price:1500,currency:'chromas',preview:'🥶',tier:4,colors:['#000818','#aaddff','#4488cc','#bbeeff','#6699bb','#224466','#88bbdd','#ccddff'],symbols:['❋','❆','✧','◈','✵','◇','❅','✦']},
-  {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1800,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
+  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Burning throne of fire',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#0a0000','#ff2200','#ff6600','#ffcc00','#ff0044','#cc0000','#ff8800','#aa0000'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
+  {type:'theme',id:'le_arctic',name:'Arctic Phantom',desc:'LIMITED — Frozen ghost realm',price:1200,currency:'chromas',preview:'🥶',tier:4,colors:['#000818','#aaddff','#4488cc','#bbeeff','#6699bb','#224466','#88bbdd','#ccddff'],symbols:['❋','❆','✧','◈','✵','◇','❅','✦']},
+  {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
   {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
-  {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1600,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
-  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:2000,currency:'chromas',preview:'✨',tier:4,colors:['#0a0800','#ffd700','#ffaa00','#ffee44','#cc8800','#ffcc00','#ff9900','#eecc44'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
+  {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
+  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#0a0800','#ffd700','#ffaa00','#ffee44','#cc8800','#ffcc00','#ff9900','#eecc44'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
   {type:'theme',id:'le_deep_ocean',name:'Deep Ocean',desc:'LIMITED — Abyssal depths of the sea',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#000a14','#003366','#006699','#0088bb','#00aadd','#004488','#0066aa','#002255'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
-  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Crimson eclipse rising',price:1700,currency:'chromas',preview:'🌙',tier:4,colors:['#0a0000','#880000','#cc0022','#ff2244','#aa0011','#660000','#dd1133','#ff4466'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
-  {type:'theme',id:'le_aurora',name:'Aurora Borealis',desc:'LIMITED — Northern lights dancing',price:1600,currency:'chromas',preview:'🌌',tier:4,colors:['#000810','#00ff88','#4488ff','#ff44aa','#44ffcc','#8844ff','#00ccff','#ff8844'],symbols:['✵','⊹','✧','◈','⋆','✶','◇','❖']},
-  {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1500,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
+  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Crimson eclipse rising',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#0a0000','#880000','#cc0022','#ff2244','#aa0011','#660000','#dd1133','#ff4466'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
+  {type:'theme',id:'le_aurora',name:'Aurora Borealis',desc:'LIMITED — Northern lights dancing',price:1300,currency:'chromas',preview:'🌌',tier:4,colors:['#000810','#00ff88','#4488ff','#ff44aa','#44ffcc','#8844ff','#00ccff','#ff8844'],symbols:['✵','⊹','✧','◈','⋆','✶','◇','❖']},
+  {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1200,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
   {type:'theme',id:'le_vaporwave',name:'Vaporwave Dream',desc:'LIMITED — Retro aesthetic overload',price:1300,currency:'chromas',preview:'🌴',tier:3,colors:['#0a0014','#ff71ce','#01cdfe','#05ffa1','#b967ff','#fffb96','#ff6b6b','#8ec5fc'],symbols:['◆','▲','◇','✦','⬡','●','✧','⊕']},
   {type:'theme',id:'le_steampunk',name:'Steampunk Engine',desc:'LIMITED — Brass gears and copper pipes',price:1400,currency:'chromas',preview:'⚙️',tier:3,colors:['#0a0800','#b87333','#cd7f32','#daa520','#8b6914','#a0522d','#c49e6e','#e8c874'],symbols:['⚙','⊕','◈','✦','⬢','◆','⊛','⬡']},
-  {type:'theme',id:'le_cosmic_dust',name:'Cosmic Dust',desc:'LIMITED — Stardust nebula swirl',price:1700,currency:'chromas',preview:'💫',tier:4,colors:['#000005','#ff6633','#ffcc00','#66ffcc','#cc33ff','#3366ff','#ff3366','#33ff66'],symbols:['✶','⊹','✵','⋆','✷','⊛','⊕','✧']},
+  {type:'theme',id:'le_cosmic_dust',name:'Cosmic Dust',desc:'LIMITED — Stardust nebula swirl',price:1400,currency:'chromas',preview:'💫',tier:4,colors:['#000005','#ff6633','#ffcc00','#66ffcc','#cc33ff','#3366ff','#ff3366','#33ff66'],symbols:['✶','⊹','✵','⋆','✷','⊛','⊕','✧']},
   {type:'theme',id:'le_midnight',name:'Midnight Raven',desc:'LIMITED — Darkest hour before dawn',price:1200,currency:'chromas',preview:'🦇',tier:3,colors:['#000000','#111122','#222244','#333355','#1a1a33','#0d0d22','#2a2a44','#3a3a55'],symbols:['◇','◎','▽','✧','◈','△','○','◆']},
   {type:'theme',id:'le_candy',name:'Candy Pop',desc:'LIMITED — Sugar rush explosion',price:1100,currency:'chromas',preview:'🍬',tier:3,colors:['#1a0010','#ff44aa','#44ddff','#ffee44','#ff8844','#44ff88','#dd44ff','#ff4444'],symbols:['♡','★','♦','●','✦','✧','◆','▲']},
   {type:'theme',id:'le_sandstorm',name:'Sandstorm Pharaoh',desc:'LIMITED — Ancient desert tomb',price:1500,currency:'chromas',preview:'🏺',tier:4,colors:['#0a0800','#daa520','#c4a35a','#8b7355','#f0e68c','#cd853f','#e6c89c','#b8860b'],symbols:['𓂀','◈','✦','△','⬡','◆','✧','◇']},
   {type:'theme',id:'le_toxic_waste',name:'Toxic Wasteland',desc:'LIMITED — Radioactive mutation zone',price:1300,currency:'chromas',preview:'☢️',tier:3,colors:['#000a00','#33ff00','#88ff00','#00ff44','#aaff00','#66ff22','#44ff00','#ccff00'],symbols:['☢','◉','⬟','⚠','◬','✦','◈','⊕']},
-  {type:'theme',id:'le_galaxy_core',name:'Galaxy Core',desc:'LIMITED — Heart of the universe',price:1900,currency:'chromas',preview:'🔮',tier:4,colors:['#000005','#8800ff','#ff00aa','#0044ff','#ff4400','#00ffaa','#ffaa00','#aa00ff'],symbols:['✶','⊹','✵','⋆','✷','⊛','❖','✧']},
+  {type:'theme',id:'le_galaxy_core',name:'Galaxy Core',desc:'LIMITED — Heart of the universe',price:1500,currency:'chromas',preview:'🔮',tier:4,colors:['#000005','#8800ff','#ff00aa','#0044ff','#ff4400','#00ffaa','#ffaa00','#aa00ff'],symbols:['✶','⊹','✵','⋆','✷','⊛','❖','✧']},
   // ===== BORDERS (8 total) =====
   {type:'border',id:'le_phoenix',name:'Phoenix Frame',desc:'LIMITED — Rising from ashes',price:900,currency:'chromas',preview:'🔥'},
   {type:'border',id:'le_frost_crown',name:'Frost Crown',desc:'LIMITED — Icy crystalline frame',price:900,currency:'chromas',preview:'❄️'},
@@ -3135,6 +3158,8 @@ const BP_TIERS=[{level:1,  free:{type:'coins',amount:50,icon:'🟡',name:'50 Coi
 // ===== SHOP FUNCTIONS =====
 function buildShop(){
   updateShopCurrency();
+  // Monthly pass check — auto grant daily diamonds
+  checkMonthlyPass();
   const tabs=document.getElementById('shopTabs');
   tabs.innerHTML='';
   ['Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
@@ -3386,6 +3411,18 @@ function renderShopTab(tab){
       cont.appendChild(el);
     });
 
+    // Monthly pass card
+    var mpCard=document.createElement('div');mpCard.style.cssText='grid-column:span 2;background:linear-gradient(135deg,rgba(6,214,160,0.1),rgba(255,209,102,0.1));border:1.5px solid var(--gold);border-radius:14px;padding:14px;margin-top:6px;cursor:pointer';
+    var mpActive=save.monthlyPassExpiry&&Date.now()<save.monthlyPassExpiry;
+    mpCard.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between">'
+      +'<div><div style="font-size:13px;font-weight:800;color:var(--gold)">💎 Monthly Diamond Pass</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">+50 💎 every day for 30 days</div>'
+      +'<div style="font-size:10px;color:var(--p1);margin-top:2px">1,500 💎 total value</div></div>'
+      +'<div style="text-align:right">'+(mpActive?'<div style="font-size:10px;color:var(--p1);font-weight:800">✓ ACTIVE</div>':'<div style="font-size:12px;font-weight:800;color:var(--gold)">$1.99</div>')+'</div>'
+      +'</div>';
+    mpCard.onclick=function(){buyMonthlyPass();};
+    cont.appendChild(mpCard);
+
     var nameSection=document.createElement('div');nameSection.style.cssText='grid-column:span 2;margin-top:6px';nameSection.className='card';
     var nameInner=document.createElement('div');nameInner.style.cssText='text-align:center;padding:12px';
     var nameTitle=document.createElement('div');nameTitle.style.cssText='font-size:12px;font-weight:800;margin-bottom:6px';
@@ -3519,6 +3556,19 @@ function buyChromaBundle(bundle){
 }
 
 // ===== BATTLE PASS =====
+const MONTHLY_PASS_PRICE=1.99;
+function checkMonthlyPass(){
+  if(!save.monthlyPassExpiry||Date.now()>save.monthlyPassExpiry)return;
+  var today=getGameDay();
+  if(save.lastPassGrantDate===today)return;
+  save.chromas=(save.chromas||0)+50;
+  save.lastPassGrantDate=today;
+  saveProg();updateShopCurrency();
+  showToast('💎 +50 Daily Diamonds from Monthly Pass!',3000);
+}
+function buyMonthlyPass(){
+  showToast('Monthly Pass coming soon via in-app purchase!',3000);
+}
 function buildBattlePass(){
   document.getElementById('bpSeason').textContent=save.season;
   document.getElementById('bpXP').textContent=save.bpXP;
@@ -6465,7 +6515,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   detail.textContent=`${p1p}% vs ${p2p}%`;
 
   // XP/Coins earned display
-  const xpEarned=won?65:15;const coinsEarned=won?25:10;addProfileXP(xpEarned);
+  const xpEarned=won?65:15;const coinsEarned=won?40:15;addProfileXP(xpEarned);
   const xpBonus=curConfig.isRanked?15:0;
 
   if(curConfig.isRanked){
