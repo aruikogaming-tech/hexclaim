@@ -464,7 +464,7 @@ body{display:flex;align-items:center;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:8px;color:var(--dim);text-align:center;margin-top:6px;cursor:default" id="versionText" onclick="">HexClaim v1.0 — Made with ❤️</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.0 — Made with ❤️</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -2302,46 +2302,6 @@ function showLevelUpPopup(){
     <button onclick="this.parentElement.remove();playSfx('click')" style="margin-top:10px;padding:8px 24px;background:var(--gold);border:none;border-radius:8px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif">Awesome!</button>`;
   document.body.appendChild(popup);
   playSfx('win');
-}
-
-// ===== ADMIN FUNCTIONS =====
-const ADMIN_CODE='hexclaim2026';
-let _adminTaps=0,_adminTapTimer=null;
-function secretAdminTap(){
-  _adminTaps++;
-  if(_adminTapTimer)clearTimeout(_adminTapTimer);
-  _adminTapTimer=setTimeout(function(){_adminTaps=0},2000);
-  if(_adminTaps>=7){
-    _adminTaps=0;
-    var el=document.getElementById('adminSection');
-    if(el)el.style.display=el.style.display==='none'?'block':'none';
-    if(save.isAdmin){var ap=document.getElementById('adminPanel');if(ap)ap.style.display='block';}
-  }
-}
-function tryAdmin(){
-  if(document.getElementById('adminCode').value===ADMIN_CODE){
-    save.isAdmin=true;saveProg();
-    document.getElementById('adminPanel').style.display='block';
-    playSfx('ability');
-  }
-}
-function adminGiveChromas(){save.chromas+=10000;saveProg();updateAllUI();playSfx('claimBig')}
-function adminMaxLevel(){save.profileLevel=999;save.profileXP=0;saveProg();updateAllUI();playSfx('win')}
-function adminGiveXP(){addProfileXP(5000)}
-function adminSetElo(){save.elo=4500;saveProg();updateAllUI();playSfx('ability')}
-function adminUnlockAll(){
-  save.tutorialDone=true;save.profileLevel=999;
-  SHOP_THEMES.forEach(t=>save.owned['theme_'+t.id]=true);
-  CHALLENGE_SKINS.forEach(s=>save.owned['theme_'+s.id]=true);
-  SEASONAL_SKINS.forEach(s=>save.owned['theme_'+s.id]=true);
-  SHOP_BORDERS.forEach(b=>save.owned['border_'+b.id]=true);
-  SHOP_EFFECTS.forEach(e=>save.owned['effect_'+e.id]=true);
-  PROFILE_ICONS.forEach(i=>save.owned['icon_'+i.id]=true);
-  SHOP_TITLES.forEach(t=>save.owned['title_'+t.id]=true);
-  save.bpPremium=true;
-  var chLevels=[5,5,5,5];for(var ci=0;ci<4;ci++)for(var li=1;li<=chLevels[ci];li++){save.cleared['ch'+(ci+1)+'_'+li]=true;save.stars['ch'+(ci+1)+'_'+li]=3;}
-  CHALLENGES.forEach((_,i)=>save.challengesDone[i]=true);
-  saveProg();updateAllUI();playSfx('win');
 }
 
 // ===== TUTORIAL =====
