@@ -3695,8 +3695,9 @@ function buildBattlePass(){
     html+=`<div class="bp-tier">
       <div class="bp-level ${reached?'done':''}">${tier.level}<div class="bp-line ${reached?'done':''}"></div></div>
       <div class="bp-track">
-        <div class="bp-reward ${freeClaimed?'claimed':''} ${freeClaimable?'claimable':''}" onclick="${freeClaimable?`claimBPReward('free',${tier.level})`:''}">
+        <div class="bp-reward ${freeClaimed?'claimed':''} ${freeClaimable?'claimable':''}" style="${!reached&&!freeClaimed?'opacity:0.35;filter:grayscale(0.8)':''}" onclick="${freeClaimable?`claimBPReward('free',${tier.level})`:''}">
           ${freeClaimed?'<div class="bp-check">✅</div>':''}
+          ${!reached&&!freeClaimed?'<div class="bp-check">🔒</div>':''}
           <div class="bp-icon">${tier.free.icon}</div>
           <div class="bp-rname">${tier.free.name}</div>
           <div class="bp-rtag">Free</div>
