@@ -4878,6 +4878,7 @@ function showTutGameOverlay(){
   document.getElementById('tutOkBtn').onclick=function(){
     ol.remove();tutOverlayEl=null;
     playSfx('click');
+    if(tutGameStep>=tutGameSteps.length){completeTutorial();return;}
     if(!gameTimerInterval&&!gameOver)startGameTimer();
   };
   stopGameTimer();
