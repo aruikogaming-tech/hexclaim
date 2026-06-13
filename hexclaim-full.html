@@ -4873,6 +4873,11 @@ function showTutGameOverlay(){
     +dotsHtml
     +'<button id="tutOkBtn" style="width:100%;margin-top:14px;padding:14px;background:linear-gradient(135deg,var(--p1),#0ea573);border:none;border-radius:12px;color:#fff;font-family:Manrope,sans-serif;font-size:14px;font-weight:800;cursor:pointer;letter-spacing:1px">Got It!</button>'
     +'</div>';
+  // Add skip button
+  var skipDiv=document.createElement('div');
+  skipDiv.style.cssText='text-align:center;margin-top:8px';
+  skipDiv.innerHTML='<button onclick="completeTutorial();playSfx(\'click\')" style="background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;text-decoration:underline">Skip Tutorial</button>';
+  ol.querySelector('div').appendChild(skipDiv);
   document.body.appendChild(ol);
   tutOverlayEl=ol;
   document.getElementById('tutOkBtn').onclick=function(){
