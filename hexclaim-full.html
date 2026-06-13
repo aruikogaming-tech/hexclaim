@@ -316,19 +316,28 @@ body{display:flex;align-items:flex-start;justify-content:center;
   </div>
 </div>
 
-<!-- DAILY STREAK SIDE WIDGET -->
-<div id="streakSideWidget" onclick="showStreakPopup();playSfx('menuNav')" style="position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:85;cursor:pointer;display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--p1);border-left:none;border-radius:0 10px 10px 0;padding:8px 6px;gap:4px;box-shadow:2px 0 12px rgba(6,214,160,0.2)">
-  <span style="font-size:20px">🔥</span>
-  <div style="font-size:8px;font-weight:800;color:var(--p1);text-align:center;line-height:1.2" id="sideStreakDay">Day 1</div>
-  <div id="sideStreakDot" style="width:8px;height:8px;border-radius:50%;background:var(--p1)"></div>
-</div>
-
 <!-- MENU -->
-<div class="screen active" id="menuScreen">
+<div class="screen active" id="menuScreen" style="position:relative">
+  <!-- Daily Streak Side Widget -->
+  <div id="streakSideWidget" onclick="showStreakPopup();playSfx('menuNav')" style="position:absolute;left:-8px;top:50%;transform:translateY(-50%);z-index:85;cursor:pointer;display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--p1);border-left:none;border-radius:0 10px 10px 0;padding:8px 6px;gap:4px;box-shadow:2px 0 12px rgba(6,214,160,0.2)">
+    <span style="font-size:20px">🔥</span>
+    <div style="font-size:8px;font-weight:800;color:var(--p1);text-align:center;line-height:1.2" id="sideStreakDay">Day 1</div>
+    <div id="sideStreakDot" style="width:8px;height:8px;border-radius:50%;background:var(--p1)"></div>
+  </div>
   <!-- Logo -->
   <div class="menu-logo" style="margin-top:8px">
     <h1>HEXCLAIM</h1>
     <p>Chromatic Conquest</p>
+  </div>
+
+  <!-- News Banner -->
+  <div style="background:linear-gradient(135deg,rgba(6,214,160,0.1),rgba(131,56,236,0.1));border:1px solid rgba(6,214,160,0.3);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="showToast('Stay tuned for updates!',3000)">
+    <span style="font-size:16px">📢</span>
+    <div style="flex:1">
+      <div style="font-size:10px;font-weight:800;color:var(--p1)">WHAT'S NEW</div>
+      <div style="font-size:11px;color:var(--text)" id="newsBannerText">Season 1 is live! Climb the ranks and earn exclusive rewards.</div>
+    </div>
+    <span style="font-size:10px;color:var(--muted)">›</span>
   </div>
 
   <!-- ELO badge -->
@@ -840,13 +849,25 @@ function showStreakPopup(){
     +'<button id="streakClaimBtn" style="padding:10px 28px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Claim 🟡'+(reward.coins||0)+' + 💎'+(reward.chromas||0)+'</button>'
     +'</div>';
   document.body.appendChild(popup);
-  document.getElementById('streakClaimBtn').onclick=function(){
-    if(reward.coins)save.coins+=reward.coins;if(reward.chromas)save.chromas+=reward.chromas;
-    save.streakClaimed[day]=true;
-    saveProg();updateShopCurrency();
-    popup.remove();
-    playSfx('claimBig');
-  };
+  var alreadyClaimed=save.streakClaimed&&save.streakClaimed[day];
+  var claimBtn=document.getElementById('streakClaimBtn');
+  if(alreadyClaimed){
+    claimBtn.textContent='Already Claimed ✓';
+    claimBtn.style.background='var(--dim)';
+    claimBtn.style.color='var(--muted)';
+    claimBtn.style.cursor='default';
+    claimBtn.onclick=null;
+  } else {
+    claimBtn.onclick=function(){
+      if(save.streakClaimed&&save.streakClaimed[day])return;
+      if(reward.coins)save.coins+=reward.coins;
+      if(reward.chromas)save.chromas+=reward.chromas;
+      save.streakClaimed[day]=true;
+      saveProg();updateShopCurrency();updateMenuStreakCard();
+      popup.remove();
+      playSfx('claimBig');
+    };
+  }
 }
 
 // ===== LUCKY SPIN =====
@@ -2360,9 +2381,14 @@ function tryRankedPVP(){
 }
 
 // ===== UPDATE ALL UI =====
+function updateNewsBanner(){
+  var el=document.getElementById('newsBannerText');
+  if(el)el.textContent='Season '+(save.season||1)+' is live! Climb the ranks and earn exclusive rewards.';
+}
 function updateAllUI(){
   updateMenuStats();
   updateTopBar();
+  updateNewsBanner();
   // Update settings name display
   const snd=document.getElementById('settingsNameDisplay');
   if(snd)snd.textContent=save.playerName;
