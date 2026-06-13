@@ -5241,6 +5241,8 @@ function launchLevel(){
     document.getElementById('p2name').textContent=isLocalPVP?'P2 ⬡':'AI ⬡';
   }
   resize();initGame();
+  animatingMove=false;
+  gameLocked=false;
 }
 
 function exitLevel(){
@@ -5269,6 +5271,8 @@ function resize(){
 }
 
 function initGame(){
+  animatingMove=false;
+  gameOver=false;
   applySkinColors();
   grid=[];owner=[];fogRevealed=[];powerTiles=[];
   // STRICT max-2 rule: BFS flood fill check — no orthogonal group > 2 tiles
@@ -6516,7 +6520,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
         grantAchievementReward('chapter_'+(curChapter+1));
       }
       saveProg();updateShopCurrency();
-      if(typeof coinsEarned!=='undefined')coinsEarned+=totalBonus;
+      coinsEarned=(coinsEarned||0)+totalBonus;
     }
   }
   if(won&&curConfig.challengeIdx!==undefined){
