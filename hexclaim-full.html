@@ -2453,18 +2453,22 @@ const CHALLENGE_SKINS=[
    colors:['#0a0015','#ff00ff','#00ffff','#ffff00','#ff0088','#0088ff','#88ff00','#ff8800'],
    symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
   // Legendary difficulty rewards
-  {id:'ch_obsidian',name:'Obsidian Crown',desc:'💀 Challenge: Perfect Storm',preview:'🖤',tier:4,
-   colors:['#000000','#1a1a2e','#2d2d44','#404060','#16213e','#0f3460','#533483','#e94560'],
-   symbols:['♛','◈','✦','◆','❖','✧','◇','⬡']},
-  {id:'ch_void_emperor',name:'Void Emperor',desc:'💀 Challenge: Suicide Mission',preview:'👁️',tier:4,
-   colors:['#000000','#220044','#440088','#6600cc','#8800ff','#aa00ff','#cc44ff','#ee88ff'],
-   symbols:['☠','⊘','⊗','⊛','⊕','⊜','⊝','⊙']},
-  {id:'ch_eternal',name:'Eternal Flame',desc:'💀 Challenge: Iron Curtain',preview:'🔱',tier:4,
-   colors:['#0a0000','#ff4400','#ff8800','#ffcc00','#ffffff','#ffaa44','#ff6622','#ffee88'],
-   symbols:['🜂','✺','◐','✹','❂','◑','✷','◉']},
-  {id:'ch_nexus',name:'Chromatic Nexus',desc:'💀 Challenge: Absolute Zero — THE RAREST SKIN',preview:'⚜️',tier:4,
-   colors:['#000000','#ff0000','#ff8800','#ffff00','#00ff00','#0088ff','#8800ff','#ff00ff'],
-   symbols:['⟁','⊹','✵','⋆','✷','⊛','⊕','✶']},
+  {id:'ch_obsidian',name:'Obsidian Crown',desc:'💀 Challenge: Perfect Storm — Rarest tile',preview:'🖤',tier:4,rankReq:'legendary',
+   colors:['#000000','#1a0a2e','#2d1a44','#4a2060','#16213e','#0f3460','#533483','#e94560'],
+   symbols:['♛','💀','✦','⬡','❖','☠','◆','👑'],
+   glowColor:'rgba(233,69,96,0.8)'},
+  {id:'ch_void_emperor',name:'Void Emperor',desc:'💀 Challenge: Suicide Mission — Rarest tile',preview:'👁️',tier:4,rankReq:'legendary',
+   colors:['#000000','#1a0033','#330066','#5500aa','#7700dd','#9900ff','#bb44ff','#dd88ff'],
+   symbols:['☠','👁','⊘','∞','⊛','✦','⊕','💀'],
+   glowColor:'rgba(136,0,255,0.8)'},
+  {id:'ch_eternal',name:'Eternal Flame',desc:'💀 Challenge: Iron Curtain — Rarest tile',preview:'🔱',tier:4,rankReq:'legendary',
+   colors:['#080000','#ff2200','#ff6600','#ffaa00','#ffee00','#ff4400','#ff8800','#ffffff'],
+   symbols:['🔱','🜂','✺','❂','⚡','✹','◐','🔥'],
+   glowColor:'rgba(255,68,0,0.8)'},
+  {id:'ch_nexus',name:'Chromatic Nexus',desc:'💀 Challenge: Absolute Zero — THE RAREST SKIN IN THE GAME',preview:'⚜️',tier:4,rankReq:'legendary',
+   colors:['#000000','#ff0044','#ff8800','#ffff00','#00ff88','#0088ff','#8800ff','#ff00ff'],
+   symbols:['⚜️','🌈','✦','⊛','⊹','◈','✵','♾'],
+   glowColor:'rgba(255,0,255,0.8)'},
   // Rank-up reward skin — Chromancer exclusive
   {id:'chromancer_ascended',name:'Chromancer Ascended',desc:'🔮 Reached Chromancer rank — the ultimate reward',preview:'🔮',tier:4,
    colors:['#000005','#06d6a0','#4cc9f0','#ffd166','#ef476f','#8338ec','#ff6b6b','#06d6a0'],
@@ -3081,11 +3085,11 @@ const SHOP_TITLES=[
   {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient',glow:0},
   {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient',glow:0},
   {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow',glow:4},
-  {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#ef476f',style:'bold',glow:1},
-  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ef476f',style:'gradient',glow:2},
-  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#b0c4de',style:'bold',glow:3},
-  {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#8338ec',style:'gradient',glow:4},
-  {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',glow:5},
+  {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#e94560',style:'gradient',font:'Archivo Black',glow:1},
+  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#9900ff',style:'rainbow',glow:2},
+  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#ff4400',style:'gradient',font:'Archivo Black',glow:3},
+  {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#ff00ff',style:'rainbow',glow:4},
+  {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
 ];
 
 const CHROMA_BUNDLES=[
@@ -3515,15 +3519,16 @@ function makeSkinPreview(colors,size,symbols,tier,rankReq){
   var isMaster=rankReq==='Master';
   var isChroma=rankReq==='Chromancer';
   var isLimited=rankReq==='limited';
-  var isHighTier=isPlatinum||isDiamond||isMaster||isChroma||isLimited;
+  var isLegendary=rankReq==='legendary';
+  var isHighTier=isPlatinum||isDiamond||isMaster||isChroma||isLimited||isLegendary;
   // Border glow per tier
-  var glowColor=isChroma?'rgba(255,209,102,0.8)':isMaster?'rgba(192,132,252,0.7)':isDiamond?'rgba(185,242,255,0.7)':isPlatinum?'rgba(229,228,226,0.6)':isLimited?'rgba(239,71,111,0.7)':'transparent';
-  var borderStyle=isHighTier?'border:1.5px solid '+glowColor+';box-shadow:0 0 6px '+glowColor:'border:1px solid rgba(255,255,255,0.08)';
+  var glowColor=isLegendary?(item&&item.glowColor||'rgba(255,0,255,0.9)'):isChroma?'rgba(255,209,102,0.8)':isMaster?'rgba(192,132,252,0.7)':isDiamond?'rgba(185,242,255,0.7)':isPlatinum?'rgba(229,228,226,0.6)':isLimited?'rgba(239,71,111,0.7)':'transparent';
+  var borderStyle=isHighTier?'border:'+(isLegendary?'2px':'1.5px')+' solid '+glowColor+';box-shadow:0 0 '+(isLegendary?'10px':'6px')+' '+glowColor+(isLegendary?',0 0 20px '+glowColor:''):'border:1px solid rgba(255,255,255,0.08)';
   var html='<div style="display:flex;gap:2px;flex-wrap:wrap;justify-content:center">';
   for(var i=1;i<colors.length&&i<=6;i++){
     // Special symbols for high tier
     var sym=syms[i-1];
-    var symColor=isChroma?'rgba(255,209,102,0.7)':isMaster?'rgba(192,132,252,0.65)':isDiamond?'rgba(185,242,255,0.65)':isPlatinum?'rgba(255,255,255,0.6)':isLimited?'rgba(239,71,111,0.7)':'rgba(255,255,255,0.4)';
+    var symColor=isLegendary?'rgba(255,255,255,0.95)':isChroma?'rgba(255,209,102,0.7)':isMaster?'rgba(192,132,252,0.65)':isDiamond?'rgba(185,242,255,0.65)':isPlatinum?'rgba(255,255,255,0.6)':isLimited?'rgba(239,71,111,0.7)':'rgba(255,255,255,0.4)';
     var symSize=isHighTier?(size*0.55):(size*0.5);
     html+='<div style="width:'+size+'px;height:'+size+'px;border-radius:4px;background:'+colors[i]+';display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;'+borderStyle+'">';
     html+='<span style="font-size:'+symSize+'px;color:'+symColor+';'+(isHighTier?'text-shadow:0 0 4px '+symColor:'')+'">'+sym+'</span>';
@@ -3800,10 +3805,10 @@ const CHALLENGES=[
   {name:"🎨 Shadow Walk",desc:"Win with fog + Hard AI + 6 colors. Navigate the darkness.",reward:"Skin: Shadow Walker",rewardSkin:'ch_shadow',cols:10,rows:12,colors:6,aiSmart:0.82,fog:true,reqChapter:2,difficulty:'medium'},
   {name:"🎨 Prism Break",desc:"Win on a 6×6 board vs Smart AI with only 3 colors. Tight quarters.",reward:"Skin: Prism Core",rewardSkin:'ch_prism',cols:6,rows:6,colors:3,aiSmart:0.7,reqChapter:1,difficulty:'medium'},
   // ===== LEGENDARY CHALLENGES (Very Hard) =====
-  {name:"💀 Perfect Storm",desc:"Win with 95%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin: Obsidian Crown + Title: The Perfect",rewardSkin:'ch_obsidian',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:80,reqChapter:3,difficulty:'legendary'},
-  {name:"💀 Suicide Mission",desc:"Win vs Impossible AI, fog, 7 colors, only 50 moves. Good luck.",reward:"Skin: Void Emperor + Title: Deathless",rewardSkin:'ch_void_emperor',rewardTitle:'Deathless',cols:10,rows:12,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:50,reqChapter:3,difficulty:'legendary'},
-  {name:"💀 Iron Curtain",desc:"Beat Expert AI on 14×16, 6 colors, 90 moves. An endurance nightmare.",reward:"Skin: Eternal Flame + Title: Iron Wall",rewardSkin:'ch_eternal',rewardTitle:'Iron Wall',cols:14,rows:16,colors:6,aiSmart:0.94,moveLimit:true,baseMoves:90,reqChapter:3,difficulty:'legendary'},
-  {name:"💀 Absolute Zero",desc:"Max AI, fog, 7 colors, 90 moves, 90%+ territory. The final test.",reward:"Skin: Chromatic Nexus + Title: Nexus Lord",rewardSkin:'ch_nexus',rewardTitle:'Nexus Lord',cols:12,rows:14,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:90,winPct:75,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Perfect Storm",desc:"Win with 95%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin: Obsidian Crown + Effect: Storm Burst + Title: The Perfect",rewardSkin:'ch_obsidian',rewardEffect:'storm_fx',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:80,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Suicide Mission",desc:"Win vs Impossible AI, fog, 7 colors, only 50 moves. Good luck.",reward:"Skin: Void Emperor + Effect: Void Pulse + Title: Deathless",rewardSkin:'ch_void_emperor',rewardEffect:'shadow_mist',rewardTitle:'Deathless',cols:10,rows:12,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:50,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Iron Curtain",desc:"Beat Expert AI on 14×16, 6 colors, 90 moves. An endurance nightmare.",reward:"Skin: Eternal Flame + Effect: Inferno Blast + Title: Iron Wall",rewardSkin:'ch_eternal',rewardEffect:'fire_trail',rewardTitle:'Iron Wall',cols:14,rows:16,colors:6,aiSmart:0.94,moveLimit:true,baseMoves:90,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Absolute Zero",desc:"Max AI, fog, 7 colors, 90 moves, 90%+ territory. The final test.",reward:"Skin: Chromatic Nexus + Effect: Supernova + Title: Nexus Lord",rewardSkin:'ch_nexus',rewardEffect:'supernova',rewardTitle:'Nexus Lord',cols:12,rows:14,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:90,winPct:75,reqChapter:3,difficulty:'legendary'},
 ];
 
 // ===== GAME STATE =====
@@ -6534,6 +6539,11 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     // Grant challenge title reward
     if(ch.rewardTitle&&!save.owned['title_'+ch.rewardTitle]){
       save.owned['title_'+ch.rewardTitle]=true;
+    }
+    // Grant challenge effect reward
+    if(ch.rewardEffect&&!save.owned['effect_'+ch.rewardEffect]){
+      save.owned['effect_'+ch.rewardEffect]=true;
+      showToast('✨ Effect unlocked: '+ch.rewardEffect+'!',4000);
     }
   }
 
