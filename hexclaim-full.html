@@ -3716,7 +3716,7 @@ function buildBattlePass(){
 }
 
 function buyBattlePass(){
-  if(save.chromas<500){showToast('Not enough chromas! Need 💎 500');return}
+  if(save.chromas<800){showToast('Not enough Diamonds! Need 💎 800');return}
   showConfirmPopup('Upgrade Battle Pass?','Purchase Premium Battle Pass for 💎 500 Chromas?','Purchase',function(){
     if(save.chromas<800){showToast('Not enough Diamonds! Need 💎 800');return;}save.chromas-=800;save.bpPremium=true;saveProg();updateShopCurrency();buildBattlePass();
     showToast('✨ Premium Battle Pass activated!');playSfx('claimBig');
