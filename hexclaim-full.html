@@ -29,7 +29,7 @@ body{display:flex;align-items:center;justify-content:center;
   radial-gradient(ellipse 60% 50% at 80% 100%,rgba(131,56,236,0.1),transparent),
   radial-gradient(ellipse 50% 40% at 50% 50%,rgba(17,138,178,0.06),transparent)}
 
-.screen{display:none;width:min(96vw,420px);flex-direction:column;gap:8px;max-height:100vh;overflow-y:auto;scrollbar-width:none}
+.screen{display:none;width:min(96vw,420px);flex-direction:column;gap:8px;max-height:100vh;overflow-y:auto;scrollbar-width:none;padding-top:56px}
 .screen::-webkit-scrollbar{display:none}
 .screen.active{display:flex}
 
@@ -517,6 +517,7 @@ body{display:flex;align-items:center;justify-content:center;
 </div>
 
 <!-- BATTLE PASS SCREEN -->
+<div class="screen" id="bpScreen">
   <button class="back-btn" onclick="showScreen('menuScreen');playSfx('menuBack')">← Back</button>
   <div style="display:flex;align-items:center;justify-content:space-between">
     <div class="section-title">Battle Pass</div>
