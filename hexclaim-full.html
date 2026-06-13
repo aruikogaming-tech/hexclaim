@@ -1880,7 +1880,7 @@ function startLocalPVP(config){
 function startLocalPVPWithName(opponentName,config){
   isPVP=true;isLocalPVP=true;
   pvpOpponent={name:opponentName,elo:0};
-  curConfig={cols:config.cols,rows:config.rows,colors:config.colors,aiSmart:0,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75};
+  curConfig={cols:config.cols,rows:config.rows,colors:config.colors,aiSmart:0,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:0};
   COLS=config.cols;ROWS=config.rows;NUM_COLORS=config.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
@@ -4679,7 +4679,7 @@ function startTutorial(){
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
-  stalemeTurns=0;lastP1Count=0;lastP2Count=0;
+  stalemateTurns=0;lastP1Count=0;lastP2Count=0;
   movesLeft=999;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
   document.getElementById('gChapter').textContent='TUTORIAL';
   document.getElementById('gLevel').textContent='How to Play';
@@ -6151,7 +6151,7 @@ function updateObjBar(){
   }
 }
 
-async function playerMove(colorIdx){
+function playerMove(colorIdx){
   if(animatingMove)return;
 
   // Online PVP: check if it's actually our turn
