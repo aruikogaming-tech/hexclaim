@@ -5089,7 +5089,17 @@ function buildChallenges(){
       const owned=save.owned['title_'+ch.rewardTitle];
       titlePreview='<div style="font-size:9px;color:'+(owned?'var(--gold)':'rgba(255,209,102,0.5)')+';margin-top:2px">🏅 Title: '+ch.rewardTitle+(owned?' ✅':'')+'</div>';
     }
-    card.innerHTML=`<div style="font-size:13px;font-weight:800;color:${diff==='legendary'?'#ef476f':diff==='medium'?'#ffd166':'var(--c3)'}">${done?'✅ ':''}${ch.name}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${ch.desc}</div><div style="font-size:9px;color:var(--p1);margin-top:5px;text-transform:uppercase;letter-spacing:1px">${ch.reward}</div>${skinPreview}${titlePreview}`;
+    let borderPreview='';
+    if(ch.rewardBorder){
+      const bOwned=save.owned['border_'+ch.rewardBorder];
+      const bStyle=getBorderStyle2(ch.rewardBorder);
+      const bName=SHOP_BORDERS.find(function(b){return b.id===ch.rewardBorder});
+      borderPreview='<div style="margin-top:5px;display:flex;align-items:center;gap:6px">'
+        +'<div style="width:32px;height:32px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;'+bStyle+'">⬡</div>'
+        +'<span style="font-size:9px;color:'+(bOwned?'var(--c2)':'rgba(100,200,255,0.5)')+'">🖼 '+(bName?bName.name:'Border')+(bOwned?' ✅':'')+'</span>'
+        +'</div>';
+    }
+    card.innerHTML=`<div style="font-size:13px;font-weight:800;color:${diff==='legendary'?'#ef476f':diff==='medium'?'#ffd166':'var(--c3)'}">${done?'✅ ':''}${ch.name}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${ch.desc}</div><div style="font-size:9px;color:var(--p1);margin-top:5px;text-transform:uppercase;letter-spacing:1px">${ch.reward}</div>${skinPreview}${borderPreview}${titlePreview}`;
     if(unlocked)card.onclick=()=>startChallenge(i);
     list.appendChild(card);
   });
