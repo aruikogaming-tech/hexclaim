@@ -2420,9 +2420,10 @@ const SHOP_THEMES=[
 ];
 
 const SEASONAL_SKINS=[
-  {id:'season_diamond_skin',name:'Diamond Season',desc:'Season exclusive — Diamond rank reward',preview:'💠',season:1,colors:['#000a14','#b9f2ff','#00e5ff','#88ddff','#00bbff','#aaeeff','#66ccff','#33aaee'],symbols:['❆','◈','✧','❅','◇','✵','❋','◎'],tier:4,rankReq:'Diamond'},
-  {id:'season_master_skin',name:'Master Season',desc:'Season exclusive — Master rank reward',preview:'👑',season:1,colors:['#0a0014','#c084fc','#9333ea','#d8b4fe','#7c3aed','#a855f7','#e879f9','#8b5cf6'],symbols:['👑','◆','✦','◉','⬡','◈','✧','⊕'],tier:4,rankReq:'Master'},
-  {id:'season_chroma_skin',name:'Chromancer Season',desc:'Season exclusive — Chromancer rank reward',preview:'🔮',season:1,colors:['#000000','#ffd166','#06d6a0','#ef476f','#8338ec','#118ab2','#ff9f1c','#ffffff'],symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],tier:4,rankReq:'Chromancer'},
+  // Season 1 — Chromancer only exclusive skin
+  {id:'season_chroma_s1',name:'Season 1 Chromancer',desc:'Season 1 exclusive — Chromancer only',preview:'🔮',season:1,colors:['#000000','#ffd166','#06d6a0','#ef476f','#8338ec','#118ab2','#ff9f1c','#ffffff'],symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],tier:4,rankReq:'Chromancer'},
+  // Season 2 — add next season
+  // {id:'season_chroma_s2',name:'Season 2 Chromancer', ...}
 ];
 
 // Challenge-exclusive skins — EARNED by completing specific challenges, cannot be bought
@@ -2475,15 +2476,16 @@ function checkSeasonEnd(){
     const playerRank=getRank(highestElo);
     const playerRankIdx=RANKS.indexOf(playerRank);
     // Rank rewards
+    const seasonNum=save.season||1;
     const rankRewards={
-      'Unranked':  {coins:25,  diamonds:15,  medal:'🔘',title:null,           skin:null,               border:null},
-      'Bronze':    {coins:50,  diamonds:30,  medal:'🥉',title:null,           skin:null,               border:'season_bronze_border'},
-      'Silver':    {coins:100, diamonds:60,  medal:'🥈',title:null,           skin:null,               border:'season_silver_border'},
-      'Gold':      {coins:200, diamonds:120, medal:'🥇',title:null,           skin:null,               border:'season_gold_border'},
-      'Platinum':  {coins:400, diamonds:250, medal:'💎',title:null,           skin:null,               border:'season_plat_border'},
-      'Diamond':   {coins:600, diamonds:400, medal:'💠',title:'Diamond Hands', skin:'season_diamond_skin',border:'season_diamond_border',effect:'season_diamond_fx'},
-      'Master':    {coins:800, diamonds:600, medal:'👑',title:'Grand Master',  skin:'season_master_skin', border:'season_master_border', effect:'season_master_fx'},
-      'Chromancer':{coins:1000,diamonds:900, medal:'🔮',title:'Chromatic God', skin:'season_chroma_skin',  border:'season_chroma_border', effect:'season_chroma_fx'},
+      'Unranked':  {coins:25,   diamonds:5,   medal:'🔘',title:null,          skin:null,                                    border:null,                    effect:null},
+      'Bronze':    {coins:50,   diamonds:10,  medal:'🥉',title:null,          skin:null,                                    border:null,                    effect:null},
+      'Silver':    {coins:100,  diamonds:25,  medal:'🥈',title:null,          skin:null,                                    border:null,                    effect:null},
+      'Gold':      {coins:200,  diamonds:50,  medal:'🥇',title:null,          skin:null,                                    border:'season_gold_border',    effect:null},
+      'Platinum':  {coins:400,  diamonds:100, medal:'💎',title:null,          skin:null,                                    border:'season_plat_border',    effect:null},
+      'Diamond':   {coins:600,  diamonds:150, medal:'💠',title:null,          skin:null,                                    border:'season_diamond_border', effect:'season_diamond_fx'},
+      'Master':    {coins:800,  diamonds:200, medal:'👑',title:null,          skin:null,                                    border:'season_master_border',  effect:'season_master_fx'},
+      'Chromancer':{coins:1000, diamonds:300, medal:'🔮',title:null,          skin:'season_chroma_s'+seasonNum,             border:'season_chroma_border',  effect:'season_chroma_fx'},
     };
     const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
     // Grant coins and diamonds
@@ -2513,7 +2515,8 @@ function checkSeasonEnd(){
     save.seasonStart=Date.now();
     save.seasonClaimed=false;
     save.seasonHighElo=save.elo;
-    saveProg();updateShopCurrency();
+    saveProg();
+    registerSeasonCosmetics();updateShopCurrency();
     showSeasonRewardPopup(playerRank,reward,skinsEarned,oldElo);
   }
   if(!save.seasonHighElo||save.elo>save.seasonHighElo){save.seasonHighElo=save.elo;saveProg();}
@@ -2779,6 +2782,44 @@ function checkTitleUnlocks(){
   });
 }
 
+function getSeasonPalette(seasonNum){
+  var palettes=[
+    {color:'#ffd166',rgb:'255,209,102'},{color:'#06d6a0',rgb:'6,214,160'},
+    {color:'#ef476f',rgb:'239,71,111'},{color:'#118ab2',rgb:'17,138,178'},
+    {color:'#8338ec',rgb:'131,56,236'},{color:'#ff9f1c',rgb:'255,159,28'},
+    {color:'#b9f2ff',rgb:'185,242,255'},{color:'#c084fc',rgb:'192,132,252'},
+    {color:'#00c8aa',rgb:'0,200,170'},{color:'#ff6b6b',rgb:'255,107,107'},
+    {color:'#4ecdc4',rgb:'78,205,196'},{color:'#ffe66d',rgb:'255,230,109'},
+  ];
+  return palettes[(seasonNum-1)%palettes.length];
+}
+function getSeasonBorderStyle(seasonNum,rank){
+  var p=getSeasonPalette(seasonNum);
+  var anims={Gold:'borderPulse 2s ease infinite',Platinum:'borderBreathe 2.5s ease infinite',Diamond:'borderPulse 1.5s ease infinite',Master:'borderRotate 4s linear infinite',Chromancer:'borderPulse 1.2s ease infinite,borderRotate 5s linear infinite'};
+  var widths={Gold:'2px',Platinum:'2px',Diamond:'3px',Master:'3px',Chromancer:'3px'};
+  return 'border:'+(widths[rank]||'2px')+' solid '+p.color+';box-shadow:0 0 14px rgba('+p.rgb+',0.8),0 0 28px rgba('+p.rgb+',0.3);animation:'+(anims[rank]||'borderPulse 2s ease infinite')+';--bc:'+p.rgb;
+}
+function shiftHue(hex,degrees){
+  var r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b2=parseInt(hex.slice(5,7),16)/255;
+  var max=Math.max(r,g,b2),min=Math.min(r,g,b2),h,s,l=(max+min)/2;
+  if(max===min){h=s=0;}else{var d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=(g-b2)/d+(g<b2?6:0);break;case g:h=(b2-r)/d+2;break;case b2:h=(r-g)/d+4;break;}h/=6;}
+  h=(h*360+degrees)%360/360;var q=l<0.5?l*(1+s):l+s-l*s,p2=2*l-q;
+  function hue2rgb(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+  return '#'+[hue2rgb(p2,q,h+1/3),hue2rgb(p2,q,h),hue2rgb(p2,q,h-1/3)].map(function(v){return Math.round(v*255).toString(16).padStart(2,'0')}).join('');
+}
+function registerSeasonCosmetics(){
+  var s=save.season||1;var p=getSeasonPalette(s);
+  var sBorders=[{id:'season_gold_border',rank:'Gold'},{id:'season_plat_border',rank:'Platinum'},{id:'season_diamond_border',rank:'Diamond'},{id:'season_master_border',rank:'Master'},{id:'season_chroma_border',rank:'Chromancer'}];
+  sBorders.forEach(function(sb){if(!SHOP_BORDERS.find(function(b){return b.id===sb.id;}))SHOP_BORDERS.push({id:sb.id,name:'Season '+s+' '+sb.rank+' Frame',price:0,currency:'season',preview:'🏆',seasonal:true,season:s});});
+  var sEffects=[{id:'season_diamond_fx',name:'Season '+s+' Diamond Aura'},{id:'season_master_fx',name:'Season '+s+' Master Surge'},{id:'season_chroma_fx',name:'Season '+s+' Chromancer Nova'}];
+  sEffects.forEach(function(se){if(!SHOP_EFFECTS.find(function(e){return e.id===se.id;}))SHOP_EFFECTS.push({id:se.id,name:se.name,desc:'Season '+s+' exclusive',price:0,currency:'season',preview:'✨',seasonal:true});});
+  var skinId='season_chroma_s'+s;
+  if(!SHOP_THEMES.find(function(t){return t.id===skinId;})){
+    var c=p.color;
+    var skinColors=['#000000',c,'#ffffff',shiftHue(c,60),shiftHue(c,120),shiftHue(c,180),shiftHue(c,240),shiftHue(c,300)];
+    SHOP_THEMES.push({tier:4,id:skinId,name:'Season '+s+' Chromancer',desc:'Season '+s+' exclusive — Chromancer only',preview:'🔮',colors:skinColors,symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],seasonal:true,season:s,currency:'season',price:0,hidden:false});
+  }
+}
 function getBorderStyle(){
   var b=save.equipped.border||'default';
   if(b==='flame')return 'border:2px solid #e94560;box-shadow:0 0 8px rgba(233,69,96,0.5),0 0 16px rgba(233,69,96,0.2)';
@@ -2812,11 +2853,11 @@ function getBorderStyle(){
   // Season exclusive borders
   if(b==='season_bronze_border')return 'border:3px solid #cd7f32;box-shadow:0 0 10px rgba(205,127,50,0.6),0 0 20px rgba(205,127,50,0.2);animation:borderPulse 2s ease infinite;--bc:205,127,50';
   if(b==='season_silver_border')return 'border:3px solid #c0c0c0;box-shadow:0 0 10px rgba(192,192,192,0.6),0 0 20px rgba(192,192,192,0.2);animation:borderPulse 2s ease infinite;--bc:192,192,192';
-  if(b==='season_gold_border')return 'border:3px solid #ffd700;box-shadow:0 0 12px rgba(255,215,0,0.7),0 0 24px rgba(255,215,0,0.3);animation:borderPulse 1.8s ease infinite;--bc:255,215,0';
-  if(b==='season_plat_border')return 'border:3px solid #00c8aa;box-shadow:0 0 14px rgba(0,200,170,0.8),0 0 28px rgba(0,180,150,0.4);animation:borderPulse 2s ease infinite;--bc:0,200,170';
-  if(b==='season_diamond_border')return 'border:3px solid #b9f2ff;box-shadow:0 0 14px rgba(185,242,255,0.8),0 0 28px rgba(0,200,255,0.4);animation:borderPulse 1.5s ease infinite;--bc:185,242,255';
-  if(b==='season_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8),0 0 32px rgba(120,0,255,0.3);animation:borderRotate 4s linear infinite';
-  if(b==='season_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(255,100,0,0.3),0 0 6px rgba(6,214,160,0.4);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
+  if(b==='season_gold_border')return getSeasonBorderStyle(save.season||1,'Gold');
+  if(b==='season_plat_border')return getSeasonBorderStyle(save.season||1,'Platinum');
+  if(b==='season_diamond_border')return getSeasonBorderStyle(save.season||1,'Diamond');
+  if(b==='season_master_border')return getSeasonBorderStyle(save.season||1,'Master');
+  if(b==='season_chroma_border')return getSeasonBorderStyle(save.season||1,'Chromancer');
   // Rank-up borders
   if(b==='rankup_bronze_border')return 'border:2px solid #cd7f32;box-shadow:0 0 8px rgba(205,127,50,0.5)';
   if(b==='rankup_silver_border')return 'border:2px solid #c0c0c0;box-shadow:0 0 8px rgba(192,192,192,0.5)';
@@ -3008,6 +3049,7 @@ function registerAchievementCosmetics(){
 }
 
 registerAchievementCosmetics();
+registerSeasonCosmetics();
 function grantAchievementReward(key){
   var r=ACHIEVEMENT_REWARDS[key];if(!r)return;
   if(r.type==='title'){
