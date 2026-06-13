@@ -459,32 +459,6 @@ body{display:flex;align-items:center;justify-content:center;
     <div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>Sound Effects</span><span id="volSfxPct">100%</span></div>
       <input type="range" min="0" max="100" value="100" id="volSfx" oninput="setVolume('sfx',this.value)" style="width:100%;accent-color:var(--c4)"></div>
   </div>
-  <div class="card" style="margin-bottom:8px">
-    <div id="adminSection" style="display:none">
-    <div style="font-size:12px;font-weight:800;margin-bottom:6px">🔒 Admin Panel</div>
-    <div style="font-size:9px;color:var(--muted);margin-bottom:6px">Developer tools — enter admin code to unlock</div>
-    <div style="display:none">
-      <input id="adminCode" type="password" placeholder="Admin code" style="flex:1;padding:6px;background:var(--dim);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;outline:none">
-      <button onclick="tryAdmin()" style="padding:6px 12px;background:var(--p1);border:none;border-radius:6px;color:#fff;font-size:10px;font-weight:700;cursor:pointer">Enter</button>
-    </div>
-    <div id="adminPanel" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-      <div style="font-size:10px;color:var(--p1);font-weight:700;margin-bottom:6px">✅ Admin Mode Active</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap">
-        <button onclick="adminGiveChromas()" class="btn" style="flex:none;padding:6px 10px;font-size:9px">+10K 💎</button>
-        
-        <button onclick="adminMaxLevel()" class="btn" style="flex:none;padding:6px 10px;font-size:9px">Max Level</button>
-        <button onclick="adminUnlockAll()" class="btn" style="flex:none;padding:6px 10px;font-size:9px">Unlock All</button>
-        <button onclick="adminGiveXP()" class="btn" style="flex:none;padding:6px 10px;font-size:9px">+5000 XP</button>
-        <button onclick="adminSetElo()" class="btn" style="flex:none;padding:6px 10px;font-size:9px">Set ELO 2800</button>
-      </div>
-      <div style="margin-top:6px;display:flex;gap:4px;align-items:center">
-        <span style="font-size:9px;color:var(--muted)">Custom 💎:</span>
-        <input id="adminChromaAmt" type="number" value="99999" style="width:70px;padding:4px;background:var(--dim);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:10px;outline:none">
-        <button onclick="save.chromas+=parseInt(document.getElementById('adminChromaAmt').value)||0;saveProg();updateAllUI()" class="btn" style="flex:none;padding:4px 8px;font-size:9px">Add</button>
-      </div>
-    </div>
-  </div>
-  </div>
   <button class="menu-btn secondary" style="margin-top:4px" onclick="resetAllProgress()">Reset Progress</button>
   <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
