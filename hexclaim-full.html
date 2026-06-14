@@ -2775,14 +2775,14 @@ const PROFILE_ICONS=[
   {id:'⬡',name:'Hexagon',achievement:'Default icon',unlocked:true},
   {id:'⚔️',name:'Swords',achievement:'Win 10 games'},
   {id:'🔮',name:'Crystal Ball',achievement:'Complete Chapter 2'},
-  {id:'🐉',name:'Dragon',achievement:'Reach Gold rank'},
+  {id:'🐉',name:'Dragon',achievement:'Win 25 games'},
   {id:'👹',name:'Oni',achievement:'Win 50 games'},
   {id:'🦊',name:'Fox',achievement:'Complete all Challenges'},
   {id:'💀',name:'Skull',achievement:'Win 10 VS AI on Hard+'},
   {id:'🌟',name:'Star',achievement:'Earn 30 total stars'},
-  {id:'🎭',name:'Mask',achievement:'Reach Diamond rank'},
-  {id:'🔱',name:'Trident',achievement:'Reach Master rank'},
-  {id:'👑',name:'Crown',achievement:'Reach Chromancer rank'},
+  {id:'🎭',name:'Mask',achievement:'Win 100 games'},
+  {id:'🔱',name:'Trident',achievement:'Complete all Campaign chapters'},
+  {id:'👑',name:'Crown',achievement:'Complete all Challenges'},
   {id:'🧊',name:'Ice',achievement:'Win 5 games in a row'},
   {id:'🎯',name:'Bullseye',achievement:'3-star every level in a chapter'},
   {id:'🌀',name:'Vortex',achievement:'Use 20 power-ups'},
@@ -2808,14 +2808,15 @@ function checkIconUnlocks(){
     var earned=false;
     if(icon.id==='⚔️'&&totalWins>=10)earned=true;
     if(icon.id==='🔮'&&ch2Done)earned=true;
-    if(icon.id==='🐉'&&rankIdx>=2)earned=true;
+    if(icon.id==='🐉'&&totalWins>=25)earned=true;
     if(icon.id==='👹'&&totalWins>=50)earned=true;
     if(icon.id==='🦊'&&allChallenges)earned=true;
     if(icon.id==='💀'&&hardWins>=10)earned=true;
     if(icon.id==='🌟'&&totalStars>=30)earned=true;
-    if(icon.id==='🎭'&&rankIdx>=4)earned=true;
-    if(icon.id==='🔱'&&rankIdx>=5)earned=true;
-    if(icon.id==='👑'&&rankIdx>=6)earned=true;
+    if(icon.id==='🎭'&&totalWins>=100)earned=true;
+    var allChapters=true;for(var cl=1;cl<=5;cl++){if(!save.cleared['ch4_'+cl])allChapters=false;}
+    if(icon.id==='🔱'&&allChapters)earned=true;
+    if(icon.id==='👑'&&allChallenges)earned=true;
     if(icon.id==='🧊'&&maxStreak>=5)earned=true;
     if(icon.id==='🎯'&&ch3Star)earned=true;
     if(icon.id==='🌀'&&powersUsed>=20)earned=true;
