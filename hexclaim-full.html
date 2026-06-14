@@ -1950,7 +1950,7 @@ function renderProfileTab(tab,externalCont){
     var r=getRank(save.elo);
     var preview=document.createElement('div');preview.className='card';preview.style.cssText='text-align:center;margin-bottom:6px;padding:16px';
     var borderName=SHOP_BORDERS.find(function(b){return b.id===save.equipped.border})||SHOP_BORDERS[0];
-    preview.innerHTML='<div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:var(--surface);font-size:32px;margin-bottom:6px;position:relative;overflow:visible;'+getBorderStyle()+'">'+(save.equipped.icon||'⬡')+'<div style="position:absolute;inset:0;pointer-events:none;overflow:visible">'+getBorderDecoHTML(64)+'</div></div>'
+    preview.innerHTML='<div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:var(--surface);font-size:32px;margin-bottom:6px;position:relative;overflow:visible;'+getBorderStyle().replace(/'/g,'"')+'">'+(save.equipped.icon||'⬡')+'<div style="position:absolute;inset:0;pointer-events:none;overflow:visible">'+getBorderDecoHTML(64)+'</div></div>'
       +'<div style="font-size:16px;font-weight:800">'+save.playerName+'</div>'
       +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'')+'</div>'
       +'<div style="font-size:9px;color:var(--c4);margin-top:2px">Border: '+borderName.name+'</div>'
@@ -2022,7 +2022,7 @@ function renderProfileTab(tab,externalCont){
 
   else if(tab==='owned'){
     // All owned skins grouped by type
-    var ownedThemes=SHOP_THEMES.filter(function(s){return ((s.price===0&&!s.achievement&&!s.hidden)||save.owned['theme_'+s.id])&&!s.hidden});
+    var ownedThemes=SHOP_THEMES.filter(function(s){return (s.price===0&&!s.achievement&&!s.hidden)&&!s.hidden});
     var seasonOwned=SEASONAL_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
     var limitedOwned=LIMITED_EDITION_POOL.filter(function(s){return s.type==='theme'&&save.owned['theme_'+s.id]});
     var challengeOwned=CHALLENGE_SKINS.filter(function(s){return save.owned['theme_'+s.id]}).concat(SHOP_THEMES.filter(function(s){return s.achievement&&s.hidden&&save.owned['theme_'+s.id]}));
