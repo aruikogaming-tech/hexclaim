@@ -2824,7 +2824,9 @@ function checkTitleUnlocks(){
     if(title.id==='Unstoppable'&&maxStreak>=5)earned=true;
     if(title.id==='Dominator'&&maxStreak>=10)earned=true;
     // Rank
-    if(title.id==='Gold Star'&&rankIdx>=2)earned=true;
+    if(title.id==='Bronze Edge'&&rankIdx>=1)earned=true;
+if(title.id==='Silver Blade'&&rankIdx>=2)earned=true;
+if(title.id==='Gold Star'&&rankIdx>=3)earned=true;
     if(title.id==='Platinum Elite'&&rankIdx>=3)earned=true;
     if(title.id==='Diamond Hands'&&rankIdx>=4)earned=true;
     if(title.id==='Grand Master'&&rankIdx>=5)earned=true;
@@ -3146,8 +3148,9 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
-  {id:'Chromancer',name:'Chromancer',achievement:'Default title',unlocked:true,color:'#ffd166',style:'gradient',glow:0},
-  {id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold',glow:0},
+  {id:'Bronze Edge',name:'Bronze Edge',achievement:'Reach Bronze rank',color:'#cd7f32',style:'bold',glow:0},
+{id:'Silver Blade',name:'Silver Blade',achievement:'Reach Silver rank',color:'#c0c0c0',style:'bold',glow:0},
+{id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold',glow:0},
   {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient',glow:0},
   {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient',glow:0},
   {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient',glow:0},
@@ -3744,8 +3747,8 @@ function checkRankUp(oldElo,newElo){
 
   // Rank-up rewards
   const rewards={
-    'Bronze':    {coins:100, chromas:10,  title:null,           skin:null,                    border:'rankup_bronze_border',  effect:null},
-    'Silver':    {coins:200, chromas:50,  title:null,           skin:null,                    border:'rankup_silver_border',  effect:null},
+    'Bronze':    {coins:100, chromas:10,  title:'Bronze Edge',       skin:null,                    border:'rankup_bronze_border',  effect:null},
+    'Silver':    {coins:200, chromas:50,  title:'Silver Blade',       skin:null,                    border:'rankup_silver_border',  effect:null},
     'Gold':      {coins:500, chromas:100, title:'Gold Star',    skin:null,                    border:'rankup_gold_border',    effect:null},
     'Platinum':  {coins:1000,chromas:200, title:'Platinum Elite',skin:null,                   border:'rankup_plat_border',    effect:null},
     'Diamond':   {coins:2000,chromas:350, title:'Diamond Hands',skin:'season_diamond_skin',   border:'rankup_diamond_border', effect:'season_diamond_fx'},
