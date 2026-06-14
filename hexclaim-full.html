@@ -2857,14 +2857,14 @@ function checkTitleUnlocks(){
     // Streak
     if(title.id==='Unstoppable'&&maxStreak>=5)earned=true;
     if(title.id==='Dominator'&&maxStreak>=10)earned=true;
-    // Rank
-    if(title.id==='Bronze Edge'&&rankIdx>=1)earned=true;
-    if(title.id==='Silver Blade'&&rankIdx>=2)earned=true;
-if(title.id==='Gold Star'&&rankIdx>=3)earned=true;
-    if(title.id==='Platinum Elite'&&rankIdx>=3)earned=true;
-    if(title.id==='Diamond Hands'&&rankIdx>=4)earned=true;
-    if(title.id==='Grand Master'&&rankIdx>=5)earned=true;
-    if(title.id==='Chromatic God'&&rankIdx>=6)earned=true;
+    // Gameplay titles
+    if(title.id==='Hex Rookie'&&(save.totalGames||0)+(save.pvpWins||0)+(save.pvpLosses||0)>=10)earned=true;
+    if(title.id==='Color Chaser'&&totalWins>=10)earned=true;
+    if(title.id==='Territory Lord'&&totalWins>=25)earned=true;
+    if(title.id==='Combo King'&&bestCombo>=5)earned=true;
+    if(title.id==='Board Breaker'&&save.best80pct)earned=true;
+    if(title.id==='Shade Slayer'&&hardWins>=1)earned=true;
+    if(title.id==='Hex Legend'&&ch4Done)earned=true;
     // Campaign
     if(title.id==='Explorer'&&ch1Done)earned=true;
     if(title.id==='Adventurer'&&ch2Done)earned=true;
@@ -3138,11 +3138,11 @@ const ACHIEVEMENT_REWARDS={
   'level_25': {type:'border', id:'achieve_level25', name:'Grinder Frame', desc:'Reach Level 25'},
   'level_50': {type:'border', id:'achieve_level50', name:'Veteran Frame', desc:'Reach Level 50'},
   // Rank → titles only
-  'rank_gold':      {type:'title', id:'Gold Star',       name:'Gold Star'},
-  'rank_platinum':  {type:'title', id:'Platinum Elite',  name:'Platinum Elite'},
-  'rank_diamond':   {type:'title', id:'Diamond Hands',   name:'Diamond Hands'},
-  'rank_master':    {type:'title', id:'Grand Master',    name:'Grand Master'},
-  'rank_chromancer':{type:'title', id:'Chromatic God',   name:'Chromatic God'},
+  'rank_gold':      null,
+  'rank_platinum':  null,
+  'rank_diamond':   null,
+  'rank_master':    null,
+  'rank_chromancer':null,
   // Challenge → titles only
   'challenge_perfect': {type:'title', id:'The Perfect',   name:'The Perfect'},
   'challenge_deathless':{type:'title',id:'Deathless',     name:'Deathless'},
@@ -3182,13 +3182,13 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
-  {id:'Bronze Edge',name:'Bronze Edge',achievement:'Reach Bronze rank',color:'#cd7f32',style:'bold',glow:0},
-{id:'Silver Blade',name:'Silver Blade',achievement:'Reach Silver rank',color:'#c0c0c0',style:'bold',glow:0},
-{id:'Gold Star',name:'Gold Star',achievement:'Reach Gold rank',color:'#ffd700',style:'bold',glow:0},
-  {id:'Platinum Elite',name:'Platinum Elite',achievement:'Reach Platinum rank',color:'#e5e4e2',style:'gradient',glow:0},
-  {id:'Diamond Hands',name:'Diamond Hands',achievement:'Reach Diamond rank',color:'#b9f2ff',style:'gradient',glow:0},
-  {id:'Grand Master',name:'Grand Master',achievement:'Reach Master rank',color:'#c084fc',style:'gradient',glow:0},
-  {id:'Chromatic God',name:'Chromatic God',achievement:'Reach Chromancer rank',color:'#ffd166',style:'rainbow',glow:4},
+  {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#06d6a0',style:'bold',glow:0},
+  {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
+  {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#ffd166',style:'bold',glow:0},
+  {id:'Combo King',name:'Combo King',achievement:'Get a 5× combo',color:'#ef476f',style:'bold',glow:0},
+  {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#8338ec',style:'gradient',glow:0},
+  {id:'Shade Slayer',name:'Shade Slayer',achievement:'Beat Hard AI',color:'#ff9f1c',style:'bold',glow:0},
+  {id:'Hex Legend',name:'Hex Legend',achievement:'Complete all Campaign chapters',color:'#ffd166',style:'rainbow',glow:2},
   {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#e94560',style:'gradient',font:'Archivo Black',glow:1},
   {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#9900ff',style:'rainbow',glow:2},
   {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#ff4400',style:'gradient',font:'Archivo Black',glow:3},
