@@ -631,7 +631,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   activeSkin:'default', // Currently active theme applied to game board
   // Monetization
   chromas:0, coins:0,
-  owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:'Chromancer'},
+  owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:''},
   bpPremium:false, bpLevel:0, bpXP:0, bpClaimed:{},
   powerStock:{bomb:2,scout:2,double:1,undo:1,reroll:1},
   dailyReward:0,
@@ -726,7 +726,7 @@ function resetAllProgress(){
         elo:0,totalGames:0,totalWins:0,pvpWins:0,pvpLosses:0,pvpStreak:0,bestStreak:0,
         cleared:{},stars:{},challengesDone:{},tutorialDone:false,
         chromas:0,coins:0,
-        owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:'Chromancer'},
+        owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:''},
         bpPremium:false,bpLevel:0,bpXP:0,bpClaimed:{},
         powerStock:{bomb:2,scout:2,double:1,undo:1,reroll:1},
         dailyReward:0,
@@ -1950,7 +1950,7 @@ function renderProfileTab(tab,externalCont){
     var borderName=SHOP_BORDERS.find(function(b){return b.id===save.equipped.border})||SHOP_BORDERS[0];
     preview.innerHTML='<div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:var(--surface);font-size:32px;margin-bottom:6px;position:relative;overflow:visible;'+getBorderStyle()+'">'+(save.equipped.icon||'⬡')+'<div style="position:absolute;inset:0;pointer-events:none;overflow:visible">'+getBorderDecoHTML(64)+'</div></div>'
       +'<div style="font-size:16px;font-weight:800">'+save.playerName+'</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'Chromancer')+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'')+'</div>'
       +'<div style="font-size:9px;color:var(--c4);margin-top:2px">Border: '+borderName.name+'</div>'
       +'<div style="font-size:10px;margin-top:4px;color:'+r.color+';font-weight:700">'+r.icon+' '+r.name+' — '+save.elo+' ELO</div>'
       +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>'
@@ -1974,7 +1974,7 @@ function renderProfileTab(tab,externalCont){
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Border</span><span style="font-weight:700">'+borderName.name+'</span></div>'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Effect</span><span style="font-weight:700">'+activeEffect.name+'</span></div>'
       +'<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Icon</span><span style="font-weight:700">'+(save.equipped.icon||'⬡')+'</span></div>'
-      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Title</span><span style="font-weight:700">'+(save.equipped.title||'Chromancer')+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Title</span><span style="font-weight:700">'+(save.equipped.title||'')+'</span></div>'
       +'</div>';
     cont.appendChild(eqCard);
 
@@ -4526,7 +4526,7 @@ function buildRankScreen(){
       <div style="width:52px;height:52px;border-radius:12px;background:var(--surface);border:2px solid var(--p1);display:flex;align-items:center;justify-content:center;font-size:26px">${save.equipped.icon||save.portrait||'⬡'}</div>
       <div style="flex:1">
         <div style="font-size:15px;font-weight:800">${save.playerName}</div>
-        <div style="font-size:10px;color:var(--gold);font-weight:700">${save.equipped.title||'Chromancer'}</div>
+        <div style="font-size:10px;color:var(--gold);font-weight:700">${save.equipped.title||''}</div>
         <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
           <span style="font-size:10px;color:var(--p1);font-weight:700">Lv.${save.profileLevel}</span>
           <div style="flex:1;height:4px;background:var(--dim);border-radius:2px;overflow:hidden"><div style="height:100%;background:var(--p1);width:${xpPct}%;border-radius:2px"></div></div>
@@ -4590,7 +4590,7 @@ function showRankTab(tab,btn){
     var borderName=SHOP_BORDERS.find(function(b){return b.id===save.equipped.border})||SHOP_BORDERS[0];
     preview.innerHTML='<div style="display:inline-flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:var(--surface);font-size:32px;margin-bottom:6px;position:relative;overflow:visible;'+getBorderStyle()+'">'+(save.equipped.icon||'⬡')+'<div style="position:absolute;inset:0;pointer-events:none;overflow:visible">'+getBorderDecoHTML(64)+'</div></div>'
       +'<div style="font-size:16px;font-weight:800">'+save.playerName+'</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'Chromancer')+'</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+(save.equipped.title||'')+'</div>'
       +'<div style="font-size:9px;color:var(--c4);margin-top:2px">Border: '+borderName.name+'</div>'
       +'<div style="font-size:10px;margin-top:4px;color:'+r.color+';font-weight:700">'+r.icon+' '+r.name+' — '+save.elo+' ELO</div>'
       +'<div style="font-size:10px;color:var(--p1);margin-top:2px;font-weight:700">Level '+save.profileLevel+'</div>'
