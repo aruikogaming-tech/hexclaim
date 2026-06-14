@@ -4697,15 +4697,17 @@ function showRankTab(tab,btn){
     wrap.appendChild(header);
 
     var rankRewardDefs={
-      'Unranked':  {coins:25,  diamonds:15,  medal:'🔘',title:null,           skin:null,             border:null},
-      'Bronze':    {coins:50,  diamonds:30,  medal:'🥉',title:null,           skin:null,             border:'Season Border'},
-      'Silver':    {coins:100, diamonds:60,  medal:'🥈',title:null,           skin:null,             border:'Season Border'},
-      'Gold':      {coins:200, diamonds:120, medal:'🥇',title:null,           skin:null,             border:'Season Border'},
-      'Platinum':  {coins:400, diamonds:250, medal:'💎',title:null,           skin:null,             border:'Season Border'},
-      'Diamond':   {coins:600, diamonds:400, medal:'💠',title:'Diamond Hands',skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
-      'Master':    {coins:800, diamonds:600, medal:'👑',title:'Grand Master', skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
-      'Chromancer':{coins:1000,diamonds:900, medal:'🔮',title:'Chromatic God',skin:'Exclusive Skin', border:'Season Border',effect:'Exclusive Effect'},
+      'Unranked':  {coins:50,   diamonds:10,  medal:'🔘',titleSuffix:null,                  border:false,icon:false},
+      'Bronze':    {coins:100,  diamonds:25,  medal:'🥉',titleSuffix:'Bronze Learner',      border:true, icon:true},
+      'Silver':    {coins:200,  diamonds:50,  medal:'🥈',titleSuffix:'Silver Starter',      border:true, icon:true},
+      'Gold':      {coins:400,  diamonds:100, medal:'🥇',titleSuffix:'Gold Average',        border:true, icon:true},
+      'Platinum':  {coins:600,  diamonds:200, medal:'💎',titleSuffix:'Platinum Superior',   border:true, icon:true},
+      'Diamond':   {coins:800,  diamonds:350, medal:'💠',titleSuffix:'Diamond Elite',       border:true, icon:true},
+      'Master':    {coins:1000, diamonds:500, medal:'👑',titleSuffix:'Master Tryhard',      border:true, icon:true},
+      'Chromancer':{coins:1500, diamonds:1000,medal:'🔮',titleSuffix:'Chromancer Legend',   border:true, icon:true},
     };
+    var seasonNum=save.season||1;
+    var nextSeason=seasonNum+1;
     RANKS.forEach(function(rank){
       var rdef=rankRewardDefs[rank.name];if(!rdef)return;
       var rankIdx=RANKS.indexOf(rank);
@@ -4713,14 +4715,11 @@ function showRankTab(tab,btn){
       var el=document.createElement('div');
       el.style.cssText='background:var(--surface);border:1px solid '+(willEarn?rank.color:'var(--border)')+';border-radius:12px;padding:12px;margin-bottom:6px;opacity:'+(willEarn?'1':'0.45');
       var rewardItems='';
-      rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">'+rdef.medal+' Medal</span> ';
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--gold)">🟡 +'+rdef.coins+'</span> ';
       rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--diamond)">💎 +'+rdef.diamonds+'</span> ';
-      if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏅 '+rdef.title+'</span> ';
-      if(rdef.skin)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--p1)">🎨 Exclusive Skin</span> ';
-      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 Exclusive Border</span> ';
-      if(rdef.effect)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">✨ Exclusive Effect</span> ';
-      if(rdef.title)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏷 '+rdef.title+'</span> ';
+      if(rdef.titleSuffix)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c3)">🏅 S'+seasonNum+' '+rdef.titleSuffix+' (permanent)</span> ';
+      if(rdef.border)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">🖼 Season '+seasonNum+' Border (until S'+nextSeason+' end)</span> ';
+      if(rdef.icon)rewardItems+='<span style="font-size:11px;font-weight:800;color:var(--c2)">😎 Season '+seasonNum+' Icon (until S'+nextSeason+' end)</span> ';
       el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
         +'<div style="font-size:13px;font-weight:800;color:'+rank.color+'">'+rank.icon+' '+rank.name+'</div>'
         +(willEarn?'<div style="font-size:9px;color:var(--p1);font-weight:700">✓ You will earn this</div>':'<div style="font-size:9px;color:var(--muted)">'+rank.min+' ELO needed</div>')
