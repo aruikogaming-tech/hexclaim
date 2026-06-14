@@ -2848,16 +2848,7 @@ function checkTitleUnlocks(){
   SHOP_TITLES.forEach(function(title){
     if(title.unlocked||save.owned['title_'+title.id])return;
     var earned=false;
-    // Win milestones
-    if(title.id==='Rookie'&&totalWins>=1)earned=true;
-    if(title.id==='Contender'&&totalWins>=10)earned=true;
-    if(title.id==='Veteran'&&totalWins>=25)earned=true;
-    if(title.id==='Warrior'&&totalWins>=50)earned=true;
-    if(title.id==='Champion'&&totalWins>=100)earned=true;
-    if(title.id==='Legend'&&totalWins>=200)earned=true;
-    // Streak
-    if(title.id==='Unstoppable'&&maxStreak>=5)earned=true;
-    if(title.id==='Dominator'&&maxStreak>=10)earned=true;
+   
     // Gameplay titles
     if(title.id==='Hex Rookie'&&(save.totalGames||0)+(save.pvpWins||0)+(save.pvpLosses||0)>=10)earned=true;
     if(title.id==='Color Chaser'&&totalWins>=10)earned=true;
@@ -2866,27 +2857,7 @@ function checkTitleUnlocks(){
     if(title.id==='Board Breaker'&&save.best80pct)earned=true;
     if(title.id==='Shade Slayer'&&hardWins>=1)earned=true;
     if(title.id==='Hex Legend'&&ch4Done)earned=true;
-    // Campaign
-    if(title.id==='Explorer'&&ch1Done)earned=true;
-    if(title.id==='Adventurer'&&ch2Done)earned=true;
-    if(title.id==='Conqueror'&&ch3Done)earned=true;
-    if(title.id==='Warlord'&&ch4Done)earned=true;
-    if(title.id==='Star Collector'&&totalStars>=30)earned=true;
-    if(title.id==='Perfectionist'&&ch3Star)earned=true;
-    // VS AI
-    if(title.id==='AI Slayer'&&hardWins>=10)earned=true;
-    if(title.id==='Machine Breaker'&&beatImpossible)earned=true;
-    // Combo/tiles
-    if(title.id==='Combo King'&&bestCombo>=5)earned=true;
-    if(title.id==='Color Master'&&totalTiles>=1000)earned=true;
-    // Level
-    if(title.id==='Grinder'&&save.profileLevel>=25)earned=true;
-    if(title.id==='No Life'&&save.profileLevel>=50)earned=true;
-    // Special
-    if(title.id==='Shade Slayer'&&save.best90pct)earned=true;
-    if(title.id==='Hex Overlord'&&allChallenges)earned=true;
-    if(title.id==='Prism Phantom'&&totalOwned>=10)earned=true;
-    if(title.id==='Lucky Star'&&save.wonJackpot)earned=true;
+    
     // Challenge titles — unlocked via challenge completion
     if(title.id==='The Perfect'&&save.challengesDone[16])earned=true;
     if(title.id==='Deathless'&&save.challengesDone[17])earned=true;
