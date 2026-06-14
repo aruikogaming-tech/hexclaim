@@ -1927,7 +1927,7 @@ function startCustomLocalPVP(){
 // ===== PROFILE SCREEN =====
 function buildProfileScreen(){
   var tabs=document.getElementById('profileTabs');tabs.innerHTML='';
-  ['Equipped','Owned'].forEach(function(t,i){
+  ['Equipped'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
     btn.textContent=t;
     btn.onclick=function(){
