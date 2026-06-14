@@ -6606,8 +6606,8 @@ function checkEnd(){
   lastP1Count=p1raw;lastP2Count=p2raw;
   if(stalemateTurns>=14){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
-  if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n;reason='Board fully claimed'}
-  if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;won=p1n>p2n;reason='Moves exhausted'}
+  if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
+  if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;const reqPct2=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct2;reason='Moves exhausted'}
   if(!ended)return false;
 
   gameOver=true;
