@@ -6776,10 +6776,8 @@ checkQuestResets();
 initFirebase();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
-if(save.isGuest&&!save.tutorialDone&&save.totalGames===0&&save.playerName==='Player'){
+if(save.playerName==='Player'&&save.totalGames===0){
   showNameEntryPopup();
-} else if(save.isGuest&&!save.tutorialDone&&save.totalGames===0){
-  showScreen('loginScreen');
 }
 
 function showNameEntryPopup(){
