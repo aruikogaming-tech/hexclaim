@@ -2729,14 +2729,14 @@ const SHOP_EFFECTS=[
 const LIMITED_EDITION_POOL=[
   // ===== THEMES (18 total) =====
   {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Dark throne of hellfire obsidian',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#0a0005','#880022','#440011','#cc0044','#660033','#330011','#aa0033','#220008'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
-  {type:'theme',id:'le_arctic',name:'Arctic Phantom',desc:'LIMITED — Frozen ghost realm',price:1200,currency:'chromas',preview:'🥶',tier:4,colors:['#080808','#333344','#555566','#888899','#222233','#444455','#111122','#aaaaaa'],symbols:['❋','❆','✧','◈','✵','◇','❅','✦']},
+  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#060600','#887700','#665500','#bbaa00','#443300','#998800','#221100','#ddcc44'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
   {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
   {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
   {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
   {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#0a0800','#ffd700','#ffaa00','#ffee44','#cc8800','#ffcc00','#ff9900','#eecc44'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
   {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#000a05','#aaff00','#88cc00','#ccff44','#669900','#bbee22','#446600','#eeff88'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
   {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Eclipse of silver and shadow',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#050010','#9966cc','#cc99ff','#6633aa','#440088','#bb77ee','#330066','#eeccff'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
-  {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1300,currency:'chromas',preview:'🌞',tier:4,colors:['#0a0500','#ffdd00','#ff6600','#ff9900','#ffbb00','#ff4400','#ffee44','#cc5500'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
+  {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1300,currency:'chromas',preview:'🌞',tier:4,colors:['#05000f','#4400cc','#6600ff','#2200aa','#8833ff','#330099','#aa66ff','#110055'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
   {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1200,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
   {type:'theme',id:'le_vaporwave',name:'Vaporwave Dream',desc:'LIMITED — Retro aesthetic overload',price:1300,currency:'chromas',preview:'🌴',tier:3,colors:['#0a0014','#ff71ce','#01cdfe','#05ffa1','#b967ff','#fffb96','#ff6b6b','#8ec5fc'],symbols:['◆','▲','◇','✦','⬡','●','✧','⊕']},
   {type:'theme',id:'le_steampunk',name:'Steampunk Engine',desc:'LIMITED — Brass gears and copper pipes',price:1400,currency:'chromas',preview:'⚙️',tier:3,colors:['#0a0800','#b87333','#cd7f32','#daa520','#8b6914','#a0522d','#c49e6e','#e8c874'],symbols:['⚙','⊕','◈','✦','⬢','◆','⊛','⬡']},
@@ -2941,7 +2941,7 @@ function getBorderStyle(){
   if(b==='rainbow')return 'border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 2px var(--p1),0 0 8px rgba(6,214,160,0.3)';
   if(b==='shadow')return 'border:2px solid #6c757d;box-shadow:0 0 12px rgba(0,0,0,0.8),0 0 4px rgba(108,117,125,0.5)';
   if(b==='frost')return 'border:2px solid #ffaa88;box-shadow:0 0 10px rgba(255,170,136,0.6),0 0 20px rgba(255,170,136,0.2)';
-  if(b==='diamond')return 'border:3px solid #b9f2ff;box-shadow:0 0 12px rgba(185,242,255,0.6),0 0 24px rgba(185,242,255,0.3)';
+  if(b==='diamond')return 'border:3px solid #0099ff;box-shadow:0 0 12px rgba(0,153,255,0.6),0 0 24px rgba(0,153,255,0.3)';
   if(b==='toxic_border')return 'border:2px solid #00ff00;box-shadow:0 0 10px rgba(0,255,0,0.5),0 0 20px rgba(0,255,0,0.2);animation:borderPulse 2s ease infinite;--bc:0,255,0';
   if(b==='blood_border')return 'border:3px solid #cc0000;box-shadow:0 0 12px rgba(204,0,0,0.6),0 0 20px rgba(204,0,0,0.3);animation:borderFlicker 1.5s ease infinite';
   if(b==='neon_pulse')return 'border:3px solid #bb44ff;box-shadow:0 0 14px rgba(187,68,255,0.7),0 0 28px rgba(187,68,255,0.3);animation:borderPulse 1.8s ease infinite;--bc:187,68,255';
@@ -2949,21 +2949,21 @@ function getBorderStyle(){
   if(b==='dragon_border')return 'border:3px solid #ff4400;box-shadow:0 0 16px rgba(255,68,0,0.7),0 0 32px rgba(255,170,0,0.3),inset 0 0 8px rgba(255,100,0,0.2);animation:borderOrbit 2s linear infinite;--bc:255,68,0';
   if(b==='void_border')return 'border:3px solid #3300cc;box-shadow:0 0 18px rgba(51,0,204,0.9),0 0 36px rgba(0,0,80,0.6),0 0 6px rgba(0,0,255,0.3);animation:borderBreathe 3s ease infinite';
   if(b==='divine_border')return 'border:3px solid #ffd700;box-shadow:0 0 20px rgba(255,215,0,0.8),0 0 40px rgba(255,215,0,0.3),0 0 8px rgba(255,255,255,0.5);animation:borderPulse 2.5s ease infinite,borderRotate 6s linear infinite;--bc:255,215,0';
-  if(b==='crystal_border')return 'border:2px solid #00cccc;box-shadow:0 0 10px rgba(0,204,204,0.5),0 0 20px rgba(0,204,204,0.2)';
+  if(b==='crystal_border')return 'border:2px solid #996600;box-shadow:0 0 10px rgba(153,102,0,0.5),0 0 20px rgba(153,102,0,0.2)';
   if(b==='magma_border')return 'border:3px solid #cc00ff;box-shadow:0 0 12px rgba(204,0,255,0.6),0 0 24px rgba(100,0,200,0.3);animation:borderPulse 2s ease infinite;--bc:204,0,255';
   if(b==='thunder_border')return 'border:3px solid #00bbff;box-shadow:0 0 14px rgba(0,187,255,0.6),0 0 28px rgba(0,187,255,0.2);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
   if(b==='storm_border')return 'border:3px solid #00ff88;box-shadow:0 0 14px rgba(0,255,136,0.7),0 0 28px rgba(0,200,100,0.3);animation:borderFlicker 0.5s ease infinite';
   if(b==='abyssal_border')return 'border:3px solid #006699;box-shadow:0 0 14px rgba(0,102,153,0.7),0 0 28px rgba(0,50,100,0.5);animation:borderBreathe 4s ease infinite';
   // Limited edition borders
-  if(b==='le_phoenix')return 'border:3px solid #ff2200;box-shadow:0 0 16px rgba(255,34,0,0.8),0 0 32px rgba(255,100,0,0.3);animation:borderFlicker 0.6s ease infinite';
+  if(b==='le_phoenix')return 'border:3px solid #5500cc;box-shadow:0 0 16px rgba(85,0,204,0.8),0 0 32px rgba(60,0,150,0.3);animation:borderFlicker 0.6s ease infinite';
   if(b==='le_frost_crown')return 'border:3px solid #ff88bb;box-shadow:0 0 14px rgba(255,136,187,0.7),0 0 28px rgba(255,100,150,0.3),0 0 6px rgba(255,200,220,0.4);animation:borderBreathe 3s ease infinite';
   if(b==='le_shadow_claw')return 'border:3px solid #443366;box-shadow:0 0 18px rgba(0,0,0,0.9),0 0 8px rgba(68,51,102,0.6);animation:borderBreathe 2.5s ease infinite';
   if(b==='le_rainbow_ring')return 'border:3px solid #ff4488;box-shadow:0 0 10px rgba(255,68,136,0.5),0 0 20px rgba(68,136,255,0.4),0 0 30px rgba(68,255,136,0.3);animation:borderRotate 3s linear infinite';
-  if(b==='le_dragon_scale')return 'border:3px solid #cc5500;box-shadow:0 0 14px rgba(204,85,0,0.7),0 0 28px rgba(150,50,0,0.3),inset 0 0 6px rgba(200,80,0,0.2);animation:borderPulse 2s ease infinite;--bc:204,85,0';
+  if(b==='le_dragon_scale')return 'border:3px solid #33ddaa;box-shadow:0 0 14px rgba(51,221,170,0.7),0 0 28px rgba(30,180,130,0.3),inset 0 0 6px rgba(50,220,160,0.2);animation:borderPulse 2s ease infinite;--bc:51,221,170';
   if(b==='le_void_rift')return 'border:3px solid #aaff00;box-shadow:0 0 18px rgba(170,255,0,0.8),0 0 36px rgba(100,200,0,0.4),0 0 6px rgba(255,255,0,0.3);animation:borderFlicker 0.3s ease infinite';
-  if(b==='le_crown_jewel')return 'border:3px solid #00eeff;box-shadow:0 0 16px rgba(0,238,255,0.8),0 0 32px rgba(0,180,220,0.4),0 0 6px rgba(0,255,255,0.3);animation:borderPulse 2.5s ease infinite;--bc:0,238,255';
-  if(b==='le_sakura_frame')return 'border:3px solid #cc88ff;box-shadow:0 0 12px rgba(204,136,255,0.6),0 0 24px rgba(180,100,255,0.2);animation:borderBreathe 3s ease infinite';
+  if(b==='le_crown_jewel')return 'border:3px solid #55ff00;box-shadow:0 0 16px rgba(85,255,0,0.8),0 0 32px rgba(60,200,0,0.4),0 0 6px rgba(100,255,0,0.3);animation:borderPulse 2.5s ease infinite;--bc:85,255,0';
+  if(b==='le_sakura_frame')return 'border:3px solid #aa5500;box-shadow:0 0 12px rgba(170,85,0,0.6),0 0 24px rgba(130,60,0,0.2);animation:borderBreathe 3s ease infinite';
   // Season exclusive borders
   if(b==='season_bronze_border')return 'border:3px solid #cd7f32;box-shadow:0 0 10px rgba(205,127,50,0.6),0 0 20px rgba(205,127,50,0.2);animation:borderPulse 2s ease infinite;--bc:205,127,50';
   if(b==='season_silver_border')return 'border:3px solid #c0c0c0;box-shadow:0 0 10px rgba(192,192,192,0.6),0 0 20px rgba(192,192,192,0.2);animation:borderPulse 2s ease infinite;--bc:192,192,192';
@@ -2994,7 +2994,7 @@ function getBorderStyle(){
   if(b==='achieve_ch3')return 'border:2px solid #ff9f1c;box-shadow:0 0 10px rgba(255,159,28,0.6)';
   if(b==='achieve_ch4')return 'border:2px solid #ef476f;box-shadow:0 0 12px rgba(239,71,111,0.6);animation:borderPulse 2s ease infinite;--bc:239,71,111';
   if(b==='achieve_vsai_hard')return 'border:2px solid #ff8800;box-shadow:0 0 10px rgba(255,136,0,0.6);animation:borderBreathe 2.5s ease infinite';
-  if(b==='achieve_vsai_insane')return 'border:3px solid #aa00ff;box-shadow:0 0 14px rgba(170,0,255,0.8);animation:borderPulse 1.5s ease infinite;--bc:170,0,255';
+  if(b==='achieve_vsai_insane')return 'border:3px solid #dd0099;box-shadow:0 0 14px rgba(221,0,153,0.8);animation:borderPulse 1.5s ease infinite;--bc:221,0,153';
   if(b==='achieve_level25')return 'border:2px solid #88ff00;box-shadow:0 0 8px rgba(136,255,0,0.6);animation:borderBreathe 3s ease infinite';
   if(b==='achieve_level50')return 'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7);animation:borderPulse 2s ease infinite;--bc:131,56,236';
   return 'border:2px solid var(--p1)';
@@ -3065,7 +3065,7 @@ function getBorderDecoHTML(size){
       html+='<div style="position:absolute;width:3px;height:3px;border-radius:50%;background:#ffd700;box-shadow:0 0 4px #ffd700;top:50%;left:50%;margin-top:-1.5px;margin-left:-1.5px;transform:rotate('+angle+'deg) translateY(-'+(s/2+10)+'px);animation:borderPulse '+(1.5+i*0.2)+'s ease infinite '+(i*0.15)+'s;--bc:255,215,0"></div>';
     }
   }
-  if(b==='crystal_border')return 'border:2px solid #00cccc;box-shadow:0 0 10px rgba(0,204,204,0.5),0 0 20px rgba(0,204,204,0.2)';
+  if(b==='crystal_border')return 'border:2px solid #996600;box-shadow:0 0 10px rgba(153,102,0,0.5),0 0 20px rgba(153,102,0,0.2)';
   if(b==='magma_border')return 'border:3px solid #cc00ff;box-shadow:0 0 12px rgba(204,0,255,0.6),0 0 24px rgba(100,0,200,0.3);animation:borderPulse 2s ease infinite;--bc:204,0,255';
   if(b==='thunder_border')return 'border:3px solid #00bbff;box-shadow:0 0 14px rgba(0,187,255,0.6),0 0 28px rgba(0,187,255,0.2);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
