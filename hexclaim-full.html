@@ -3384,10 +3384,9 @@ function renderShopTab(tab){
       {name:'Chromancer',icon:'🔮',color:'#ffd166',items:allSkins.filter(function(s){return s.rankReq==='Chromancer'})},
     ];
     function renderSkinItem(item){
-      var owned=item.price===0||save.owned['theme_'+item.id];
+      var owned=(item.price===0&&!item.achievement)||save.owned['theme_'+item.id];
       var isActive=save.activeSkin===item.id;
-      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')||(item.achievement&&!save.owned['theme_'+item.id]?'Complete the challenge to unlock':'');
-      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')||(item.achievement&&!save.owned['theme_'+item.id]?'Complete the challenge to unlock':'');
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.achievement&&!save.owned['theme_'+item.id]);
       var el=document.createElement('div');el.className='shop-item';
       if(rankLocked){
         el.style.opacity='0.4';
