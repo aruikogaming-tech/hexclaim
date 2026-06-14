@@ -341,7 +341,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
   </div>
 
   <!-- ELO badge -->
-  <div class="rank-badge-big" id="menuRankBadge" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin:4px 0"></div>
+  <div class="rank-badge-big" id="menuRankBadge" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin:4px 0;min-height:80px"></div>
   
  <!-- Main action buttons -->
   <button class="menu-btn ranked" id="pvpBtn" style="opacity:0.4;pointer-events:none;position:relative" disabled>⚔ Ranked PVP <span style="font-size:8px;background:var(--gold);color:#0d0b14;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:800">COMING SOON</span></button>
@@ -603,7 +603,7 @@ window.onunhandledrejection=function(e){
 };
 // ===== RANK SYSTEM =====
 const RANKS=[
-  {name:'Unranked',icon:'🔘',color:'var(--muted)',min:0,max:399},
+  {name:'Unranked',icon:'⬡',color:'var(--muted)',min:0,max:399},
   {name:'Bronze',icon:'🥉',color:'var(--bronze)',min:400,max:799},
   {name:'Silver',icon:'🥈',color:'var(--silver)',min:800,max:1299},
   {name:'Gold',icon:'🥇',color:'var(--gold)',min:1300,max:1899},
