@@ -2496,10 +2496,10 @@ const SHOP_THEMES=[
   {tier:2,id:'blood',name:'Bloodmoon',desc:'Dark crimson shadow ritual',price:3500,currency:'coins',preview:'🩸',colors:['#0a0000','#cc0000','#ff3333','#ff6644','#880044','#ff0088','#ff8800','#440022'],symbols:['☽','✠','◆','❖','✟','◇','☾','✝']},
   {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:8000,req:'win100ch2',reqDesc:'Win 100 games & Complete Chapter 2',currency:'coins',preview:'🪩',colors:['#0a0a1a','#dd66aa','#44cccc','#ccaa44','#6688dd','#cc6633','#8866dd','#44aa66'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
   {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,req:'3star_ch3',reqDesc:'3-star every level in Chapter 3',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
-  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
+  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000a05','#004422','#228800','#44dd00','#116600','#66ff00','#003311','#aaff44'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
   {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,req:'all_legendary',reqDesc:'Complete all Legendary Challenges',currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶']},
-  {tier:4,id:'void_nexus',name:'Void Nexus',desc:'Level 200 exclusive — cosmic void energy',price:0,currency:'free',preview:'🌑',achievement:true,hidden:true,colors:['#000000','#1a0033','#2d0066','#440099','#5500bb','#6600dd','#330066','#220044'],symbols:['⊘','☠','✦','∞','⊛','◈','⊕','💀']},
-  {tier:4,id:'solar_crown',name:'Solar Crown',desc:'Level 500 exclusive — blazing solar glory',price:0,currency:'free',preview:'👑',achievement:true,hidden:true,colors:['#0a0500','#ff8800','#ffcc00','#ff4400','#ffee00','#ff6600','#cc3300','#ffaa00'],symbols:['👑','✦','★','⊛','◈','⊕','✧','☆']},
+  {tier:4,id:'void_nexus',name:'Void Nexus',desc:'Level 200 exclusive — dimensional rift energy',price:0,currency:'free',preview:'🌑',achievement:true,hidden:true,colors:['#000a08','#003322','#004433','#006655','#008866','#00aa88','#002211','#001108'],symbols:['⊘','⌬','✦','∞','⊛','◈','⊕','⌁']},
+  {tier:4,id:'solar_crown',name:'Solar Crown',desc:'Level 500 exclusive — blazing solar glory',price:0,currency:'free',preview:'👑',achievement:true,hidden:true,colors:['#0a0500','#ff2200','#ffcc00','#ff0000','#ff4400','#cc0000','#ff8800','#ff5500'],symbols:['👑','✦','★','⊛','◈','⊕','✧','☆']},
   {tier:4,id:'celestial_ascension',name:'Celestial Ascension',desc:'Level 999 exclusive — the ultimate prestige skin',price:0,currency:'free',preview:'✨',achievement:true,hidden:true,colors:['#ffffff','#ffd700','#ff69b4','#00ffff','#ff4500','#7fff00','#9400d3','#ffd166'],symbols:['✨','🌟','⊛','✦','◈','⊕','★','💫']},
   {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'consistent25',reqDesc:'Win 25 games without losing 3 in a row',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
@@ -2521,7 +2521,7 @@ const CHALLENGE_SKINS=[
    colors:['#000810','#0088ff','#4444cc','#00ccff','#8866ff','#0044aa','#22aaff','#6644dd'],
    symbols:['⚡','◎','▽','✧','◈','△','≋','⌇']},
   {id:'ch_shadow',name:'Shadow Walker',desc:'🏆 Challenge: Shadow Walk',preview:'🌑',tier:2,
-   colors:['#050508','#445566','#667788','#8899aa','#334455','#556677','#778899','#aabbcc'],
+   colors:['#020408','#0a1a2a','#1a3344','#2a4455','#0d2233','#3a5566','#153344','#4a6677'],
    symbols:['◇','◎','▽','✧','◈','△','○','◆']},
   {id:'ch_prism',name:'Prism Core',desc:'🏆 Challenge: Prism Break',preview:'🔷',tier:2,
    colors:['#0a0015','#ff00ff','#00ffff','#ffff00','#ff0088','#0088ff','#88ff00','#ff8800'],
@@ -2728,24 +2728,24 @@ const SHOP_EFFECTS=[
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
 const LIMITED_EDITION_POOL=[
   // ===== THEMES (18 total) =====
-  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Burning throne of fire',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#0a0000','#ff2200','#ff6600','#ffcc00','#ff0044','#cc0000','#ff8800','#aa0000'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
+  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Dark throne of hellfire obsidian',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#0a0005','#880022','#440011','#cc0044','#660033','#330011','#aa0033','#220008'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
   {type:'theme',id:'le_arctic',name:'Arctic Phantom',desc:'LIMITED — Frozen ghost realm',price:1200,currency:'chromas',preview:'🥶',tier:4,colors:['#000818','#aaddff','#4488cc','#bbeeff','#6699bb','#224466','#88bbdd','#ccddff'],symbols:['❋','❆','✧','◈','✵','◇','❅','✦']},
   {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
   {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
   {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
   {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#0a0800','#ffd700','#ffaa00','#ffee44','#cc8800','#ffcc00','#ff9900','#eecc44'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
-  {type:'theme',id:'le_deep_ocean',name:'Deep Ocean',desc:'LIMITED — Abyssal depths of the sea',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#000a14','#003366','#006699','#0088bb','#00aadd','#004488','#0066aa','#002255'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
-  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Crimson eclipse rising',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#0a0000','#880000','#cc0022','#ff2244','#aa0011','#660000','#dd1133','#ff4466'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
-  {type:'theme',id:'le_aurora',name:'Aurora Borealis',desc:'LIMITED — Northern lights dancing',price:1300,currency:'chromas',preview:'🌌',tier:4,colors:['#000810','#00ff88','#4488ff','#ff44aa','#44ffcc','#8844ff','#00ccff','#ff8844'],symbols:['✵','⊹','✧','◈','⋆','✶','◇','❖']},
+  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#000508','#003322','#00ffcc','#006644','#00eebb','#004433','#00ddaa','#002211'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
+  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Eclipse of silver and shadow',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#050010','#9966cc','#cc99ff','#6633aa','#440088','#bb77ee','#330066','#eeccff'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
+  {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1300,currency:'chromas',preview:'🌞',tier:4,colors:['#0a0500','#ffdd00','#ff6600','#ff9900','#ffbb00','#ff4400','#ffee44','#cc5500'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
   {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1200,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
   {type:'theme',id:'le_vaporwave',name:'Vaporwave Dream',desc:'LIMITED — Retro aesthetic overload',price:1300,currency:'chromas',preview:'🌴',tier:3,colors:['#0a0014','#ff71ce','#01cdfe','#05ffa1','#b967ff','#fffb96','#ff6b6b','#8ec5fc'],symbols:['◆','▲','◇','✦','⬡','●','✧','⊕']},
   {type:'theme',id:'le_steampunk',name:'Steampunk Engine',desc:'LIMITED — Brass gears and copper pipes',price:1400,currency:'chromas',preview:'⚙️',tier:3,colors:['#0a0800','#b87333','#cd7f32','#daa520','#8b6914','#a0522d','#c49e6e','#e8c874'],symbols:['⚙','⊕','◈','✦','⬢','◆','⊛','⬡']},
   {type:'theme',id:'le_cosmic_dust',name:'Cosmic Dust',desc:'LIMITED — Stardust nebula swirl',price:1400,currency:'chromas',preview:'💫',tier:4,colors:['#000005','#ff6633','#ffcc00','#66ffcc','#cc33ff','#3366ff','#ff3366','#33ff66'],symbols:['✶','⊹','✵','⋆','✷','⊛','⊕','✧']},
-  {type:'theme',id:'le_midnight',name:'Midnight Raven',desc:'LIMITED — Darkest hour before dawn',price:1200,currency:'chromas',preview:'🦇',tier:3,colors:['#000000','#111122','#222244','#333355','#1a1a33','#0d0d22','#2a2a44','#3a3a55'],symbols:['◇','◎','▽','✧','◈','△','○','◆']},
+  {type:'theme',id:'le_midnight',name:'Midnight Raven',desc:'LIMITED — Darkest hour before dawn',price:1200,currency:'chromas',preview:'🦇',tier:3,colors:['#050008','#220033','#440055','#6600aa','#330044','#880066','#110022','#550077'],symbols:['◇','◎','▽','✧','◈','△','○','◆']},
   {type:'theme',id:'le_candy',name:'Candy Pop',desc:'LIMITED — Sugar rush explosion',price:1100,currency:'chromas',preview:'🍬',tier:3,colors:['#1a0010','#ff44aa','#44ddff','#ffee44','#ff8844','#44ff88','#dd44ff','#ff4444'],symbols:['♡','★','♦','●','✦','✧','◆','▲']},
   {type:'theme',id:'le_sandstorm',name:'Sandstorm Pharaoh',desc:'LIMITED — Ancient desert tomb',price:1500,currency:'chromas',preview:'🏺',tier:4,colors:['#0a0800','#daa520','#c4a35a','#8b7355','#f0e68c','#cd853f','#e6c89c','#b8860b'],symbols:['𓂀','◈','✦','△','⬡','◆','✧','◇']},
-  {type:'theme',id:'le_toxic_waste',name:'Toxic Wasteland',desc:'LIMITED — Radioactive mutation zone',price:1300,currency:'chromas',preview:'☢️',tier:3,colors:['#000a00','#33ff00','#88ff00','#00ff44','#aaff00','#66ff22','#44ff00','#ccff00'],symbols:['☢','◉','⬟','⚠','◬','✦','◈','⊕']},
-  {type:'theme',id:'le_galaxy_core',name:'Galaxy Core',desc:'LIMITED — Heart of the universe',price:1500,currency:'chromas',preview:'🔮',tier:4,colors:['#000005','#8800ff','#ff00aa','#0044ff','#ff4400','#00ffaa','#ffaa00','#aa00ff'],symbols:['✶','⊹','✵','⋆','✷','⊛','❖','✧']},
+  {type:'theme',id:'le_toxic_waste',name:'Toxic Wasteland',desc:'LIMITED — Radioactive mutation zone',price:1300,currency:'chromas',preview:'☢️',tier:3,colors:['#000a00','#33ff00','#ff8800','#00ff44','#ffdd00','#66ff22','#ff4400','#ccff00'],symbols:['☢','◉','⬟','⚠','◬','✦','◈','⊕']},
+  {type:'theme',id:'le_galaxy_core',name:'Galaxy Core',desc:'LIMITED — Heart of the universe',price:1500,currency:'chromas',preview:'🔮',tier:4,colors:['#000008','#000066','#0000cc','#0022ff','#002299','#0011aa','#001133','#0033ff'],symbols:['✶','⊹','✵','⋆','✷','⊛','❖','✧']},
   // ===== BORDERS (8 total) =====
   {type:'border',id:'le_phoenix',name:'Phoenix Frame',desc:'LIMITED — Rising from ashes',price:900,currency:'chromas',preview:'🔥'},
   {type:'border',id:'le_frost_crown',name:'Frost Crown',desc:'LIMITED — Icy crystalline frame',price:900,currency:'chromas',preview:'❄️'},
@@ -6011,17 +6011,17 @@ function draw(){
         ctx.restore();
       } else if(eff==='phantom_burst'){
         var pbGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.9);
-        pbGrad.addColorStop(0,'rgba(136,0,255,'+claimAnim*0.7+')');
-        pbGrad.addColorStop(0.4,'rgba(60,0,120,'+claimAnim*0.5+')');
-        pbGrad.addColorStop(1,'rgba(0,0,0,'+claimAnim*0.2+')');
+        pbGrad.addColorStop(0,'rgba(0,200,255,'+claimAnim*0.7+')');
+        pbGrad.addColorStop(0.4,'rgba(0,80,180,'+claimAnim*0.5+')');
+        pbGrad.addColorStop(1,'rgba(0,0,30,'+claimAnim*0.2+')');
         ctx.fillStyle=pbGrad;ctx.fill();
-        ctx.shadowColor='rgba(136,0,255,1)';ctx.shadowBlur=claimAnim*35;ctx.fill();ctx.shadowBlur=0;
+        ctx.shadowColor='rgba(0,220,255,1)';ctx.shadowBlur=claimAnim*35;ctx.fill();ctx.shadowBlur=0;
         ctx.save();
         for(var pb=0;pb<6;pb++){
           var pbAngle=pb*Math.PI/3+t*2;var pbDist=cellW*0.4*(1-claimAnim*0.4);
           var pbx=cx2+Math.cos(pbAngle)*pbDist,pby=cy2+Math.sin(pbAngle)*pbDist;
           ctx.beginPath();ctx.arc(pbx,pby,2+2*claimAnim,0,Math.PI*2);
-          ctx.fillStyle='rgba(180,0,255,'+claimAnim*0.9+')';ctx.fill();
+          ctx.fillStyle='rgba(0,255,255,'+claimAnim*0.9+')';ctx.fill();
         }
         ctx.restore();
       } else if(eff==='divine_collapse'){
