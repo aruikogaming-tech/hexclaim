@@ -2354,7 +2354,7 @@ function addProfileXP(amount){
 }
 
 function showLevelUpPopup(){
-  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'💎 +200 Diamonds'},50:{desc:'💎 +500 Diamonds'},100:{desc:'Profile Icon: Crystal Ball'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
+  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},50:{desc:'Title: Dedicated!'},100:{desc:'Title: Veteran + Century Border!'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
   const reward=LEVEL_REWARDS[save.profileLevel];
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(8,8,16,0.95);border:1px solid var(--gold);border-radius:16px;padding:24px;text-align:center;min-width:240px;animation:cellGainPop 0.5s ease';
