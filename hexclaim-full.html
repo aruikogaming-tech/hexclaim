@@ -341,7 +341,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
   </div>
 
   <!-- ELO badge -->
-  <div class="rank-badge-big" id="menuRankBadge" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;margin:4px 0;min-height:80px"></div>
+  <div class="rank-badge-big" id="menuRankBadge"></div>
   
  <!-- Main action buttons -->
   <button class="menu-btn ranked" id="pvpBtn" style="opacity:0.4;pointer-events:none;position:relative" disabled>⚔ Ranked PVP <span style="font-size:8px;background:var(--gold);color:#0d0b14;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:800">COMING SOON</span></button>
@@ -3138,11 +3138,11 @@ const ACHIEVEMENT_REWARDS={
   'level_25': {type:'border', id:'achieve_level25', name:'Grinder Frame', desc:'Reach Level 25'},
   'level_50': {type:'border', id:'achieve_level50', name:'Veteran Frame', desc:'Reach Level 50'},
   // Rank → titles only
-  'rank_gold':      null,
-  'rank_platinum':  null,
-  'rank_diamond':   null,
-  'rank_master':    null,
-  'rank_chromancer':null,
+  'rank_gold':      {type:'none'},
+  'rank_platinum':  {type:'none'},
+  'rank_diamond':   {type:'none'},
+  'rank_master':    {type:'none'},
+  'rank_chromancer':{type:'none'},
   // Challenge → titles only
   'challenge_perfect': {type:'title', id:'The Perfect',   name:'The Perfect'},
   'challenge_deathless':{type:'title',id:'Deathless',     name:'Deathless'},
@@ -3952,7 +3952,7 @@ let previewColor=-1; // Which color is being previewed on hover
 
 let canvas,ctx,W,H,cellW,cellH;
 
-let gameLocked=false; // TRUE while actively in a game — only exitLevel can unlock
+var gameLocked=false; // TRUE while actively in a game — only exitLevel can unlock
 
 function showScreen(id){
   // Bulletproof guard: NOTHING can leave gameScreen while gameLocked
@@ -3979,10 +3979,10 @@ function updateMenuStats(){
   const prog=getRankProgress(save.elo);
   const badge=document.getElementById('menuRankBadge');
   if(badge)badge.innerHTML=`
-    <div class="rank-icon" style="font-size:40px">${r.icon}</div>
-    <div class="rank-name" style="color:${r.color};font-size:18px;font-family:'Archivo Black',sans-serif;margin-top:4px">${r.name}</div>
-    <div class="rank-elo" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px">${save.elo} ELO</div>
-    <div class="rank-bar" style="width:180px;margin:8px auto 0"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>`;
+    <div class="rank-icon">${r.icon}</div>
+    <div class="rank-name" style="color:${r.color}">${r.name}</div>
+    <div class="rank-elo">${save.elo} ELO</div>
+    <div class="rank-bar"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>`;
   // Top bar
   updateTopBar();
 }
