@@ -335,7 +335,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:16px">📢</span>
     <div style="flex:1">
       <div style="font-size:10px;font-weight:800;color:var(--p1)">WHAT'S NEW</div>
-      <div style="font-size:11px;color:var(--text)" id="newsBannerText">Season 1 is live! Climb the ranks and earn exclusive rewards.</div>
+      <div style="font-size:11px;color:var(--text)" id="newsBannerText">Season 1 is live! Climb the ranks and earn seasonal rewards and permanent titles!</div>
     </div>
     <span style="font-size:10px;color:var(--muted)">›</span>
   </div>
@@ -739,7 +739,7 @@ function resetAllProgress(){
         matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:false,
         nameChangesFree:1,activeSkin:'default',aiStats:{},
         authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
-        isAdmin:wasAdmin,seasonTempCosmetics:[]
+        isAdmin:wasAdmin,seasonTempCosmetics:[],consistentWins:0,consistentFailed:false,lossInRow:0,best80pct:false,best90pct:false,aiHardWins:0,maxWinStreak:0,winStreak:0
       };
       saveProg();
       updateAllUI();
@@ -1041,7 +1041,7 @@ const MONTHLY_QUESTS=[
   {id:'m_win30',name:'Champion',desc:'Win 30 games this month',target:30,track:'monthlyWins',reward:{coins:800,bpXP:400},icon:'🏆'},
   {id:'m_campaign15',name:'Story Master',desc:'Clear 15 campaign levels',target:15,track:'monthlyCampaign',reward:{coins:650,bpXP:200},icon:'📖'},
   {id:'m_rankup',name:'Rank Climber',desc:'Gain 200 ELO this month',target:200,track:'monthlyElo',reward:{coins:650,bpXP:350},icon:'📈'},
-  {id:'m_combo5',name:'Combo Legend',desc:'Get 5× combo 3 times',target:3,track:'monthlyBigCombos',reward:{coins:500,bpXP:250},icon:'🔥'},
+  {id:'m_combo5',name:'Win Streak',desc:'Win 15 games in a row this month',target:1,track:'monthlyWinStreak',reward:{coins:500,bpXP:250},icon:'🔥'},
 ];
 
 // Daily BP tasks — small repeatable tasks that give BP XP
@@ -2342,7 +2342,7 @@ function addProfileXP(amount){
 }
 
 function showLevelUpPopup(){
-  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'Title: Grinder'},50:{desc:'Title: No Life'},100:{desc:'Profile Icon: Crystal Ball'},999:{desc:'MAX LEVEL!'}};
+  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'💎 +200 Diamonds'},50:{desc:'💎 +500 Diamonds'},100:{desc:'Profile Icon: Crystal Ball'},999:{desc:'MAX LEVEL!'}};
   const reward=LEVEL_REWARDS[save.profileLevel];
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(8,8,16,0.95);border:1px solid var(--gold);border-radius:16px;padding:24px;text-align:center;min-width:240px;animation:cellGainPop 0.5s ease';
@@ -2407,7 +2407,7 @@ function showNewsPopup(){
 }
 function updateNewsBanner(){
   var el=document.getElementById('newsBannerText');
-  if(el)el.textContent='Season '+(save.season||1)+' is live! Climb the ranks and earn exclusive rewards.';
+  if(el)el.textContent='Season '+(save.season||1)+' is live! Climb the ranks and earn seasonal rewards and permanent titles!';
 }
 function updateAllUI(){
   updateMenuStats();
@@ -4683,7 +4683,7 @@ function showRankTab(tab,btn){
     var titleHead=document.createElement('div');titleHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px';
     titleHead.textContent='🏷️ Player Titles';wrap.appendChild(titleHead);
     SHOP_TITLES.forEach(function(item){
-      var owned=item.price===0||save.owned['title_'+item.id];
+      var owned=save.owned['title_'+item.id]||false;
       var equipped=save.equipped.title===item.id;
       var el=document.createElement('div');el.className='shop-item'+(owned&&!equipped?' owned':'');
       el.innerHTML='<div class="si-preview" style="background:var(--dim)">🏷</div><div class="si-info"><div class="si-name">"'+item.name+'"</div></div>'
@@ -4707,7 +4707,7 @@ function showRankTab(tab,btn){
     const header=document.createElement('div');header.className='card';
     header.style.cssText='margin-bottom:8px;text-align:center;background:linear-gradient(135deg,rgba(239,71,111,0.05),rgba(255,209,102,0.05));border-color:rgba(255,209,102,0.2)';
     header.innerHTML='<div style="font-size:12px;font-weight:800;color:var(--gold)">\u{1f3c6} Season '+save.season+' Rank Rewards</div>'
-      +'<div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5">Exclusive skins <span style="color:var(--p1);font-weight:700">earned automatically</span> when the season ends based on your highest rank. They can never be obtained again!</div>'
+      +'<div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5">Rewards are <span style="color:var(--p1);font-weight:700">earned automatically</span> when the season ends based on your highest rank. Titles are permanent. Borders and icons last until the end of next season.</div>'
       +'<div style="font-size:10px;color:var(--c4);margin-top:6px;font-weight:700">'+(daysLeft>0?'Season ends in '+daysLeft+' days':'Season ending soon!')+'</div>'
       +'<div style="font-size:10px;color:var(--text);margin-top:4px">Your peak: <span style="color:'+highRank.color+';font-weight:800">'+highRank.icon+' '+highRank.name+'</span> ('+highElo+' ELO)</div>';
     wrap.appendChild(header);
@@ -6343,7 +6343,7 @@ function forceGameEnd(won,reason){
   grantMatchXP(won,curConfig.isRanked||false);
   var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);if(won&&_p1pctRaw>=90)save.best90pct=true;if(won&&_p1pctRaw>=80)save.best80pct=true;
   trackGameEnd(won,_p1pctRaw,curConfig.isRanked||false,curChapter>=0,!!(curConfig&&curConfig.vsAiDiff));
-  if(won){save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;}
+  if(won){save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;if((save.maxWinStreak||0)>=15)trackQuest('monthlyWinStreak',1);}
   else{save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
   if(curConfig.vsAiDiff&&['hard','expert','master','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
   checkIconUnlocks();checkTitleUnlocks();
