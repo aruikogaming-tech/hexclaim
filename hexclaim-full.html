@@ -3374,7 +3374,7 @@ function renderShopTab(tab){
     cont.appendChild(preview);
 
     // Group skins: unlocked first, then by rank
-    var allSkins=getAllSkins().filter(function(s){return (!s.hidden&&!s.achievement)||save.owned['theme_'+s.id];});
+    var allSkins=getAllSkins().filter(function(s){return !s.hidden||save.owned['theme_'+s.id];});
     var noRank=allSkins.filter(function(s){return !s.rankReq});
     var rankGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:allSkins.filter(function(s){return s.rankReq==='Gold'})},
@@ -3386,8 +3386,8 @@ function renderShopTab(tab){
     function renderSkinItem(item){
       var owned=item.price===0||save.owned['theme_'+item.id];
       var isActive=save.activeSkin===item.id;
-      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
-      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')||(item.achievement&&!save.owned['theme_'+item.id]?'Complete the challenge to unlock':'');
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')||(item.achievement&&!save.owned['theme_'+item.id]?'Complete the challenge to unlock':'');
       var el=document.createElement('div');el.className='shop-item';
       if(rankLocked){
         el.style.opacity='0.4';
@@ -3421,8 +3421,8 @@ function renderShopTab(tab){
     function renderBorderItem(item){
       var owned=item.price===0||save.owned['border_'+item.id];
       var equipped=save.equipped.border===item.id;
-      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
-      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req))||(item.achievement&&!save.owned['theme_'+item.id]);
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')|| (item.achievement?'Complete the challenge to unlock':'');
       var el=document.createElement('div');el.className='shop-item'+(owned&&!equipped?' owned':'');
       var prevStyle='width:36px;height:36px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;';
       var borderMap={
@@ -3476,8 +3476,8 @@ function renderShopTab(tab){
     function renderEffectItem(item){
       var owned=item.price===0||save.owned['effect_'+item.id];
       var equipped=save.equipped.effect===item.id;
-      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
-      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req))||(item.achievement&&!save.owned['theme_'+item.id]);
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')|| (item.achievement?'Complete the challenge to unlock':'');
       var el=document.createElement('div');el.className='shop-item'+(owned&&!equipped?' owned':'');
       if(rankLocked){
         el.style.opacity='0.4';
