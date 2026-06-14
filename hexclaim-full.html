@@ -2815,7 +2815,7 @@ function checkIconUnlocks(){
     if(icon.id==='💀'&&hardWins>=10)earned=true;
     if(icon.id==='🌟'&&totalStars>=30)earned=true;
     if(icon.id==='🎭'&&totalWins>=100)earned=true;
-    var allChapters=true;for(var cl=1;cl<=5;cl++){if(!save.cleared['ch4_'+cl])allChapters=false;}
+    var allChapters=true;for(var ac=1;ac<=4;ac++){for(var cl=1;cl<=5;cl++){if(!save.cleared['ch'+ac+'_'+cl])allChapters=false;}}
     if(icon.id==='🔱'&&allChapters)earned=true;
     if(icon.id==='👑'&&allChallenges)earned=true;
     if(icon.id==='🧊'&&maxStreak>=5)earned=true;
@@ -2853,7 +2853,7 @@ function checkTitleUnlocks(){
     if(title.id==='Hex Rookie'&&(save.totalGames||0)+(save.pvpWins||0)+(save.pvpLosses||0)>=10)earned=true;
     if(title.id==='Color Chaser'&&totalWins>=10)earned=true;
     if(title.id==='Territory Lord'&&totalWins>=25)earned=true;
-    if(title.id==='Combo King'&&bestCombo>=5)earned=true;
+    if(title.id==='Combo King'&&maxStreak>=15)earned=true;
     if(title.id==='Board Breaker'&&save.best80pct)earned=true;
     if(title.id==='Shade Slayer'&&hardWins>=1)earned=true;
     if(title.id==='Hex Legend'&&ch4Done)earned=true;
@@ -3165,7 +3165,7 @@ const SHOP_TITLES=[
   {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#06d6a0',style:'bold',glow:0},
   {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
   {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#ffd166',style:'bold',glow:0},
-  {id:'Combo King',name:'Combo King',achievement:'Get a 5× combo',color:'#ef476f',style:'bold',glow:0},
+  {id:'Combo King',name:'Combo King',achievement:'Win 15 games in a row',color:'#ef476f',style:'bold',glow:0},
   {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#8338ec',style:'gradient',glow:0},
   {id:'Shade Slayer',name:'Shade Slayer',achievement:'Beat Hard AI',color:'#ff9f1c',style:'bold',glow:0},
   {id:'Hex Legend',name:'Hex Legend',achievement:'Complete all Campaign chapters',color:'#ffd166',style:'rainbow',glow:2},
