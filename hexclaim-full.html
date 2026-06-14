@@ -2892,6 +2892,7 @@ function checkTitleUnlocks(){
     if(title.id==='Deathless'&&save.challengesDone[17])earned=true;
     if(title.id==='Iron Wall'&&save.challengesDone[18])earned=true;
     if(title.id==='Nexus Lord'&&save.challengesDone[19])earned=true;
+    if(title.id==='Chromancer Supreme'&&save.challengesDone[9])earned=true;
     if(earned){save.owned['title_'+title.id]=true;saveProg()}
   });
 }
@@ -3183,6 +3184,13 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
+  {id:'Speed Demon',name:'Speed Demon',achievement:'Win Speed Demon challenge',color:'#ef476f',style:'bold',glow:0},
+  {id:'Dominator',name:'Dominator',achievement:'Win Domination challenge',color:'#ffd166',style:'bold',glow:0},
+  {id:'Prismatic',name:'Prismatic',achievement:'Win Color Chaos challenge',color:'#8338ec',style:'rainbow',glow:1},
+  {id:'Blind Seer',name:'Blind Seer',achievement:'Win Blindfold Blitz challenge',color:'#118ab2',style:'gradient',glow:0},
+  {id:'Precision',name:'Precision',achievement:'Win No Margin challenge',color:'#06d6a0',style:'bold',glow:0},
+  {id:'Flash',name:'Flash',achievement:'Win Speedrun Pro challenge',color:'#ffd166',style:'bold',glow:0},
+  {id:'Hex God',name:'Hex God',achievement:'Win Ultimate Test challenge',color:'#ff4400',style:'rainbow',glow:2},
   {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#06d6a0',style:'bold',glow:0},
   {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
   {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#ffd166',style:'bold',glow:0},
@@ -6691,6 +6699,8 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     // Grant chroma rewards
     var chromaMatch=ch.reward&&ch.reward.match(/(\d+)\s*Chromas/);
     if(chromaMatch){save.chromas=(save.chromas||0)+parseInt(chromaMatch[1]);showToast('💎 +'+chromaMatch[1]+' Diamonds earned!',3000);}
+    var titleMatch=ch.reward&&ch.reward.match(/Title:\s*(.+)/);
+    if(titleMatch){var tId=titleMatch[1].trim();if(!save.owned['title_'+tId]){save.owned['title_'+tId]=true;showToast('🏅 Title unlocked: "'+tId+'"!',4000);}}
     if(ch.rewardSkin&&!save.owned['theme_'+ch.rewardSkin]){
       save.owned['theme_'+ch.rewardSkin]=true;
       showToast('🎨 Skin unlocked: '+CHALLENGE_SKINS.find(s=>s.id===ch.rewardSkin).name+'!',4000);
