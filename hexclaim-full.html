@@ -3979,10 +3979,10 @@ function updateMenuStats(){
   const prog=getRankProgress(save.elo);
   const badge=document.getElementById('menuRankBadge');
   if(badge)badge.innerHTML=`
-    <div class="rank-icon">${r.icon}</div>
-    <div class="rank-name" style="color:${r.color}">${r.name}</div>
-    <div class="rank-elo">${save.elo} ELO</div>
-    <div class="rank-bar"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>`;
+    <div class="rank-icon" style="font-size:40px">${r.icon}</div>
+    <div class="rank-name" style="color:${r.color};font-size:18px;font-family:'Archivo Black',sans-serif;margin-top:4px">${r.name}</div>
+    <div class="rank-elo" style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px">${save.elo} ELO</div>
+    <div class="rank-bar" style="width:180px;margin:8px auto 0"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>`;
   // Top bar
   updateTopBar();
 }
