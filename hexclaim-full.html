@@ -2025,7 +2025,7 @@ function renderProfileTab(tab,externalCont){
     var ownedThemes=SHOP_THEMES.filter(function(s){return (s.price===0&&!s.achievement&&!s.hidden)||save.owned['theme_'+s.id]});
     var seasonOwned=SEASONAL_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
     var limitedOwned=LIMITED_EDITION_POOL.filter(function(s){return s.type==='theme'&&save.owned['theme_'+s.id]});
-    var challengeOwned=CHALLENGE_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
+    var challengeOwned=CHALLENGE_SKINS.filter(function(s){return save.owned['theme_'+s.id]}).concat(SHOP_THEMES.filter(function(s){return s.achievement&&s.hidden&&save.owned['theme_'+s.id]}));
     var skinHead=document.createElement('div');skinHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:6px 0 6px;text-transform:uppercase;letter-spacing:1px';
     var ownedCount=ownedThemes.length+seasonOwned.length+limitedOwned.length+challengeOwned.length;
     skinHead.textContent='🎨 Owned Color Themes ('+ownedCount+')';cont.appendChild(skinHead);
@@ -3374,7 +3374,7 @@ function renderShopTab(tab){
     cont.appendChild(preview);
 
     // Group skins: unlocked first, then by rank
-    var allSkins=getAllSkins().filter(function(s){return !s.hidden||save.owned['theme_'+s.id];});
+    var allSkins=getAllSkins().filter(function(s){return (!s.hidden&&!s.achievement)||save.owned['theme_'+s.id];});
     var noRank=allSkins.filter(function(s){return !s.rankReq});
     var rankGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:allSkins.filter(function(s){return s.rankReq==='Gold'})},
@@ -6730,9 +6730,10 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     var titleMatch=ch.reward&&ch.reward.match(/Title:\s*(.+)/);
     var validTitles=['Territory Lord','Combo King','Board Breaker','Shade Slayer','Hex Legend','The Perfect','Deathless','Iron Wall','Nexus Lord','Chromancer Supreme','Dedicated','Veteran','Elite','Legendary','Transcendent'];
     if(titleMatch){var tId=titleMatch[1].trim();if(validTitles.indexOf(tId)>=0&&!save.owned['title_'+tId]){save.owned['title_'+tId]=true;showToast('🏅 Title unlocked: "'+tId+'"!',4000);}}
-    if(ch.rewardSkin&&!save.owned['theme_'+ch.rewardSkin]){
+    if(ch.rewardSkin&&!save.owned['theme_'+ch.rewardSkin]){var _skinSrc=CHALLENGE_SKINS.find(function(s){return s.id===ch.rewardSkin})||SHOP_THEMES.find(function(s){return s.id===ch.rewardSkin});
       save.owned['theme_'+ch.rewardSkin]=true;
-      showToast('🎨 Skin unlocked: '+CHALLENGE_SKINS.find(s=>s.id===ch.rewardSkin).name+'!',4000);
+      var _unlockedSkin=CHALLENGE_SKINS.find(function(s){return s.id===ch.rewardSkin})||SHOP_THEMES.find(function(s){return s.id===ch.rewardSkin});
+      showToast('🎨 Skin unlocked: '+(_unlockedSkin?_unlockedSkin.name:ch.rewardSkin)+'!',4000);
     }
     // Grant challenge title reward
     if(ch.rewardTitle&&!save.owned['title_'+ch.rewardTitle]){
