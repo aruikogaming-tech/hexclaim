@@ -2856,14 +2856,14 @@ function checkTitleUnlocks(){
     if(title.id==='Combo King'&&maxStreak>=15)earned=true;
     if(title.id==='Board Breaker'&&save.best80pct)earned=true;
     if(title.id==='Shade Slayer'&&hardWins>=1)earned=true;
-    if(title.id==='Hex Legend'&&ch4Done)earned=true;
+    if(title.id==='Hex Legend'&&ch1Done&&ch2Done&&ch3Done&&ch4Done)earned=true;
     
     // Challenge titles — unlocked via challenge completion
     if(title.id==='The Perfect'&&save.challengesDone[16])earned=true;
     if(title.id==='Deathless'&&save.challengesDone[17])earned=true;
     if(title.id==='Iron Wall'&&save.challengesDone[18])earned=true;
     if(title.id==='Nexus Lord'&&save.challengesDone[19])earned=true;
-    if(title.id==='Chromancer Supreme'&&save.challengesDone[9])earned=true;
+    if(title.id==='Chromancer Supreme'&&save.challengesDone[16]&&save.challengesDone[17]&&save.challengesDone[18]&&save.challengesDone[19])earned=true;
     if(earned){save.owned['title_'+title.id]=true;saveProg()}
   });
 }
@@ -3165,7 +3165,7 @@ const SHOP_TITLES=[
   {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#06d6a0',style:'bold',glow:0},
   {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
   {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#ffd166',style:'bold',glow:0},
-  {id:'Combo King',name:'Combo King',achievement:'Win 15 games in a row',color:'#ef476f',style:'bold',glow:0},
+  {id:'Combo King',name:'Unstoppable',achievement:'Win 15 games in a row',color:'#ef476f',style:'bold',glow:0},
   {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#8338ec',style:'gradient',glow:0},
   {id:'Shade Slayer',name:'Shade Slayer',achievement:'Beat Hard AI',color:'#ff9f1c',style:'bold',glow:0},
   {id:'Hex Legend',name:'Hex Legend',achievement:'Complete all Campaign chapters',color:'#ffd166',style:'rainbow',glow:2},
