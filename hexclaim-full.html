@@ -3945,7 +3945,7 @@ const CHALLENGES=[
   {name:"🎨 Shadow Walk",desc:"Win with fog + Hard AI + 6 colors. Navigate the darkness.",reward:"Skin: Shadow Walker",rewardSkin:'ch_shadow',cols:10,rows:12,colors:6,aiSmart:0.82,fog:true,reqChapter:2,difficulty:'medium'},
   {name:"🎨 Prism Break",desc:"Win on a 6×6 board vs Smart AI with only 3 colors. Tight quarters.",reward:"Skin: Prism Core",rewardSkin:'ch_prism',cols:6,rows:6,colors:3,aiSmart:0.7,reqChapter:1,difficulty:'medium'},
   // ===== LEGENDARY CHALLENGES (Very Hard) =====
-  {name:"💀 Perfect Storm",desc:"Win with 95%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin + Border + Effect + Title",rewardSkin:'ch_obsidian',rewardBorder:'ch_obsidian_border',rewardEffect:'storm_fx',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:80,reqChapter:3,difficulty:'legendary'},
+  {name:"💀 Perfect Storm",desc:"Win with 80%+ territory vs Expert AI with fog and 6 colors.",reward:"Skin + Border + Effect + Title",rewardSkin:'ch_obsidian',rewardBorder:'ch_obsidian_border',rewardEffect:'storm_fx',rewardTitle:'The Perfect',cols:11,rows:13,colors:6,aiSmart:0.94,fog:true,winPct:80,reqChapter:3,difficulty:'legendary'},
   {name:"💀 Suicide Mission",desc:"Win vs Impossible AI, fog, 7 colors, only 50 moves. Good luck.",reward:"Skin + Border + Effect + Title",rewardSkin:'ch_void_emperor',rewardBorder:'ch_void_border',rewardEffect:'shadow_mist',rewardTitle:'Deathless',cols:10,rows:12,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:50,reqChapter:3,difficulty:'legendary'},
   {name:"💀 Iron Curtain",desc:"Beat Expert AI on 14×16, 6 colors, 90 moves. An endurance nightmare.",reward:"Skin + Border + Effect + Title",rewardSkin:'ch_eternal',rewardBorder:'ch_eternal_border',rewardEffect:'fire_trail',rewardTitle:'Iron Wall',cols:14,rows:16,colors:6,aiSmart:0.94,moveLimit:true,baseMoves:90,reqChapter:3,difficulty:'legendary'},
   {name:"💀 Absolute Zero",desc:"Max AI, fog, 7 colors, 90 moves, 90%+ territory. The final test.",reward:"Skin + Border + Effect + Title",rewardSkin:'ch_nexus',rewardBorder:'ch_nexus_border',rewardEffect:'supernova',rewardTitle:'Nexus Lord',cols:12,rows:14,colors:7,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:90,winPct:75,reqChapter:3,difficulty:'legendary'},
@@ -5166,7 +5166,7 @@ function buildChallenges(){
     let borderPreview='';
     if(ch.rewardBorder){
       const bOwned=save.owned['border_'+ch.rewardBorder];
-      const bStyle=getBorderStyle2(ch.rewardBorder);
+      const bStyle=getBorderStyle();
       const bName=SHOP_BORDERS.find(function(b){return b.id===ch.rewardBorder});
       borderPreview='<div style="margin-top:5px;display:flex;align-items:center;gap:6px">'
         +'<div style="width:32px;height:32px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:14px;'+bStyle+'">⬡</div>'
@@ -6687,8 +6687,10 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   }
   if(won&&curConfig.challengeIdx!==undefined){
     save.challengesDone[curConfig.challengeIdx]=true;
-    // Grant challenge skin reward
     const ch=CHALLENGES[curConfig.challengeIdx];
+    // Grant chroma rewards
+    var chromaMatch=ch.reward&&ch.reward.match(/(\d+)\s*Chromas/);
+    if(chromaMatch){save.chromas=(save.chromas||0)+parseInt(chromaMatch[1]);showToast('💎 +'+chromaMatch[1]+' Diamonds earned!',3000);}
     if(ch.rewardSkin&&!save.owned['theme_'+ch.rewardSkin]){
       save.owned['theme_'+ch.rewardSkin]=true;
       showToast('🎨 Skin unlocked: '+CHALLENGE_SKINS.find(s=>s.id===ch.rewardSkin).name+'!',4000);
