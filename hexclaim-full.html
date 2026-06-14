@@ -823,11 +823,14 @@ function showStreakPopup(){
   STREAK_REWARDS.forEach(function(r,i){
     const isCurrent=i+1===day;
     const isPast=i+1<day;
-    const claimed=save.streakClaimed[i+1]&&!isCurrent;
-    rewardGrid+='<div style="text-align:center;padding:6px;border-radius:8px;background:'+(isCurrent?'rgba(6,214,160,0.15)':isPast?'rgba(255,255,255,0.03)':'var(--dim)')+';border:1px solid '+(isCurrent?'var(--p1)':'var(--border)')+';'+(isPast&&!isCurrent?'opacity:0.4':'')+'">'
-      +'<div style="font-size:9px;font-weight:800;color:'+(isCurrent?'var(--p1)':'var(--muted)')+'">'+r.label+'</div>'
+    const isClaimed=save.streakClaimed&&save.streakClaimed[i+1];
+    const bg=isClaimed?'rgba(6,214,160,0.08)':isCurrent?'rgba(6,214,160,0.15)':isPast?'rgba(255,255,255,0.03)':'var(--dim)';
+    const border=isClaimed||isCurrent?'var(--p1)':'var(--border)';
+    const opacity=isPast&&!isClaimed&&!isCurrent?'opacity:0.4':'';
+    rewardGrid+='<div style="text-align:center;padding:6px;border-radius:8px;background:'+bg+';border:1px solid '+border+';'+opacity+'">'
+      +'<div style="font-size:9px;font-weight:800;color:'+(isCurrent||isClaimed?'var(--p1)':'var(--muted)')+'">'+r.label+'</div>'
       +'<div style="font-size:10px;margin-top:2px">🟡'+(r.coins||0)+' 💎'+(r.chromas||0)+'</div>'
-      +(isPast?'<div style="font-size:8px;color:var(--p1)">✓</div>':'')
+      +(isClaimed?'<div style="font-size:8px;color:var(--p1)">✓</div>':'')
       +'</div>';
   });
   popup.onclick=function(e){if(e.target===popup)popup.remove();};
