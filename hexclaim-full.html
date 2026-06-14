@@ -2312,6 +2312,11 @@ function xpForLevel(lv){return 50+Math.floor(lv*3)} // Level 1=53, Level 10=80, 
 
 // Dynamic rewards based on level
 function getRewardForLevel(lv){
+  if(lv===999)return{type:'milestone',desc:'✨ TRANSCENDENT! 🟡999,999 + 💎999,999 + Celestial Ascension Skin + Transcendent Border + Divine Collapse Effect!'};
+  if(lv===500)return{type:'milestone',desc:'🔥 LEGENDARY! Solar Crown Skin + Legendary Frame Border + Title: Legendary!'};
+  if(lv===200)return{type:'milestone',desc:'🌑 ELITE! Void Nexus Skin + Phantom Burst Effect + Title: Elite!'};
+  if(lv===100)return{type:'milestone',desc:'🥇 VETERAN! Century Frame Border + Title: Veteran!'};
+  if(lv===50)return{type:'milestone',desc:'💚 DEDICATED! Title: Dedicated!'};
   if(lv===10)return{type:'unlock',id:'ranked',desc:'🔓 Ranked PVP Unlocked!'};
   if(lv%100===0)return{type:'chromas',amount:1000,desc:'1000 💎 Century Bonus!'};
   if(lv%50===0)return{type:'portrait',id:['🐲','⚡','🌟','💠','🔥','🌊','☠️','👾','🦅','🎭','💫','🌙','🗡️','🛡️','🏴‍☠️','🦊','🐺','🦁','🎪','🃏'][Math.floor(lv/50)%20],desc:'Rare Portrait!'};
@@ -2331,8 +2336,15 @@ function addProfileXP(amount){
     const reward=getRewardForLevel(save.profileLevel);
     if(reward){
       if(reward.type==='coins'){save.coins+=reward.amount;if(reward.amount>=300)save.wonJackpot=true;}
-      else if(reward.type==='coins')save.coins+=reward.amount;
       else if(reward.type==='portrait')save.owned['portrait_'+reward.id]=true;
+      else if(reward.type==='milestone'){
+        var lv2=save.profileLevel;
+        if(lv2===50){save.owned['title_Dedicated']=true;}
+        if(lv2===100){save.owned['title_Veteran']=true;save.owned['border_century_border']=true;}
+        if(lv2===200){save.owned['title_Elite']=true;save.owned['theme_void_nexus']=true;save.owned['effect_phantom_burst']=true;}
+        const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},50:{desc:'Title: Dedicated!'},100:{desc:'Title: Veteran + Century Border!'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
+        if(lv2===999){save.owned['title_Transcendent']=true;save.owned['theme_celestial_ascension']=true;save.owned['border_transcendent_border']=true;save.owned['effect_divine_collapse']=true;save.coins+=999999;save.chromas+=999999;}
+      }
     }
   }
   if(save.profileLevel>=999)save.profileXP=0;
@@ -2342,7 +2354,7 @@ function addProfileXP(amount){
 }
 
 function showLevelUpPopup(){
-  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'💎 +200 Diamonds'},50:{desc:'💎 +500 Diamonds'},100:{desc:'Profile Icon: Crystal Ball'},999:{desc:'MAX LEVEL!'}};
+  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},25:{desc:'💎 +200 Diamonds'},50:{desc:'💎 +500 Diamonds'},100:{desc:'Profile Icon: Crystal Ball'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
   const reward=LEVEL_REWARDS[save.profileLevel];
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(8,8,16,0.95);border:1px solid var(--gold);border-radius:16px;padding:24px;text-align:center;min-width:240px;animation:cellGainPop 0.5s ease';
@@ -2484,6 +2496,9 @@ const SHOP_THEMES=[
   {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,req:'3star_ch3',reqDesc:'3-star every level in Chapter 3',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
   {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
   {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,req:'all_legendary',reqDesc:'Complete all Legendary Challenges',currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶']},
+  {tier:4,id:'void_nexus',name:'Void Nexus',desc:'Level 200 exclusive — cosmic void energy',price:0,currency:'free',preview:'🌑',achievement:true,hidden:true,colors:['#000000','#1a0033','#2d0066','#440099','#5500bb','#6600dd','#330066','#220044'],symbols:['⊘','☠','✦','∞','⊛','◈','⊕','💀']},
+  {tier:4,id:'solar_crown',name:'Solar Crown',desc:'Level 500 exclusive — blazing solar glory',price:0,currency:'free',preview:'👑',achievement:true,hidden:true,colors:['#0a0500','#ff8800','#ffcc00','#ff4400','#ffee00','#ff6600','#cc3300','#ffaa00'],symbols:['👑','✦','★','⊛','◈','⊕','✧','☆']},
+  {tier:4,id:'celestial_ascension',name:'Celestial Ascension',desc:'Level 999 exclusive — the ultimate prestige skin',price:0,currency:'free',preview:'✨',achievement:true,hidden:true,colors:['#ffffff','#ffd700','#ff69b4','#00ffff','#ff4500','#7fff00','#9400d3','#ffd166'],symbols:['✨','🌟','⊛','✦','◈','⊕','★','💫']},
   {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'consistent25',reqDesc:'Win 25 games without losing 3 in a row',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
 
@@ -2662,6 +2677,9 @@ const SHOP_BORDERS=[
   {id:'cosmic_border',name:'Cosmic Orbit',price:22000,currency:'coins',preview:'🪐',req:'3star_ch4',reqDesc:'3-star every level in Chapter 4'},
   {id:'void_border',name:'Void Rift',price:30000,currency:'coins',preview:'🕳️',req:'all_challenges',reqDesc:'Complete all Challenges'},
   // Legendary challenge borders
+  {id:'century_border',name:'Century Frame',price:0,currency:'free',preview:'🥇',achievement:true},
+  {id:'legendary_border',name:'Legendary Frame',price:0,currency:'free',preview:'🔥',achievement:true},
+  {id:'transcendent_border',name:'Transcendent Frame',price:0,currency:'free',preview:'✨',achievement:true},
   {id:'ch_obsidian_border',name:'Obsidian Crown Frame',price:0,currency:'season',preview:'🖤',achievement:true},
   {id:'ch_void_border',name:'Void Emperor Frame',price:0,currency:'season',preview:'👁️',achievement:true},
   {id:'ch_eternal_border',name:'Eternal Flame Frame',price:0,currency:'season',preview:'🔱',achievement:true},
@@ -2697,6 +2715,8 @@ const SHOP_EFFECTS=[
   {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:22000,currency:'coins',preview:'🪐',req:'win10streak',reqDesc:'Win 10 games in a row'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:30000,currency:'coins',preview:'💥',req:'all_effects',reqDesc:'Earn every other effect first'},
   // Season exclusive effects
+  {id:'phantom_burst',name:'Phantom Burst',desc:'Level 200 exclusive — dark energy implosion',price:0,currency:'free',preview:'🌑',achievement:true},
+  {id:'divine_collapse',name:'Divine Collapse',desc:'Level 999 exclusive — blinding white nova',price:0,currency:'free',preview:'✨',achievement:true},
   {id:'shadow_mist',name:'Shadow Mist',desc:'Void corruption — challenge reward',price:0,currency:'season',preview:'🌑',achievement:true},
   {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'season',preview:'💠',seasonal:true},
   {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'season',preview:'👑',seasonal:true},
@@ -2849,6 +2869,12 @@ function checkTitleUnlocks(){
     if(title.unlocked||save.owned['title_'+title.id])return;
     var earned=false;
    
+    // Level milestone titles
+    if(title.id==='Dedicated'&&save.profileLevel>=50)earned=true;
+    if(title.id==='Veteran'&&save.profileLevel>=100)earned=true;
+    if(title.id==='Elite'&&save.profileLevel>=200)earned=true;
+    if(title.id==='Legendary'&&save.profileLevel>=500)earned=true;
+    if(title.id==='Transcendent'&&save.profileLevel>=999)earned=true;
     // Gameplay titles
     if(title.id==='Hex Rookie'&&(save.totalGames||0)+(save.pvpWins||0)+(save.pvpLosses||0)>=10)earned=true;
     if(title.id==='Color Chaser'&&totalWins>=10)earned=true;
@@ -2953,6 +2979,9 @@ function getBorderStyle(){
   if(b==='rankup_master_border')return 'border:3px solid #c084fc;box-shadow:0 0 16px rgba(192,132,252,0.8);animation:borderRotate 4s linear infinite';
   if(b==='rankup_chroma_border')return 'border:3px solid #ffd166;box-shadow:0 0 18px rgba(255,209,102,0.8),0 0 36px rgba(6,214,160,0.3);animation:borderPulse 1.2s ease infinite,borderRotate 5s linear infinite;--bc:255,209,102';
   // Legendary challenge borders
+  if(b==='century_border')return 'border:3px solid #ffd700;box-shadow:0 0 16px rgba(255,215,0,0.8),0 0 32px rgba(255,215,0,0.3);animation:borderPulse 2s ease infinite;--bc:255,215,0';
+  if(b==='legendary_border')return 'border:3px solid #ff8800;box-shadow:0 0 18px rgba(255,136,0,0.9),0 0 36px rgba(255,68,0,0.4),0 0 8px rgba(255,215,0,0.3);animation:borderPulse 1.5s ease infinite,borderRotate 4s linear infinite;--bc:255,136,0';
+  if(b==='transcendent_border')return 'border:3px solid #ffffff;box-shadow:0 0 20px rgba(255,255,255,0.9),0 0 40px rgba(255,209,102,0.5),0 0 60px rgba(131,56,236,0.3);animation:borderPulse 1s ease infinite,borderRotate 3s linear infinite;--bc:255,255,255';
   if(b==='ch_obsidian_border')return 'border:3px solid #e94560;box-shadow:0 0 14px rgba(233,69,96,0.9),0 0 28px rgba(233,69,96,0.4);animation:borderPulse 1.5s ease infinite,borderFlicker 3s ease infinite;--bc:233,69,96';
   if(b==='ch_void_border')return 'border:3px solid #9900ff;box-shadow:0 0 16px rgba(153,0,255,0.9),0 0 32px rgba(153,0,255,0.4);animation:borderRotate 3s linear infinite;--bc:153,0,255';
   if(b==='ch_eternal_border')return 'border:3px solid #ff4400;box-shadow:0 0 16px rgba(255,68,0,0.9),0 0 32px rgba(255,170,0,0.4);animation:borderPulse 1.2s ease infinite;--bc:255,68,0';
@@ -3155,6 +3184,11 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
+  {id:'Dedicated',name:'Dedicated',achievement:'Reach Level 50',color:'#06d6a0',style:'bold',glow:1},
+  {id:'Veteran',name:'Veteran',achievement:'Reach Level 100',color:'#118ab2',style:'gradient',glow:2},
+  {id:'Elite',name:'Elite',achievement:'Reach Level 200',color:'#8338ec',style:'rainbow',glow:3},
+  {id:'Legendary',name:'Legendary',achievement:'Reach Level 500',color:'#ff9f1c',style:'rainbow',glow:4},
+  {id:'Transcendent',name:'Transcendent',achievement:'Reach Level 999',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
   {id:'Speed Demon',name:'Speed Demon',achievement:'Win Speed Demon challenge',color:'#ef476f',style:'bold',glow:0},
   {id:'Dominator',name:'Dominator',achievement:'Win Domination challenge',color:'#ffd166',style:'bold',glow:0},
   {id:'Prismatic',name:'Prismatic',achievement:'Win Color Chaos challenge',color:'#8338ec',style:'rainbow',glow:1},
@@ -5971,6 +6005,40 @@ function draw(){
           ctx.fillStyle=confColors[p%confColors.length];
           ctx.fillRect(-2,-1,4,2);
           ctx.restore();
+        }
+        ctx.restore();
+      } else if(eff==='phantom_burst'){
+        var pbGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.9);
+        pbGrad.addColorStop(0,'rgba(136,0,255,'+claimAnim*0.7+')');
+        pbGrad.addColorStop(0.4,'rgba(60,0,120,'+claimAnim*0.5+')');
+        pbGrad.addColorStop(1,'rgba(0,0,0,'+claimAnim*0.2+')');
+        ctx.fillStyle=pbGrad;ctx.fill();
+        ctx.shadowColor='rgba(136,0,255,1)';ctx.shadowBlur=claimAnim*35;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var pb=0;pb<6;pb++){
+          var pbAngle=pb*Math.PI/3+t*2;var pbDist=cellW*0.4*(1-claimAnim*0.4);
+          var pbx=cx2+Math.cos(pbAngle)*pbDist,pby=cy2+Math.sin(pbAngle)*pbDist;
+          ctx.beginPath();ctx.arc(pbx,pby,2+2*claimAnim,0,Math.PI*2);
+          ctx.fillStyle='rgba(180,0,255,'+claimAnim*0.9+')';ctx.fill();
+        }
+        ctx.restore();
+      } else if(eff==='divine_collapse'){
+        ctx.fillStyle='rgba(255,255,255,'+claimAnim*claimAnim*0.8+')';ctx.fill();
+        ctx.shadowColor='rgba(255,255,255,1)';ctx.shadowBlur=claimAnim*50;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var dc=0;dc<16;dc++){
+          var dcAngle=dc*Math.PI/8+t*2;var dcLen=cellW*0.8*claimAnim;
+          ctx.beginPath();ctx.moveTo(cx2,cy2);
+          ctx.lineTo(cx2+Math.cos(dcAngle)*dcLen,cy2+Math.sin(dcAngle)*dcLen);
+          var dcHue=(dc*22+t*100)%360;
+          ctx.strokeStyle='hsla('+dcHue+',100%,80%,'+claimAnim*0.9+')';
+          ctx.lineWidth=3*claimAnim;ctx.stroke();
+        }
+        for(var dr=0;dr<4;dr++){
+          var drR=cellW*(0.2+dr*0.18)*(1-claimAnim*0.3);
+          ctx.beginPath();ctx.arc(cx2,cy2,drR,0,Math.PI*2);
+          ctx.strokeStyle='rgba(255,255,255,'+claimAnim*0.6+')';
+          ctx.lineWidth=2*claimAnim;ctx.stroke();
         }
         ctx.restore();
       } else if(eff==='shadow_mist'){
