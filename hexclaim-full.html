@@ -648,7 +648,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Account
   authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
   // Stats tracking
-  bestComboEver:0,mostTilesSingleMove:0,totalTilesCaptured:0,totalTimePlayed:0,
+  bestComboEver:0,mostTilesSingleMove:0,totalTilesCaptured:0,totalTimePlayed:0,consistentWins:0,consistentFailed:false,
   gamesPerMode:{campaign:0,vsai:0,ranked:0,blitz:0},
   winsPerMode:{campaign:0,vsai:0,ranked:0,blitz:0},
   // Rate prompt
@@ -2484,7 +2484,7 @@ const SHOP_THEMES=[
   {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,req:'3star_ch3',reqDesc:'3-star every level in Chapter 3',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
   {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
   {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,req:'all_legendary',reqDesc:'Complete all Legendary Challenges',currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶']},
-  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'combo10',reqDesc:'Reach a 10× combo',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
+  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'consistent25',reqDesc:'Win 25 games without losing 3 in a row',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
 
 const SEASONAL_SKINS=[
@@ -3372,7 +3372,7 @@ function meetsReq(req){
   if(req==='all_chapters')return allChapters;
   if(req==='all_challenges')return allChallenges;
   if(req==='all_legendary')return allLegendary;
-  if(req==='combo10')return(save.bestComboEver||0)>=10;
+  if(req==='consistent25')return(save.consistentWins||0)>=25&&!save.consistentFailed;
   if(req==='win10streak')return maxStreak>=10;
   if(req==='all_effects')return allEffects;
   return true;
@@ -6363,7 +6363,7 @@ function forceGameEnd(won,reason){
   grantMatchXP(won,curConfig.isRanked||false);
   var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);if(won&&_p1pctRaw>=90)save.best90pct=true;
   trackGameEnd(won,_p1pctRaw,curConfig.isRanked||false,curChapter>=0,!!(curConfig&&curConfig.vsAiDiff));
-  if(won){save.winStreak=(save.winStreak||0)+1;save.maxWinStreak=Math.max(save.maxWinStreak||0,save.winStreak)}else{save.winStreak=0}
+  
   if(curConfig.vsAiDiff&&['hard','expert','master','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
   checkIconUnlocks();checkTitleUnlocks();
   saveProg();updateShopCurrency();
