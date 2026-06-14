@@ -831,30 +831,24 @@ function showStreakPopup(){
       +'</div>';
   });
   popup.onclick=function(e){if(e.target===popup)popup.remove();};
+  var alreadyClaimed=save.streakClaimed&&save.streakClaimed[day];
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:20px;text-align:center;max-width:340px;width:90%;animation:popIn 0.3s ease">'
-    +'<div style="display:flex;justify-content:flex-end"><button onclick="this.closest(\'#streakPopup\').remove()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0">✕</button></div>'
     +'<div style="font-size:28px;margin-bottom:4px">🔥</div>'
     +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:16px;color:var(--p1)">'+day+'-Day Streak!</div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+(day>=7?'Max streak! Keep it going!':'Come back tomorrow to continue!')+'</div>'
-    +'<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:12px 0">'+rewardGrid+'</div>'
-    +'<button id="streakClaimBtn" style="padding:10px 28px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Claim 🟡'+(reward.coins||0)+' + 💎'+(reward.chromas||0)+'</button>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+(day>=30?'🏆 Max streak achieved!':day>=14?'🔥 Amazing streak! Keep going!':'Come back tomorrow to continue!')+'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:12px 0;max-height:200px;overflow-y:auto">'+rewardGrid+'</div>'
+    +'<button id="streakClaimBtn" style="padding:10px 28px;background:'+(alreadyClaimed?'var(--dim)':'var(--p1)')+';border:none;border-radius:8px;color:'+(alreadyClaimed?'var(--muted)':'#fff')+';font-weight:800;cursor:'+(alreadyClaimed?'default':'pointer')+';font-family:Manrope,sans-serif;font-size:13px">'+(alreadyClaimed?'Already Claimed ✓':'Claim 🟡'+(reward.coins||0)+' + 💎'+(reward.chromas||0))+'</button>'
+    +'<button onclick="document.getElementById(\'streakPopup\').remove();playSfx(\'menuBack\')" style="display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">Close</button>'
     +'</div>';
   document.body.appendChild(popup);
-  var alreadyClaimed=save.streakClaimed&&save.streakClaimed[day];
   var claimBtn=document.getElementById('streakClaimBtn');
-  if(alreadyClaimed){
-    claimBtn.textContent='Already Claimed ✓';
-    claimBtn.style.background='var(--dim)';
-    claimBtn.style.color='var(--muted)';
-    claimBtn.style.cursor='default';
-    claimBtn.onclick=null;
-  } else {
+  if(!alreadyClaimed){
     claimBtn.onclick=function(){
       if(save.streakClaimed&&save.streakClaimed[day])return;
       if(reward.coins)save.coins+=reward.coins;
       if(reward.chromas)save.chromas+=reward.chromas;
       save.streakClaimed[day]=true;
-      saveProg();updateShopCurrency();updateMenuStreakCard();
+      saveProg();updateShopCurrency();
       popup.remove();
       playSfx('claimBig');
     };
