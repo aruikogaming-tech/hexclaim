@@ -648,7 +648,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Account
   authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
   // Stats tracking
-  bestComboEver:0,mostTilesSingleMove:0,totalTilesCaptured:0,totalTimePlayed:0,consistentWins:0,consistentFailed:false,
+  bestComboEver:0,mostTilesSingleMove:0,totalTilesCaptured:0,totalTimePlayed:0,consistentWins:0,consistentFailed:false,lossInRow:0,
   gamesPerMode:{campaign:0,vsai:0,ranked:0,blitz:0},
   winsPerMode:{campaign:0,vsai:0,ranked:0,blitz:0},
   // Rate prompt
@@ -2697,6 +2697,7 @@ const SHOP_EFFECTS=[
   {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:22000,currency:'coins',preview:'🪐',req:'win10streak',reqDesc:'Win 10 games in a row'},
   {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:30000,currency:'coins',preview:'💥',req:'all_effects',reqDesc:'Earn every other effect first'},
   // Season exclusive effects
+  {id:'shadow_mist',name:'Shadow Mist',desc:'Void corruption — challenge reward',price:0,currency:'season',preview:'🌑',achievement:true},
   {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'season',preview:'💠',seasonal:true},
   {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'season',preview:'👑',seasonal:true},
   {id:'season_chroma_fx',name:'Chromancer Nova',desc:'Season exclusive — Chromancer rank reward',price:0,currency:'season',preview:'🔮',seasonal:true},
@@ -3359,7 +3360,7 @@ function meetsReq(req){
   var allChapters=ch2Done&&ch3Done&&ch4Done&&(function(){var d=true;for(var l=1;l<=5;l++){if(!save.cleared||!save.cleared['ch1_'+l])d=false;}return d;})();
   var allChallenges=CHALLENGES.every(function(_,i){return save.challengesDone&&save.challengesDone[i]});
   var allLegendary=CHALLENGES.filter(function(c){return c.difficulty==='legendary'}).every(function(c,i){var idx=CHALLENGES.indexOf(c);return save.challengesDone&&save.challengesDone[idx]});
-  var allEffects=['confetti','sparkle','pulse','fire_trail','lightning'].every(function(id){return save.owned&&save.owned['effect_'+id]});
+  var allEffects=['confetti','sparkle','pulse','fire_trail','lightning','rainbow_wave','plasma','storm_fx','nebula_fx'].every(function(id){return save.owned&&save.owned['effect_'+id]});
   if(req==='win50ch2')return totalWins>=50&&ch2Done;
   if(req==='win75ch2')return totalWins>=75&&ch2Done;
   if(req==='win75ch3')return totalWins>=75&&ch3Done;
@@ -6361,7 +6362,7 @@ function forceGameEnd(won,reason){
     else save.aiStats[curConfig.vsAiDiff].losses++;
   }
   grantMatchXP(won,curConfig.isRanked||false);
-  var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);if(won&&_p1pctRaw>=90)save.best90pct=true;
+  var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);if(won&&_p1pctRaw>=90)save.best90pct=true;if(won&&_p1pctRaw>=80)save.best80pct=true;
   trackGameEnd(won,_p1pctRaw,curConfig.isRanked||false,curChapter>=0,!!(curConfig&&curConfig.vsAiDiff));
   if(won){save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;}
   else{save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
