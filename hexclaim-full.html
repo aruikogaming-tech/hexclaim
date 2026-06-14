@@ -2673,11 +2673,11 @@ const SHOP_BORDERS=[
   {id:'electric',name:'Electric Spark',price:800,currency:'coins',preview:'⚡'},
   {id:'frost',name:'Frostbite',price:1200,currency:'coins',preview:'❄️'},
   {id:'shadow',name:'Shadow Pulse',price:1800,currency:'coins',preview:'🌑'},
-  {id:'neon_pulse',name:'Neon Pulse',price:0,currency:'free',preview:'💜',achievement:true},
-  {id:'galaxy_border',name:'Galaxy Swirl',price:0,currency:'free',preview:'🌌',achievement:true},
-  {id:'storm_border',name:'Storm Ring',price:0,currency:'free',preview:'⛈️',achievement:true},
-  {id:'cosmic_border',name:'Cosmic Orbit',price:0,currency:'free',preview:'🪐',achievement:true},
-  {id:'void_border',name:'Void Rift',price:0,currency:'free',preview:'🕳️',achievement:true},
+  {id:'neon_pulse',name:'Neon Pulse',price:0,currency:'free',preview:'💜',achievement:true,shopLocked:true},
+  {id:'galaxy_border',name:'Galaxy Swirl',price:0,currency:'free',preview:'🌌',achievement:true,shopLocked:true},
+  {id:'storm_border',name:'Storm Ring',price:0,currency:'free',preview:'⛈️',achievement:true,shopLocked:true},
+  {id:'cosmic_border',name:'Cosmic Orbit',price:0,currency:'free',preview:'🪐',achievement:true,shopLocked:true},
+  {id:'void_border',name:'Void Rift',price:0,currency:'free',preview:'🕳️',achievement:true,shopLocked:true},
   // Legendary challenge borders
   {id:'century_border',name:'Century Frame',price:0,currency:'free',preview:'🥇',achievement:true},
   {id:'legendary_border',name:'Legendary Frame',price:0,currency:'free',preview:'🔥',achievement:true},
@@ -2711,11 +2711,11 @@ const SHOP_EFFECTS=[
   {id:'pulse',name:'Shockwave',desc:'Massive expanding energy rings',price:1200,currency:'coins',preview:'💫'},
   {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:1800,currency:'coins',preview:'🔥'},
   {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:2500,currency:'coins',preview:'⚡'},
-  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:0,currency:'free',preview:'🌈',achievement:true},
-  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:0,currency:'free',preview:'⚛️',achievement:true},
-  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:0,currency:'free',preview:'⛈️',achievement:true},
-  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:0,currency:'free',preview:'🪐',achievement:true},
-  {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:0,currency:'free',preview:'💥',achievement:true},
+  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:0,currency:'free',preview:'🌈',achievement:true,shopLocked:true},
+  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:0,currency:'free',preview:'⚛️',achievement:true,shopLocked:true},
+  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:0,currency:'free',preview:'⛈️',achievement:true,shopLocked:true},
+  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:0,currency:'free',preview:'🪐',achievement:true,shopLocked:true},
+  {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:0,currency:'free',preview:'💥',achievement:true,shopLocked:true},
   // Season exclusive effects
   {id:'phantom_burst',name:'Phantom Burst',desc:'Level 200 exclusive — dark energy implosion',price:0,currency:'free',preview:'🌑',achievement:true},
   {id:'divine_collapse',name:'Divine Collapse',desc:'Level 999 exclusive — blinding white nova',price:0,currency:'free',preview:'✨',achievement:true},
@@ -3410,7 +3410,7 @@ function renderShopTab(tab){
   }
 
   else if(tab==='borders'){
-    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup});
+    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup&&(!s.achievement||s.shopLocked||save.owned['border_'+s.id])});
     var rankBorderGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Platinum'})},
@@ -3465,7 +3465,7 @@ function renderShopTab(tab){
     });  }
 
   else if(tab==='effects'){
-    var noRankEffects=SHOP_EFFECTS.filter(function(s){return !s.rankReq});
+    var noRankEffects=SHOP_EFFECTS.filter(function(s){return !s.rankReq&&(!s.achievement||s.shopLocked||save.owned['effect_'+s.id])});
     var rankEffectGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:SHOP_EFFECTS.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:SHOP_EFFECTS.filter(function(s){return s.rankReq==='Platinum'})},
