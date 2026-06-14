@@ -2877,8 +2877,6 @@ function checkTitleUnlocks(){
     if(title.id==='Legendary'&&save.profileLevel>=500)earned=true;
     if(title.id==='Transcendent'&&save.profileLevel>=999)earned=true;
     // Gameplay titles
-    if(title.id==='Hex Rookie'&&(save.totalGames||0)+(save.pvpWins||0)+(save.pvpLosses||0)>=10)earned=true;
-    if(title.id==='Color Chaser'&&totalWins>=10)earned=true;
     if(title.id==='Territory Lord'&&totalWins>=25)earned=true;
     if(title.id==='Combo King'&&maxStreak>=15)earned=true;
     if(title.id==='Board Breaker'&&save.best80pct)earned=true;
@@ -3190,15 +3188,6 @@ const SHOP_TITLES=[
   {id:'Elite',name:'Elite',achievement:'Reach Level 200',color:'#ff007f',style:'rainbow',glow:3},
   {id:'Legendary',name:'Legendary',achievement:'Reach Level 500',color:'#ff6600',style:'rainbow',glow:4},
   {id:'Transcendent',name:'Transcendent',achievement:'Reach Level 999',color:'#ffffff',style:'rainbow',font:'Archivo Black',glow:5},
-  {id:'Speed Demon',name:'Speed Demon',achievement:'Win Speed Demon challenge',color:'#ffcc00',style:'bold',glow:0},
-  {id:'Dominator',name:'Dominator',achievement:'Win Domination challenge',color:'#ff5500',style:'bold',glow:0},
-  {id:'Prismatic',name:'Prismatic',achievement:'Win Color Chaos challenge',color:'#cc44ff',style:'rainbow',glow:1},
-  {id:'Blind Seer',name:'Blind Seer',achievement:'Win Blindfold Blitz challenge',color:'#4488ff',style:'gradient',glow:0},
-  {id:'Precision',name:'Precision',achievement:'Win No Margin challenge',color:'#06d6a0',style:'bold',glow:0},
-  {id:'Flash',name:'Flash',achievement:'Win Speedrun Pro challenge',color:'#00eeff',style:'bold',glow:0},
-  {id:'Hex God',name:'Hex God',achievement:'Win Ultimate Test challenge',color:'#ff2200',style:'rainbow',glow:2},
-  {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#44ff88',style:'bold',glow:0},
-  {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
   {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#99ff00',style:'bold',glow:0},
   {id:'Combo King',name:'Unstoppable',achievement:'Win 15 games in a row',color:'#ff4488',style:'bold',glow:0},
   {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#00ddaa',style:'gradient',glow:0},
@@ -3941,18 +3930,18 @@ const CHAPTERS=[
   {name:"The Last Stand",desc:"SHADE at full power. Limited moves.",mechanic:"Move Limit + Boss AI",mechanicDesc:"Limited moves. SHADE plays at full intelligence.",levels:5,cols:14,rows:16,colors:6,aiSmart:0.97,story:"The core of Chromara trembles. SHADE has evolved into its final form. Every choice must count.",starThresholds:[62,70,80],moveLimit:true,baseMoves:100}
 ];
 const CHALLENGES=[
-  {name:"Speed Demon",desc:"Win in under 40 moves.",reward:"Title: Speed Demon",cols:8,rows:10,colors:4,aiSmart:0.3,moveLimit:true,baseMoves:40,reqChapter:0},
-  {name:"Domination",desc:"Claim 90%+ of the board.",reward:"Title: Dominator",cols:8,rows:10,colors:4,aiSmart:0.4,winPct:90,reqChapter:0},
+  {name:"Speed Demon",desc:"Win in under 40 moves.",reward:"100 Chromas",cols:8,rows:10,colors:4,aiSmart:0.3,moveLimit:true,baseMoves:40,reqChapter:0},
+  {name:"Domination",desc:"Claim 90%+ of the board.",reward:"150 Chromas",cols:8,rows:10,colors:4,aiSmart:0.4,winPct:90,reqChapter:0},
   {name:"Tiny Tyrant",desc:"Win on a tiny 6×6 board with 3 colors.",reward:"50 Chromas",cols:6,rows:6,colors:3,aiSmart:0.5,reqChapter:0},
-  {name:"Color Chaos",desc:"Win with 6 colors on the board.",reward:"Title: Prismatic",cols:8,rows:10,colors:6,aiSmart:0.4,reqChapter:1},
+  {name:"Color Chaos",desc:"Win with 6 colors on the board.",reward:"150 Chromas",cols:8,rows:10,colors:6,aiSmart:0.4,reqChapter:1},
   {name:"Marathon",desc:"Win on a massive 12×14 board.",reward:"100 Chromas",cols:12,rows:14,colors:5,aiSmart:0.5,reqChapter:1},
-  {name:"Blindfold Blitz",desc:"Full fog + 55 moves.",reward:"Title: Blind Seer",cols:9,rows:11,colors:5,aiSmart:0.6,fog:true,moveLimit:true,baseMoves:55,reqChapter:2},
-  {name:"No Margin",desc:"Win with 60%+ territory. Every tile counts.",reward:"Title: Precision",cols:8,rows:10,colors:4,aiSmart:0.5,winPct:60,reqChapter:2},
+  {name:"Blindfold Blitz",desc:"Full fog + 55 moves.",reward:"100 Chromas",cols:9,rows:11,colors:5,aiSmart:0.6,fog:true,moveLimit:true,baseMoves:55,reqChapter:2},
+  {name:"No Margin",desc:"Win with 60%+ territory. Every tile counts.",reward:"100 Chromas",cols:8,rows:10,colors:4,aiSmart:0.5,winPct:60,reqChapter:2},
   {name:"Fog of War",desc:"Win with fog on a 10×12 board.",reward:"75 Chromas",cols:10,rows:12,colors:5,aiSmart:0.6,fog:true,reqChapter:2},
-  {name:"Speedrun Pro",desc:"Win in under 30 moves.",reward:"Title: Flash",cols:7,rows:8,colors:3,aiSmart:0.4,moveLimit:true,baseMoves:30,reqChapter:2},
+  {name:"Speedrun Pro",desc:"Win in under 30 moves.",reward:"200 Chromas",cols:7,rows:8,colors:3,aiSmart:0.4,moveLimit:true,baseMoves:30,reqChapter:2},
   {name:"Impossible SHADE",desc:"Max AI on 6-color board.",reward:"Title: Chromancer Supreme",cols:10,rows:12,colors:6,aiSmart:1.0,reqChapter:3},
   {name:"Endurance",desc:"Beat Expert AI on a 14×16 board.",reward:"200 Chromas",cols:14,rows:16,colors:5,aiSmart:0.8,reqChapter:3},
-  {name:"Ultimate Test",desc:"Max AI, fog, 6 colors, 60 moves.",reward:"Title: Hex God",cols:10,rows:12,colors:6,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:60,reqChapter:3},
+  {name:"Ultimate Test",desc:"Max AI, fog, 6 colors, 60 moves.",reward:"300 Chromas",cols:10,rows:12,colors:6,aiSmart:1.0,fog:true,moveLimit:true,baseMoves:60,reqChapter:3},
   // ===== SKIN CHALLENGES (Medium) =====
   {name:"🎨 Emerald Rush",desc:"Win in under 50 moves with 5 colors. Prove you're fast AND smart.",reward:"Skin: Emerald Pulse",rewardSkin:'ch_emerald',cols:9,rows:11,colors:5,aiSmart:0.5,moveLimit:true,baseMoves:50,reqChapter:1,difficulty:'medium'},
   {name:"🎨 Storm Chaser",desc:"Claim 85%+ territory on a 12×14 board. Leave nothing behind.",reward:"Skin: Storm Surge",rewardSkin:'ch_storm',cols:12,rows:14,colors:5,aiSmart:0.6,winPct:85,reqChapter:2,difficulty:'medium'},
@@ -6751,7 +6740,8 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     var chromaMatch=ch.reward&&ch.reward.match(/(\d+)\s*Chromas/);
     if(chromaMatch){save.chromas=(save.chromas||0)+parseInt(chromaMatch[1]);showToast('💎 +'+chromaMatch[1]+' Diamonds earned!',3000);}
     var titleMatch=ch.reward&&ch.reward.match(/Title:\s*(.+)/);
-    if(titleMatch){var tId=titleMatch[1].trim();if(!save.owned['title_'+tId]){save.owned['title_'+tId]=true;showToast('🏅 Title unlocked: "'+tId+'"!',4000);}}
+    var validTitles=['Territory Lord','Combo King','Board Breaker','Shade Slayer','Hex Legend','The Perfect','Deathless','Iron Wall','Nexus Lord','Chromancer Supreme','Dedicated','Veteran','Elite','Legendary','Transcendent'];
+    if(titleMatch){var tId=titleMatch[1].trim();if(validTitles.indexOf(tId)>=0&&!save.owned['title_'+tId]){save.owned['title_'+tId]=true;showToast('🏅 Title unlocked: "'+tId+'"!',4000);}}
     if(ch.rewardSkin&&!save.owned['theme_'+ch.rewardSkin]){
       save.owned['theme_'+ch.rewardSkin]=true;
       showToast('🎨 Skin unlocked: '+CHALLENGE_SKINS.find(s=>s.id===ch.rewardSkin).name+'!',4000);
