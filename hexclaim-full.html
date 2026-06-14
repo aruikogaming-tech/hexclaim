@@ -657,7 +657,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   starterPackBought:false,
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,limitedShopRotation:null,limitedShopItems:null,
-  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],seasonTempCosmetics:[]
+  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[]
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
@@ -739,7 +739,7 @@ function resetAllProgress(){
         matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:false,
         nameChangesFree:1,activeSkin:'default',aiStats:{},
         authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
-        isAdmin:wasAdmin
+        isAdmin:wasAdmin,seasonTempCosmetics:[]
       };
       saveProg();
       updateAllUI();
@@ -2858,7 +2858,7 @@ function checkTitleUnlocks(){
     if(title.id==='Dominator'&&maxStreak>=10)earned=true;
     // Rank
     if(title.id==='Bronze Edge'&&rankIdx>=1)earned=true;
-if(title.id==='Silver Blade'&&rankIdx>=2)earned=true;
+    if(title.id==='Silver Blade'&&rankIdx>=2)earned=true;
 if(title.id==='Gold Star'&&rankIdx>=3)earned=true;
     if(title.id==='Platinum Elite'&&rankIdx>=3)earned=true;
     if(title.id==='Diamond Hands'&&rankIdx>=4)earned=true;
@@ -3780,13 +3780,13 @@ function checkRankUp(oldElo,newElo){
 
   // Rank-up rewards
   const rewards={
-    'Bronze':    {coins:100, chromas:10,  title:'Bronze Edge',       skin:null,                    border:'rankup_bronze_border',  effect:null},
-    'Silver':    {coins:200, chromas:50,  title:'Silver Blade',       skin:null,                    border:'rankup_silver_border',  effect:null},
-    'Gold':      {coins:500, chromas:100, title:'Gold Star',    skin:null,                    border:'rankup_gold_border',    effect:null},
-    'Platinum':  {coins:1000,chromas:200, title:'Platinum Elite',skin:null,                   border:'rankup_plat_border',    effect:null},
-    'Diamond':   {coins:2000,chromas:350, title:'Diamond Hands',skin:'season_diamond_skin',   border:'rankup_diamond_border', effect:'season_diamond_fx'},
-    'Master':    {coins:3000,chromas:500, title:'Grand Master', skin:'season_master_skin',    border:'rankup_master_border',  effect:'season_master_fx'},
-    'Chromancer':{coins:5000,chromas:1000,title:'Chromatic God',skin:'chromancer_ascended',   border:'rankup_chroma_border',  effect:'season_chroma_fx'},
+    'Bronze':    {coins:100, chromas:10,  title:null, skin:null, border:'rankup_bronze_border',  effect:null},
+    'Silver':    {coins:200, chromas:50,  title:null, skin:null, border:'rankup_silver_border',  effect:null},
+    'Gold':      {coins:500, chromas:100, title:null, skin:null, border:'rankup_gold_border',    effect:null},
+    'Platinum':  {coins:1000,chromas:200, title:null, skin:null, border:'rankup_plat_border',    effect:null},
+    'Diamond':   {coins:2000,chromas:350, title:null, skin:null, border:'rankup_diamond_border', effect:null},
+    'Master':    {coins:3000,chromas:500, title:null, skin:null, border:'rankup_master_border',  effect:null},
+    'Chromancer':{coins:5000,chromas:1000,title:null, skin:null, border:'rankup_chroma_border',  effect:null},
   };
 
   const reward=rewards[newRank.name];
