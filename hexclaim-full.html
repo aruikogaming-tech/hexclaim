@@ -2498,8 +2498,8 @@ const SHOP_THEMES=[
   {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,req:'3star_ch3',reqDesc:'3-star every level in Chapter 3',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
   {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000a05','#004422','#228800','#44dd00','#116600','#66ff00','#003311','#aaff44'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
   {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,req:'all_legendary',reqDesc:'Complete all Legendary Challenges',currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶']},
-  {tier:4,id:'void_nexus',name:'Void Nexus',desc:'Level 200 exclusive — dimensional rift energy',price:0,currency:'free',preview:'🌑',achievement:true,hidden:true,colors:['#0a0008','#440022','#880044','#cc0066','#660033','#aa0055','#220011','#ff0077'],symbols:['⊘','⌬','✦','∞','⊛','◈','⊕','⌁']},
-  {tier:4,id:'solar_crown',name:'Solar Crown',desc:'Level 500 exclusive — blazing solar glory',price:0,currency:'free',preview:'👑',achievement:true,hidden:true,colors:['#0a0500','#ff2200','#ffcc00','#ff0000','#ff4400','#cc0000','#ff8800','#ff5500'],symbols:['👑','✦','★','⊛','◈','⊕','✧','☆']},
+  {tier:4,id:'void_nexus',name:'Void Nexus',desc:'Level 200 exclusive — dimensional rift energy',price:0,currency:'free',preview:'🌑',achievement:true,hidden:true,colors:['#000808','#003333','#005555','#007777','#002222','#006666','#001111','#009999'],symbols:['⊘','⌬','✦','∞','⊛','◈','⊕','⌁']},
+  {tier:4,id:'solar_crown',name:'Solar Crown',desc:'Level 500 exclusive — blazing solar glory',price:0,currency:'free',preview:'👑',achievement:true,hidden:true,colors:['#080600','#cc8800','#ffbb00','#ffdd44','#aa6600','#ffcc22','#886600','#ffe066'],symbols:['👑','✦','★','⊛','◈','⊕','✧','☆']},
   {tier:4,id:'celestial_ascension',name:'Celestial Ascension',desc:'Level 999 exclusive — the ultimate prestige skin',price:0,currency:'free',preview:'✨',achievement:true,hidden:true,colors:['#ffffff','#ffd700','#ff69b4','#00ffff','#ff4500','#7fff00','#9400d3','#ffd166'],symbols:['✨','🌟','⊛','✦','◈','⊕','★','💫']},
   {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'consistent25',reqDesc:'Win 25 games without losing 3 in a row',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
@@ -2729,7 +2729,7 @@ const SHOP_EFFECTS=[
 const LIMITED_EDITION_POOL=[
   // ===== THEMES (18 total) =====
   {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Dark throne of hellfire obsidian',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#080a0c','#778899','#556677','#99aabb','#334455','#aabbcc','#1a2233','#ccdde0'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
-  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#060600','#887700','#665500','#bbaa00','#443300','#998800','#221100','#ddcc44'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
+  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#050508','#334477','#223366','#445588','#112255','#556699','#0a1133','#6677aa'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
   {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
   {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
   {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
@@ -2935,7 +2935,7 @@ function registerSeasonCosmetics(){
 }
 function getBorderStyle(){
   var b=save.equipped.border||'default';
-  if(b==='flame')return 'border:2px solid #e94560;box-shadow:0 0 8px rgba(233,69,96,0.5),0 0 16px rgba(233,69,96,0.2)';
+  if(b==='flame')return 'border:2px solid #ff8833;box-shadow:0 0 8px rgba(255,136,51,0.5),0 0 16px rgba(255,136,51,0.2)';
   if(b==='electric')return 'border:2px solid #4cc9f0;box-shadow:0 0 8px rgba(76,201,240,0.5),0 0 16px rgba(76,201,240,0.2)';
   if(b==='rainbow')return 'border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 2px var(--p1),0 0 8px rgba(6,214,160,0.3)';
   if(b==='shadow')return 'border:2px solid #6c757d;box-shadow:0 0 12px rgba(0,0,0,0.8),0 0 4px rgba(108,117,125,0.5)';
@@ -2949,7 +2949,7 @@ function getBorderStyle(){
   if(b==='void_border')return 'border:3px solid #3300cc;box-shadow:0 0 18px rgba(51,0,204,0.9),0 0 36px rgba(0,0,80,0.6),0 0 6px rgba(0,0,255,0.3);animation:borderBreathe 3s ease infinite';
   if(b==='divine_border')return 'border:3px solid #ffd700;box-shadow:0 0 20px rgba(255,215,0,0.8),0 0 40px rgba(255,215,0,0.3),0 0 8px rgba(255,255,255,0.5);animation:borderPulse 2.5s ease infinite,borderRotate 6s linear infinite;--bc:255,215,0';
   if(b==='crystal_border')return 'border:2px solid #996600;box-shadow:0 0 10px rgba(153,102,0,0.5),0 0 20px rgba(153,102,0,0.2)';
-  if(b==='magma_border')return 'border:3px solid #cc00ff;box-shadow:0 0 12px rgba(204,0,255,0.6),0 0 24px rgba(100,0,200,0.3);animation:borderPulse 2s ease infinite;--bc:204,0,255';
+  if(b==='magma_border')return 'border:3px solid #dd5500;box-shadow:0 0 12px rgba(221,85,0,0.6),0 0 24px rgba(170,50,0,0.3);animation:borderPulse 2s ease infinite;--bc:221,85,0';
   if(b==='thunder_border')return 'border:3px solid #00bbff;box-shadow:0 0 14px rgba(0,187,255,0.6),0 0 28px rgba(0,187,255,0.2);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
   if(b==='storm_border')return 'border:3px solid #00ff88;box-shadow:0 0 14px rgba(0,255,136,0.7),0 0 28px rgba(0,200,100,0.3);animation:borderFlicker 0.5s ease infinite';
@@ -2958,9 +2958,9 @@ function getBorderStyle(){
   if(b==='le_phoenix')return 'border:3px solid #5500cc;box-shadow:0 0 16px rgba(85,0,204,0.8),0 0 32px rgba(60,0,150,0.3);animation:borderFlicker 0.6s ease infinite';
   if(b==='le_frost_crown')return 'border:3px solid #ff88bb;box-shadow:0 0 14px rgba(255,136,187,0.7),0 0 28px rgba(255,100,150,0.3),0 0 6px rgba(255,200,220,0.4);animation:borderBreathe 3s ease infinite';
   if(b==='le_shadow_claw')return 'border:3px solid #443366;box-shadow:0 0 18px rgba(0,0,0,0.9),0 0 8px rgba(68,51,102,0.6);animation:borderBreathe 2.5s ease infinite';
-  if(b==='le_rainbow_ring')return 'border:3px solid #ff4488;box-shadow:0 0 10px rgba(255,68,136,0.5),0 0 20px rgba(68,136,255,0.4),0 0 30px rgba(68,255,136,0.3);animation:borderRotate 3s linear infinite';
+  if(b==='le_rainbow_ring')return 'border:3px solid #ffee00;box-shadow:0 0 10px rgba(255,238,0,0.6),0 0 20px rgba(220,200,0,0.4),0 0 30px rgba(255,255,0,0.3);animation:borderRotate 3s linear infinite';
   if(b==='le_dragon_scale')return 'border:3px solid #33ddaa;box-shadow:0 0 14px rgba(51,221,170,0.7),0 0 28px rgba(30,180,130,0.3),inset 0 0 6px rgba(50,220,160,0.2);animation:borderPulse 2s ease infinite;--bc:51,221,170';
-  if(b==='le_void_rift')return 'border:3px solid #aaff00;box-shadow:0 0 18px rgba(170,255,0,0.8),0 0 36px rgba(100,200,0,0.4),0 0 6px rgba(255,255,0,0.3);animation:borderFlicker 0.3s ease infinite';
+  if(b==='le_void_rift')return 'border:3px solid #cc1111;box-shadow:0 0 18px rgba(204,17,17,0.8),0 0 36px rgba(160,0,0,0.4),0 0 6px rgba(255,30,30,0.3);animation:borderFlicker 0.3s ease infinite';
   if(b==='le_crown_jewel')return 'border:3px solid #55ff00;box-shadow:0 0 16px rgba(85,255,0,0.8),0 0 32px rgba(60,200,0,0.4),0 0 6px rgba(100,255,0,0.3);animation:borderPulse 2.5s ease infinite;--bc:85,255,0';
   if(b==='le_sakura_frame')return 'border:3px solid #aa5500;box-shadow:0 0 12px rgba(170,85,0,0.6),0 0 24px rgba(130,60,0,0.2);animation:borderBreathe 3s ease infinite';
   // Season exclusive borders
@@ -2992,7 +2992,7 @@ function getBorderStyle(){
   if(b==='achieve_ch2')return 'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)';
   if(b==='achieve_ch3')return 'border:2px solid #ff9f1c;box-shadow:0 0 10px rgba(255,159,28,0.6)';
   if(b==='achieve_ch4')return 'border:2px solid #ef476f;box-shadow:0 0 12px rgba(239,71,111,0.6);animation:borderPulse 2s ease infinite;--bc:239,71,111';
-  if(b==='achieve_vsai_hard')return 'border:2px solid #ff8800;box-shadow:0 0 10px rgba(255,136,0,0.6);animation:borderBreathe 2.5s ease infinite';
+  if(b==='achieve_vsai_hard')return 'border:2px solid #228833;box-shadow:0 0 10px rgba(34,136,51,0.6);animation:borderBreathe 2.5s ease infinite';
   if(b==='achieve_vsai_insane')return 'border:3px solid #dd0099;box-shadow:0 0 14px rgba(221,0,153,0.8);animation:borderPulse 1.5s ease infinite;--bc:221,0,153';
   if(b==='achieve_level25')return 'border:2px solid #88ff00;box-shadow:0 0 8px rgba(136,255,0,0.6);animation:borderBreathe 3s ease infinite';
   if(b==='achieve_level50')return 'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7);animation:borderPulse 2s ease infinite;--bc:131,56,236';
@@ -3065,7 +3065,7 @@ function getBorderDecoHTML(size){
     }
   }
   if(b==='crystal_border')return 'border:2px solid #996600;box-shadow:0 0 10px rgba(153,102,0,0.5),0 0 20px rgba(153,102,0,0.2)';
-  if(b==='magma_border')return 'border:3px solid #cc00ff;box-shadow:0 0 12px rgba(204,0,255,0.6),0 0 24px rgba(100,0,200,0.3);animation:borderPulse 2s ease infinite;--bc:204,0,255';
+  if(b==='magma_border')return 'border:3px solid #dd5500;box-shadow:0 0 12px rgba(221,85,0,0.6),0 0 24px rgba(170,50,0,0.3);animation:borderPulse 2s ease infinite;--bc:221,85,0';
   if(b==='thunder_border')return 'border:3px solid #00bbff;box-shadow:0 0 14px rgba(0,187,255,0.6),0 0 28px rgba(0,187,255,0.2);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
   if(b==='storm_border'){
@@ -3115,9 +3115,9 @@ function getBorderDecoHTML(size){
 const ACHIEVEMENT_REWARDS={
   // Win milestones → skins
   'win_1':   {type:'theme', id:'achieve_win1',   name:'Victory Rush',    desc:'Won first game',     colors:['#0a1628','#06d6a0','#00b388','#00e5a0','#00ff88','#04c47a'],symbols:['★','◆','▲','✦','●','⬡']},
-  'win_10':  {type:'theme', id:'achieve_win10',  name:'Tenacious',       desc:'Won 10 games',       colors:['#0d1a2e','#118ab2','#0099cc','#00bbee','#0077aa','#33aadd'],symbols:['◎','◈','◉','◌','○','●']},
+  'win_10':  {type:'theme', id:'achieve_win10',  name:'Tenacious',       desc:'Won 10 games',       colors:['#0a0510','#884466','#aa5577','#cc6688','#662244','#bb7799'],symbols:['◎','◈','◉','◌','○','●']},
   'win_25':  {type:'theme', id:'achieve_win25',  name:'Battle-Worn',     desc:'Won 25 games',       colors:['#1a0a0a','#ef476f','#cc2244','#ff6688','#ff4466','#dd3355'],symbols:['✖','◥','▼','◣','⬥','▲']},
-  'win_50':  {type:'theme', id:'achieve_win50',  name:'War Paint',       desc:'Won 50 games',       colors:['#0f0a1a','#8338ec','#6622cc','#aa55ff','#9944ee','#7733bb'],symbols:['⬟','◈','✧','◆','◉','✦']},
+  'win_50':  {type:'theme', id:'achieve_win50',  name:'War Paint',       desc:'Won 50 games',       colors:['#0a0300','#993300','#bb4400','#cc5500','#661100','#dd6622'],symbols:['⬟','◈','✧','◆','◉','✦']},
   'win_100': {type:'theme', id:'achieve_win100', name:'Century',         desc:'Won 100 games',      colors:['#0a0500','#cd7f32','#b87333','#e8a44a','#996633','#daa520'],symbols:['✿','❧','♣','❦','✾','♠']},
   'win_200': {type:'theme', id:'achieve_win200', name:'Legend Tiles',    desc:'Won 200 games',      colors:['#010008','#1a0088','#2200bb','#3311cc','#0a0055','#4422dd'],symbols:['👑','★','◆','✦','⬡','●']},
   // Streaks → effects
@@ -3185,28 +3185,28 @@ function grantAchievementReward(key){
 }
 
 const SHOP_TITLES=[
-  {id:'Dedicated',name:'Dedicated',achievement:'Reach Level 50',color:'#00e5ff',style:'bold',glow:1},
+  {id:'Dedicated',name:'Dedicated',achievement:'Reach Level 50',color:'#00ffaa',style:'bold',glow:1},
   {id:'Veteran',name:'Veteran',achievement:'Reach Level 100',color:'#7fff00',style:'gradient',glow:2},
   {id:'Elite',name:'Elite',achievement:'Reach Level 200',color:'#ff007f',style:'rainbow',glow:3},
   {id:'Legendary',name:'Legendary',achievement:'Reach Level 500',color:'#ff6600',style:'rainbow',glow:4},
   {id:'Transcendent',name:'Transcendent',achievement:'Reach Level 999',color:'#ffffff',style:'rainbow',font:'Archivo Black',glow:5},
-  {id:'Speed Demon',name:'Speed Demon',achievement:'Win Speed Demon challenge',color:'#ef476f',style:'bold',glow:0},
-  {id:'Dominator',name:'Dominator',achievement:'Win Domination challenge',color:'#ffd166',style:'bold',glow:0},
+  {id:'Speed Demon',name:'Speed Demon',achievement:'Win Speed Demon challenge',color:'#ffcc00',style:'bold',glow:0},
+  {id:'Dominator',name:'Dominator',achievement:'Win Domination challenge',color:'#ff5500',style:'bold',glow:0},
   {id:'Prismatic',name:'Prismatic',achievement:'Win Color Chaos challenge',color:'#cc44ff',style:'rainbow',glow:1},
   {id:'Blind Seer',name:'Blind Seer',achievement:'Win Blindfold Blitz challenge',color:'#4488ff',style:'gradient',glow:0},
   {id:'Precision',name:'Precision',achievement:'Win No Margin challenge',color:'#06d6a0',style:'bold',glow:0},
-  {id:'Flash',name:'Flash',achievement:'Win Speedrun Pro challenge',color:'#ffee00',style:'bold',glow:0},
+  {id:'Flash',name:'Flash',achievement:'Win Speedrun Pro challenge',color:'#00eeff',style:'bold',glow:0},
   {id:'Hex God',name:'Hex God',achievement:'Win Ultimate Test challenge',color:'#ff2200',style:'rainbow',glow:2},
   {id:'Hex Rookie',name:'Hex Rookie',achievement:'Play 10 games',color:'#44ff88',style:'bold',glow:0},
   {id:'Color Chaser',name:'Color Chaser',achievement:'Win 10 games',color:'#118ab2',style:'bold',glow:0},
-  {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#ff9f1c',style:'bold',glow:0},
+  {id:'Territory Lord',name:'Territory Lord',achievement:'Win 25 games',color:'#99ff00',style:'bold',glow:0},
   {id:'Combo King',name:'Unstoppable',achievement:'Win 15 games in a row',color:'#ff4488',style:'bold',glow:0},
-  {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#8338ec',style:'gradient',glow:0},
+  {id:'Board Breaker',name:'Board Breaker',achievement:'Win with 80%+ territory',color:'#00ddaa',style:'gradient',glow:0},
   {id:'Shade Slayer',name:'Shade Slayer',achievement:'Beat Hard AI',color:'#ff8800',style:'bold',glow:0},
   {id:'Hex Legend',name:'Hex Legend',achievement:'Complete all Campaign chapters',color:'#00ccff',style:'rainbow',glow:2},
   {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#e94560',style:'gradient',font:'Archivo Black',glow:1},
   {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#9900ff',style:'rainbow',glow:2},
-  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#ff4400',style:'gradient',font:'Archivo Black',glow:3},
+  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#44bbff',style:'gradient',font:'Archivo Black',glow:3},
   {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#ff00ff',style:'rainbow',glow:4},
   {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
 ];
