@@ -2480,11 +2480,11 @@ const SHOP_THEMES=[
   {tier:1,id:'fire',name:'Hellfire',desc:'Molten lava and brimstone',price:1500,currency:'coins',preview:'🔥',colors:['#1a0000','#ff3300','#ff8800','#ffcc00','#ff0066','#880000','#ff44aa','#cc6600'],symbols:['⬥','▲','◆','☠','✖','◥','◣','▼']},
   {tier:2,id:'galaxy',name:'Galaxy Nebula',desc:'Cosmic stardust swirl',price:2500,currency:'coins',preview:'🌌',colors:['#000010','#cc44ff','#4488ff','#ff44aa','#44ffcc','#ffaa22','#ff6644','#44ff88'],symbols:['✦','⊹','✵','⋆','✷','⊛','⊕','✶']},
   {tier:2,id:'blood',name:'Bloodmoon',desc:'Dark crimson shadow ritual',price:3500,currency:'coins',preview:'🩸',colors:['#0a0000','#cc0000','#ff3333','#ff6644','#880044','#ff0088','#ff8800','#440022'],symbols:['☽','✠','◆','❖','✟','◇','☾','✝']},
-  {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:8000,rankReq:'Gold',currency:'coins',preview:'🪩',colors:['#0a0a1a','#dd66aa','#44cccc','#ccaa44','#6688dd','#cc6633','#8866dd','#44aa66'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
-  {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,rankReq:'Platinum',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
-  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦'],rankReq:'Diamond'},
-  {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶'],rankReq:'Master'},
-  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,rankReq:'Chromancer',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
+  {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:8000,req:'win100ch2',reqDesc:'Win 100 games & Complete Chapter 2',currency:'coins',preview:'🪩',colors:['#0a0a1a','#dd66aa','#44cccc','#ccaa44','#6688dd','#cc6633','#8866dd','#44aa66'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
+  {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:12000,req:'3star_ch3',reqDesc:'3-star every level in Chapter 3',currency:'coins',preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
+  {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:18000,req:'win200',reqDesc:'Win 200 games',currency:'coins',preview:'⛈️',colors:['#000510','#00aaff','#ff00aa','#ffff00','#00ff88','#8844ff','#ff4400','#00ffff'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
+  {tier:4,id:'celestial',name:'Celestial Forge',desc:'Stars being born in cosmic fire',price:25000,req:'all_legendary',reqDesc:'Complete all Legendary Challenges',currency:'coins',preview:'🌟',colors:['#000005','#ffcc00','#ff6600','#ff0066','#0066ff','#cc00ff','#00ffaa','#ffaa00'],symbols:['☆','✦','⊹','✵','⋆','✷','⊛','✶']},
+  {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:35000,req:'combo10',reqDesc:'Reach a 10× combo',currency:'coins',preview:'🐉',colors:['#0a0000','#ff2200','#ffaa00','#00ff44','#cc00ff','#ff0088','#0066ff','#ffcc44'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
 
 const SEASONAL_SKINS=[
@@ -2656,11 +2656,11 @@ const SHOP_BORDERS=[
   {id:'electric',name:'Electric Spark',price:800,currency:'coins',preview:'⚡'},
   {id:'frost',name:'Frostbite',price:1200,currency:'coins',preview:'❄️'},
   {id:'shadow',name:'Shadow Pulse',price:1800,currency:'coins',preview:'🌑'},
-  {id:'neon_pulse',name:'Neon Pulse',price:6000,currency:'coins',preview:'💜',rankReq:'Gold'},
-  {id:'galaxy_border',name:'Galaxy Swirl',price:10000,currency:'coins',preview:'🌌',rankReq:'Platinum'},
-  {id:'storm_border',name:'Storm Ring',price:16000,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
-  {id:'cosmic_border',name:'Cosmic Orbit',price:22000,currency:'coins',preview:'🪐',rankReq:'Master'},
-  {id:'void_border',name:'Void Rift',price:30000,currency:'coins',preview:'🕳️',rankReq:'Chromancer'},
+  {id:'neon_pulse',name:'Neon Pulse',price:6000,currency:'coins',preview:'💜',req:'win50ch2',reqDesc:'Win 50 games & Complete Chapter 2'},
+  {id:'galaxy_border',name:'Galaxy Swirl',price:10000,currency:'coins',preview:'🌌',req:'win75ch3',reqDesc:'Win 75 games & Complete Chapter 3'},
+  {id:'storm_border',name:'Storm Ring',price:16000,currency:'coins',preview:'⛈️',req:'win100',reqDesc:'Win 100 games'},
+  {id:'cosmic_border',name:'Cosmic Orbit',price:22000,currency:'coins',preview:'🪐',req:'3star_ch4',reqDesc:'3-star every level in Chapter 4'},
+  {id:'void_border',name:'Void Rift',price:30000,currency:'coins',preview:'🕳️',req:'all_challenges',reqDesc:'Complete all Challenges'},
   // Legendary challenge borders
   {id:'ch_obsidian_border',name:'Obsidian Crown Frame',price:0,currency:'season',preview:'🖤',achievement:true},
   {id:'ch_void_border',name:'Void Emperor Frame',price:0,currency:'season',preview:'👁️',achievement:true},
@@ -2691,11 +2691,11 @@ const SHOP_EFFECTS=[
   {id:'pulse',name:'Shockwave',desc:'Massive expanding energy rings',price:1200,currency:'coins',preview:'💫'},
   {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:1800,currency:'coins',preview:'🔥'},
   {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:2500,currency:'coins',preview:'⚡'},
-  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:6000,currency:'coins',preview:'🌈',rankReq:'Gold'},
-  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:10000,currency:'coins',preview:'⚛️',rankReq:'Platinum'},
-  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:16000,currency:'coins',preview:'⛈️',rankReq:'Diamond'},
-  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:22000,currency:'coins',preview:'🪐',rankReq:'Master'},
-  {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:30000,currency:'coins',preview:'💥',rankReq:'Chromancer'},
+  {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:6000,currency:'coins',preview:'🌈',req:'win75ch2',reqDesc:'Win 75 games & Complete Chapter 2'},
+  {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:10000,currency:'coins',preview:'⚛️',req:'3star_ch2',reqDesc:'3-star every level in Chapter 2'},
+  {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:16000,currency:'coins',preview:'⛈️',req:'all_chapters',reqDesc:'Complete all Campaign chapters'},
+  {id:'nebula_fx',name:'Nebula Birth',desc:'Cosmic gas cloud swirling into existence',price:22000,currency:'coins',preview:'🪐',req:'win10streak',reqDesc:'Win 10 games in a row'},
+  {id:'supernova',name:'Supernova',desc:'Cataclysmic stellar explosion with shockwave rings',price:30000,currency:'coins',preview:'💥',req:'all_effects',reqDesc:'Earn every other effect first'},
   // Season exclusive effects
   {id:'season_diamond_fx',name:'Diamond Frost',desc:'Season exclusive — Diamond rank reward',price:0,currency:'season',preview:'💠',seasonal:true},
   {id:'season_master_fx',name:'Master Surge',desc:'Season exclusive — Master rank reward',price:0,currency:'season',preview:'👑',seasonal:true},
@@ -3346,6 +3346,38 @@ function meetsRankReq(rankName){
   return playerIdx>=reqIdx;
 }
 
+function meetsReq(req){
+  if(!req)return true;
+  var totalWins=(save.totalWins||0)+(save.pvpWins||0);
+  var maxStreak=save.maxWinStreak||0;
+  var ch3AllStar=true;for(var l=1;l<=5;l++){if((save.stars&&save.stars['ch3_'+l]||0)<3)ch3AllStar=false;}
+  var ch4AllStar=true;for(var l=1;l<=5;l++){if((save.stars&&save.stars['ch4_'+l]||0)<3)ch4AllStar=false;}
+  var ch2AllStar=true;for(var l=1;l<=5;l++){if((save.stars&&save.stars['ch2_'+l]||0)<3)ch2AllStar=false;}
+  var ch2Done=true;for(var l=1;l<=5;l++){if(!save.cleared||!save.cleared['ch2_'+l])ch2Done=false;}
+  var ch3Done=true;for(var l=1;l<=5;l++){if(!save.cleared||!save.cleared['ch3_'+l])ch3Done=false;}
+  var ch4Done=true;for(var l=1;l<=5;l++){if(!save.cleared||!save.cleared['ch4_'+l])ch4Done=false;}
+  var allChapters=ch2Done&&ch3Done&&ch4Done&&(function(){var d=true;for(var l=1;l<=5;l++){if(!save.cleared||!save.cleared['ch1_'+l])d=false;}return d;})();
+  var allChallenges=CHALLENGES.every(function(_,i){return save.challengesDone&&save.challengesDone[i]});
+  var allLegendary=CHALLENGES.filter(function(c){return c.difficulty==='legendary'}).every(function(c,i){var idx=CHALLENGES.indexOf(c);return save.challengesDone&&save.challengesDone[idx]});
+  var allEffects=['confetti','sparkle','pulse','fire_trail','lightning'].every(function(id){return save.owned&&save.owned['effect_'+id]});
+  if(req==='win50ch2')return totalWins>=50&&ch2Done;
+  if(req==='win75ch2')return totalWins>=75&&ch2Done;
+  if(req==='win75ch3')return totalWins>=75&&ch3Done;
+  if(req==='win100')return totalWins>=100;
+  if(req==='win100ch2')return totalWins>=100&&ch2Done;
+  if(req==='win200')return totalWins>=200;
+  if(req==='3star_ch2')return ch2AllStar;
+  if(req==='3star_ch3')return ch3AllStar;
+  if(req==='3star_ch4')return ch4AllStar;
+  if(req==='all_chapters')return allChapters;
+  if(req==='all_challenges')return allChallenges;
+  if(req==='all_legendary')return allLegendary;
+  if(req==='combo10')return(save.bestComboEver||0)>=10;
+  if(req==='win10streak')return maxStreak>=10;
+  if(req==='all_effects')return allEffects;
+  return true;
+}
+
 function renderShopTab(tab){
   var cont=document.getElementById('shopContent');
   cont.innerHTML='';cont.style.cssText='display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;scrollbar-width:none;-webkit-overflow-scrolling:touch';
@@ -3369,11 +3401,12 @@ function renderShopTab(tab){
     function renderSkinItem(item){
       var owned=item.price===0||save.owned['theme_'+item.id];
       var isActive=save.activeSkin===item.id;
-      var rankLocked=item.rankReq&&!meetsRankReq(item.rankReq);
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
       var el=document.createElement('div');el.className='shop-item';
       if(rankLocked){
         el.style.opacity='0.4';
-        el.innerHTML='<div class="si-preview" style="background:'+item.colors[0]+';padding:2px;filter:grayscale(0.8)">'+makeSkinPreview(item.colors,16,item.symbols,item.tier,item.rankReq)+'</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div class="si-desc">'+item.desc+'</div><div style="font-size:8px;color:var(--c4);margin-top:2px;font-weight:700">Requires '+item.rankReq+' rank</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
+        el.innerHTML='<div class="si-preview" style="background:'+item.colors[0]+';padding:2px;filter:grayscale(0.8)">'+makeSkinPreview(item.colors,16,item.symbols,item.tier,item.rankReq)+'</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div class="si-desc">'+item.desc+'</div><div style="font-size:8px;color:var(--c4);margin-top:2px;font-weight:700">🔒 '+lockDesc+'</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
         el.onclick=function(){playSfx('click')};
       } else if(!owned){
         el.innerHTML='<div class="si-preview" style="background:'+item.colors[0]+';padding:2px">'+makeSkinPreview(item.colors,16,item.symbols,item.tier,item.rankReq)+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc">'+item.desc+'</div>'+'</div><div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>';
@@ -3403,7 +3436,8 @@ function renderShopTab(tab){
     function renderBorderItem(item){
       var owned=item.price===0||save.owned['border_'+item.id];
       var equipped=save.equipped.border===item.id;
-      var rankLocked=item.rankReq&&!meetsRankReq(item.rankReq);
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
       var el=document.createElement('div');el.className='shop-item'+(owned&&!equipped?' owned':'');
       var prevStyle='width:36px;height:36px;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;';
       var borderMap={
@@ -3431,7 +3465,7 @@ function renderShopTab(tab){
       var decoHTML=getBorderDecoHTML(36);save.equipped.border=savedBorder;
       if(rankLocked){
         el.style.opacity='0.4';
-        el.innerHTML='<div style="'+prevStyle+';filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div style="font-size:8px;color:var(--c4);font-weight:700">Requires '+item.rankReq+' rank</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
+        el.innerHTML='<div style="'+prevStyle+';filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div style="font-size:8px;color:var(--c4);font-weight:700">🔒 '+lockDesc+'</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
         el.onclick=function(){playSfx('click')};
       } else {
         el.innerHTML='<div style="'+prevStyle+';position:relative;overflow:hidden">'+(save.equipped.icon||'\u2b21')+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc" style="font-size:9px;color:var(--muted)">Frames your profile icon</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
@@ -3457,11 +3491,12 @@ function renderShopTab(tab){
     function renderEffectItem(item){
       var owned=item.price===0||save.owned['effect_'+item.id];
       var equipped=save.equipped.effect===item.id;
-      var rankLocked=item.rankReq&&!meetsRankReq(item.rankReq);
+      var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.req&&!meetsReq(item.req));
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'');
       var el=document.createElement('div');el.className='shop-item'+(owned&&!equipped?' owned':'');
       if(rankLocked){
         el.style.opacity='0.4';
-        el.innerHTML='<div class="si-preview" style="background:var(--dim);filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div class="si-desc">'+item.desc+'</div><div style="font-size:8px;color:var(--c4);margin-top:2px;font-weight:700">Requires '+item.rankReq+' rank</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
+        el.innerHTML='<div class="si-preview" style="background:var(--dim);filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div class="si-desc">'+item.desc+'</div><div style="font-size:8px;color:var(--c4);margin-top:2px;font-weight:700">🔒 '+lockDesc+'</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
         el.onclick=function(){playSfx('click')};
       } else {
         el.innerHTML='<div class="si-preview" style="background:var(--dim)">'+item.preview+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc">'+item.desc+'</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
