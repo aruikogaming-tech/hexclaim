@@ -3403,7 +3403,7 @@ function renderShopTab(tab){
     cont.appendChild(preview);
 
     // Group skins: unlocked first, then by rank
-    var allSkins=getAllSkins().filter(function(s){return !s.hidden;});
+    var allSkins=getAllSkins().filter(function(s){return !s.hidden||save.owned['theme_'+s.id];});
     var noRank=allSkins.filter(function(s){return !s.rankReq});
     var rankGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:allSkins.filter(function(s){return s.rankReq==='Gold'})},
