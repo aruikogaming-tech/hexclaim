@@ -657,7 +657,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   starterPackBought:false,
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,limitedShopRotation:null,limitedShopItems:null,
-  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0
+  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],seasonTempCosmetics:[]
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
@@ -2546,71 +2546,104 @@ function checkSeasonEnd(){
   if(elapsed>=SEASON_DURATION&&!save.seasonClaimed){
     const highestElo=save.seasonHighElo||save.elo;
     const playerRank=getRank(highestElo);
-    const playerRankIdx=RANKS.indexOf(playerRank);
-    // Rank rewards
     const seasonNum=save.season||1;
+    const nextSeasonNum=seasonNum+1;
+
+    // Strip previous season's temp cosmetics
+    if(save.seasonTempCosmetics){
+      save.seasonTempCosmetics.forEach(function(id){
+        delete save.owned[id];
+      });
+    }
+    save.seasonTempCosmetics=[];
+
     const rankRewards={
-      'Unranked':  {coins:25,   diamonds:5,   medal:'🔘',title:null,          skin:null,                                    border:null,                    effect:null},
-      'Bronze':    {coins:50,   diamonds:10,  medal:'🥉',title:null,          skin:null,                                    border:null,                    effect:null},
-      'Silver':    {coins:100,  diamonds:25,  medal:'🥈',title:null,          skin:null,                                    border:null,                    effect:null},
-      'Gold':      {coins:200,  diamonds:50,  medal:'🥇',title:null,          skin:null,                                    border:'season_gold_border',    effect:null},
-      'Platinum':  {coins:400,  diamonds:100, medal:'💎',title:null,          skin:null,                                    border:'season_plat_border',    effect:null},
-      'Diamond':   {coins:600,  diamonds:150, medal:'💠',title:null,          skin:null,                                    border:'season_diamond_border', effect:'season_diamond_fx'},
-      'Master':    {coins:800,  diamonds:200, medal:'👑',title:null,          skin:null,                                    border:'season_master_border',  effect:'season_master_fx'},
-      'Chromancer':{coins:1000, diamonds:300, medal:'🔮',title:null,          skin:'season_chroma_s'+seasonNum,             border:'season_chroma_border',  effect:'season_chroma_fx'},
+      'Unranked':  {coins:50,   diamonds:10,  medal:'🔘',titleSuffix:null},
+      'Bronze':    {coins:100,  diamonds:25,  medal:'🥉',titleSuffix:'Bronze Learner'},
+      'Silver':    {coins:200,  diamonds:50,  medal:'🥈',titleSuffix:'Silver Starter'},
+      'Gold':      {coins:400,  diamonds:100, medal:'🥇',titleSuffix:'Gold Average'},
+      'Platinum':  {coins:600,  diamonds:200, medal:'💎',titleSuffix:'Platinum Superior'},
+      'Diamond':   {coins:800,  diamonds:350, medal:'💠',titleSuffix:'Diamond Elite'},
+      'Master':    {coins:1000, diamonds:500, medal:'👑',titleSuffix:'Master Tryhard'},
+      'Chromancer':{coins:1500, diamonds:1000,medal:'🔮',titleSuffix:'Chromancer Legend'},
     };
-    const reward=rankRewards[playerRank.name]||rankRewards['Bronze'];
+    const reward=rankRewards[playerRank.name]||rankRewards['Unranked'];
+
     // Grant coins and diamonds
     save.coins=(save.coins||0)+reward.coins;
     save.chromas=(save.chromas||0)+reward.diamonds;
-    // Grant title
-    if(reward.title&&!save.owned['title_'+reward.title]){save.owned['title_'+reward.title]=true;}
-    // Grant skin
-    if(reward.skin&&!save.owned['theme_'+reward.skin]){save.owned['theme_'+reward.skin]=true;}
-    // Grant border
-    if(reward.border&&!save.owned['border_'+reward.border]){save.owned['border_'+reward.border]=true;}
-    if(reward.effect&&!save.owned['effect_'+reward.effect]){save.owned['effect_'+reward.effect]=true;}
-    // Grant seasonal skins
-    let skinsEarned=0;
-    SEASONAL_SKINS.filter(s=>s.season===save.season).forEach(s=>{
-      const rankIdx=RANKS.findIndex(r=>r.name===s.rank);
-      if(playerRankIdx>=rankIdx&&!save.owned['theme_'+s.id]){save.owned['theme_'+s.id]=true;skinsEarned++;}
-    });
+
+    // Grant permanent season title
+    if(reward.titleSuffix){
+      const titleId='S'+seasonNum+' '+reward.titleSuffix;
+      if(!save.owned['title_'+titleId]){
+        save.owned['title_'+titleId]=true;
+      }
+      // Auto-equip the new title
+      save.equipped.title=titleId;
+    }
+
+    // Grant temp season border (all ranks except Unranked)
+    if(playerRank.name!=='Unranked'){
+      const borderId='season_'+seasonNum+'_'+playerRank.name.toLowerCase()+'_border';
+      save.owned['border_'+borderId]=true;
+      save.seasonTempCosmetics.push('border_'+borderId);
+    }
+
+    // Grant temp season icon (all ranks except Unranked)
+    if(playerRank.name!=='Unranked'){
+      const iconId='season_'+seasonNum+'_'+playerRank.name.toLowerCase()+'_icon';
+      save.owned['icon_'+iconId]=true;
+      save.seasonTempCosmetics.push('icon_'+iconId);
+    }
+
     if(!save.seasonMedals)save.seasonMedals=[];
-    save.seasonMedals.push({season:save.season,rank:playerRank.name,icon:reward.medal});
+    save.seasonMedals.push({season:seasonNum,rank:playerRank.name,icon:reward.medal});
     save.seasonClaimed=true;
+
     // 50% soft ELO reset
     const oldElo=save.elo;
     save.elo=Math.round(oldElo+(1000-oldElo)*0.5);
     save.elo=Math.max(0,save.elo);
-    save.season=(save.season||1)+1;
+    save.season=nextSeasonNum;
     save.seasonStart=Date.now();
     save.seasonClaimed=false;
     save.seasonHighElo=save.elo;
     saveProg();
-    registerSeasonCosmetics();updateShopCurrency();
-    showSeasonRewardPopup(playerRank,reward,skinsEarned,oldElo);
+    updateShopCurrency();
+    showSeasonRewardPopup(playerRank,reward,seasonNum,oldElo);
   }
   if(!save.seasonHighElo||save.elo>save.seasonHighElo){save.seasonHighElo=save.elo;saveProg();}
 }
 
-function showSeasonRewardPopup(rank,reward,skinsEarned,oldElo){
+function showSeasonRewardPopup(rank,reward,seasonNum,oldElo){
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
-  var extraHtml='';
-  if(reward.title)extraHtml+='<div style="font-size:11px;color:var(--c3);font-weight:700;margin-top:4px">🏅 Title Unlocked: '+reward.title+'</div>';
-  if(reward.skin)extraHtml+='<div style="font-size:11px;color:var(--p1);font-weight:700;margin-top:4px">🎨 Exclusive Tile Skin Unlocked!</div>';
-  if(reward.border)extraHtml+='<div style="font-size:11px;color:var(--c2);font-weight:700;margin-top:4px">🖼 Exclusive Border Unlocked!</div>';
-  if(skinsEarned>0)extraHtml+='<div style="font-size:11px;color:var(--p1);font-weight:700;margin-top:4px">✨ '+skinsEarned+' Seasonal Skin'+(skinsEarned>1?'s':'')+' Unlocked!</div>';
-  popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--gold);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:90%;animation:popIn 0.3s ease">'
+  const nextSeason=seasonNum+1;
+  const tempExpiry='Season '+nextSeason+' end';
+  const titleId=reward.titleSuffix?'S'+seasonNum+' '+reward.titleSuffix:null;
+  const hasTemp=rank.name!=='Unranked';
+
+  var rewardsHtml='';
+  rewardsHtml+='<div style="font-size:13px;font-weight:800;color:var(--gold)">🟡 +'+reward.coins+' Coins</div>';
+  rewardsHtml+='<div style="font-size:13px;font-weight:800;color:var(--diamond)">💎 +'+reward.diamonds+' Diamonds</div>';
+  if(titleId)rewardsHtml+='<div style="font-size:12px;font-weight:800;color:var(--c3);margin-top:4px">🏅 Permanent Title: "'+titleId+'"</div>';
+  if(hasTemp){
+    rewardsHtml+='<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">';
+    rewardsHtml+='<div style="font-size:10px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px">Seasonal (expires '+tempExpiry+')</div>';
+    rewardsHtml+='<div style="font-size:12px;font-weight:800;color:var(--c2)">🖼 Season '+seasonNum+' '+rank.name+' Border</div>';
+    rewardsHtml+='<div style="font-size:12px;font-weight:800;color:var(--c2);margin-top:2px">😎 Season '+seasonNum+' '+rank.name+' Icon</div>';
+    rewardsHtml+='</div>';
+  }
+
+  popup.innerHTML='<div style="position:relative;background:var(--surface);border:2px solid var(--gold);border-radius:20px;padding:24px;text-align:center;max-width:320px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:40px;margin-bottom:8px">🏆</div>'
-    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:18px;color:var(--gold);margin-bottom:6px">Season '+(save.season-1)+' Complete!</div>'
-    +'<div style="font-size:13px;color:var(--text);margin-bottom:8px">Peak Rank: <span style="color:'+rank.color+';font-weight:800">'+rank.icon+' '+rank.name+'</span></div>'
-    +'<div style="background:var(--dim);border-radius:12px;padding:12px;margin-bottom:10px">'
-    +'<div style="font-size:13px;font-weight:800;color:var(--gold)">🟡 +'+reward.coins+' Coins</div>'
-    +'<div style="font-size:13px;font-weight:800;color:var(--diamond)">💎 +'+reward.diamonds+' Diamonds</div>'
-    +extraHtml+'</div>'
-    +'<div style="font-size:10px;color:var(--muted);margin-bottom:12px">ELO reset: '+oldElo+' → '+save.elo+' · Season '+(save.season)+' begins now!</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:18px;color:var(--gold);margin-bottom:6px">Season '+seasonNum+' Complete!</div>'
+    +'<div style="font-size:13px;color:var(--text);margin-bottom:10px">Peak Rank: <span style="color:'+rank.color+';font-weight:800">'+rank.icon+' '+rank.name+'</span></div>'
+    +'<div style="background:var(--dim);border-radius:12px;padding:12px;margin-bottom:10px;text-align:left">'
+    +rewardsHtml
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--muted);margin-bottom:12px">ELO reset: '+oldElo+' → '+save.elo+' · Season '+nextSeason+' begins now!</div>'
     +'<button onclick="this.parentElement.parentElement.remove();playSfx(\'click\')" style="width:100%;padding:12px;background:var(--gold);border:none;border-radius:10px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Claim Rewards!</button>'
     +'</div>';
   document.body.appendChild(popup);
