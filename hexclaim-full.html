@@ -6411,8 +6411,8 @@ function forceGameEnd(won,reason){
   grantMatchXP(won,curConfig.isRanked||false);
   var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);if(won&&_p1pctRaw>=90)save.best90pct=true;if(won&&_p1pctRaw>=80)save.best80pct=true;
   trackGameEnd(won,_p1pctRaw,curConfig.isRanked||false,curChapter>=0,!!(curConfig&&curConfig.vsAiDiff));
-  if(won){save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;if((save.maxWinStreak||0)>=15)trackQuest('monthlyWinStreak',1);}
-  else{save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
+  if(won){save.winStreak=(save.winStreak||0)+1;save.maxWinStreak=Math.max(save.maxWinStreak||0,save.winStreak);save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;if(save.maxWinStreak>=15)trackQuest('monthlyWinStreak',1);}
+  else{save.winStreak=0;save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
   if(curConfig.vsAiDiff&&['hard','expert','master','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
   checkIconUnlocks();checkTitleUnlocks();
   saveProg();updateShopCurrency();
