@@ -2022,7 +2022,7 @@ function renderProfileTab(tab,externalCont){
 
   else if(tab==='owned'){
     // All owned skins grouped by type
-    var ownedThemes=SHOP_THEMES.filter(function(s){return (s.price===0&&!s.achievement&&!s.hidden)||save.owned['theme_'+s.id]});
+    var ownedThemes=SHOP_THEMES.filter(function(s){return ((s.price===0&&!s.achievement&&!s.hidden)||save.owned['theme_'+s.id])&&!s.hidden});
     var seasonOwned=SEASONAL_SKINS.filter(function(s){return save.owned['theme_'+s.id]});
     var limitedOwned=LIMITED_EDITION_POOL.filter(function(s){return s.type==='theme'&&save.owned['theme_'+s.id]});
     var challengeOwned=CHALLENGE_SKINS.filter(function(s){return save.owned['theme_'+s.id]}).concat(SHOP_THEMES.filter(function(s){return s.achievement&&s.hidden&&save.owned['theme_'+s.id]}));
@@ -3387,6 +3387,7 @@ function renderShopTab(tab){
       var owned=(item.price===0&&!item.achievement)||save.owned['theme_'+item.id];
       var isActive=save.activeSkin===item.id;
       var rankLocked=(item.rankReq&&!meetsRankReq(item.rankReq))||(item.achievement&&!save.owned['theme_'+item.id]);
+      var lockDesc=item.reqDesc||(item.rankReq?'Requires '+item.rankReq+' rank':'')|| (item.achievement&&!save.owned['theme_'+item.id]?'Complete challenge to unlock':'');
       var el=document.createElement('div');el.className='shop-item';
       if(rankLocked){
         el.style.opacity='0.4';
@@ -3409,7 +3410,7 @@ function renderShopTab(tab){
   }
 
   else if(tab==='borders'){
-    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup&&!s.achievement});
+    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup});
     var rankBorderGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Platinum'})},
