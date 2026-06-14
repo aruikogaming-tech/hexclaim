@@ -2342,7 +2342,7 @@ function addProfileXP(amount){
         if(lv2===50){save.owned['title_Dedicated']=true;}
         if(lv2===100){save.owned['title_Veteran']=true;save.owned['border_century_border']=true;}
         if(lv2===200){save.owned['title_Elite']=true;save.owned['theme_void_nexus']=true;save.owned['effect_phantom_burst']=true;}
-        const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},50:{desc:'Title: Dedicated!'},100:{desc:'Title: Veteran + Century Border!'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
+        if(lv2===500){save.owned['title_Legendary']=true;save.owned['theme_solar_crown']=true;save.owned['border_legendary_border']=true;}
         if(lv2===999){save.owned['title_Transcendent']=true;save.owned['theme_celestial_ascension']=true;save.owned['border_transcendent_border']=true;save.owned['effect_divine_collapse']=true;save.coins+=999999;save.chromas+=999999;}
       }
     }
