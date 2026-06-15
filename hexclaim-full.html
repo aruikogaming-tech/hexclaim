@@ -4900,7 +4900,7 @@ function startTutorial(){
   tutGameStep=0;tutMovesThisStep=0;
   // Start a small campaign-style game
   curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
-  curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:0,isTutorial:true};
+  curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:true,baseMoves:30,starThresholds:[60,75,90],winPct:0,isTutorial:true};
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
