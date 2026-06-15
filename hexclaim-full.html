@@ -2929,7 +2929,7 @@ function registerSeasonCosmetics(){
 }
 function getBorderStyle(){
   var b=save.equipped.border||'default';
-  if(b==='flame')return 'border:2px solid #9922ee;box-shadow:0 0 8px rgba(153,34,238,0.5),0 0 16px rgba(153,34,238,0.2)';
+  if(b==='flame')return 'border:2px solid #006633;box-shadow:0 0 8px rgba(0,102,51,0.5),0 0 16px rgba(0,102,51,0.2)';
   if(b==='electric')return 'border:2px solid #4cc9f0;box-shadow:0 0 8px rgba(76,201,240,0.5),0 0 16px rgba(76,201,240,0.2)';
   if(b==='rainbow')return 'border:3px solid transparent;background-clip:padding-box;box-shadow:0 0 0 2px var(--p1),0 0 8px rgba(6,214,160,0.3)';
   if(b==='shadow')return 'border:2px solid #6c757d;box-shadow:0 0 12px rgba(0,0,0,0.8),0 0 4px rgba(108,117,125,0.5)';
@@ -2946,16 +2946,16 @@ function getBorderStyle(){
   if(b==='magma_border')return 'border:3px solid #dd5500;box-shadow:0 0 12px rgba(221,85,0,0.6),0 0 24px rgba(170,50,0,0.3);animation:borderPulse 2s ease infinite;--bc:221,85,0';
   if(b==='thunder_border')return 'border:3px solid #ff0055;box-shadow:0 0 14px rgba(255,0,85,0.7),0 0 28px rgba(255,0,85,0.3);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
-  if(b==='storm_border')return 'border:3px solid #00ff88;box-shadow:0 0 14px rgba(0,255,136,0.7),0 0 28px rgba(0,200,100,0.3);animation:borderFlicker 0.5s ease infinite';
+  if(b==='storm_border')return 'border:3px solid #ff2200;box-shadow:0 0 14px rgba(255,34,0,0.7),0 0 28px rgba(200,20,0,0.3);animation:borderFlicker 0.5s ease infinite';
   if(b==='abyssal_border')return 'border:3px solid #006699;box-shadow:0 0 14px rgba(0,102,153,0.7),0 0 28px rgba(0,50,100,0.5);animation:borderBreathe 4s ease infinite';
   // Limited edition borders
   if(b==='le_phoenix')return 'border:3px solid #5500cc;box-shadow:0 0 16px rgba(85,0,204,0.8),0 0 32px rgba(60,0,150,0.3);animation:borderFlicker 0.6s ease infinite';
-  if(b==='le_frost_crown')return 'border:3px solid #ff88bb;box-shadow:0 0 14px rgba(255,136,187,0.7),0 0 28px rgba(255,100,150,0.3),0 0 6px rgba(255,200,220,0.4);animation:borderBreathe 3s ease infinite';
+  if(b==='le_frost_crown')return 'border:3px solid #99ddff;box-shadow:0 0 14px rgba(153,221,255,0.7),0 0 28px rgba(120,180,255,0.3),0 0 6px rgba(200,235,255,0.4);animation:borderBreathe 3s ease infinite';
   if(b==='le_shadow_claw')return 'border:3px solid #443366;box-shadow:0 0 18px rgba(0,0,0,0.9),0 0 8px rgba(68,51,102,0.6);animation:borderBreathe 2.5s ease infinite';
   if(b==='le_rainbow_ring')return 'border:3px solid #ffee00;box-shadow:0 0 10px rgba(255,238,0,0.6),0 0 20px rgba(220,200,0,0.4),0 0 30px rgba(255,255,0,0.3);animation:borderRotate 3s linear infinite';
-  if(b==='le_dragon_scale')return 'border:3px solid #33ddaa;box-shadow:0 0 14px rgba(51,221,170,0.7),0 0 28px rgba(30,180,130,0.3),inset 0 0 6px rgba(50,220,160,0.2);animation:borderPulse 2s ease infinite;--bc:51,221,170';
-  if(b==='le_void_rift')return 'border:3px solid #eecc00;box-shadow:0 0 18px rgba(238,204,0,0.8),0 0 36px rgba(200,160,0,0.4),0 0 6px rgba(255,220,0,0.3);animation:borderFlicker 0.3s ease infinite';
-  if(b==='le_crown_jewel')return 'border:3px solid #55ff00;box-shadow:0 0 16px rgba(85,255,0,0.8),0 0 32px rgba(60,200,0,0.4),0 0 6px rgba(100,255,0,0.3);animation:borderPulse 2.5s ease infinite;--bc:85,255,0';
+  if(b==='le_dragon_scale')return 'border:3px solid #ee4499;box-shadow:0 0 14px rgba(238,68,153,0.7),0 0 28px rgba(200,40,120,0.3),inset 0 0 6px rgba(238,68,153,0.2);animation:borderPulse 2s ease infinite;--bc:238,68,153';
+  if(b==='le_void_rift')return 'border:3px solid #aabb00;box-shadow:0 0 18px rgba(170,187,0,0.8),0 0 36px rgba(130,150,0,0.4),0 0 6px rgba(200,220,0,0.3);animation:borderFlicker 0.3s ease infinite';
+  if(b==='le_crown_jewel')return 'border:3px solid #44aacc;box-shadow:0 0 16px rgba(68,170,204,0.8),0 0 32px rgba(40,130,170,0.4),0 0 6px rgba(80,190,220,0.3);animation:borderPulse 2.5s ease infinite;--bc:68,170,204';
   if(b==='le_sakura_frame')return 'border:3px solid #aa5500;box-shadow:0 0 12px rgba(170,85,0,0.6),0 0 24px rgba(130,60,0,0.2);animation:borderBreathe 3s ease infinite';
   // Season exclusive borders
   if(b==='season_bronze_border')return 'border:3px solid #cd7f32;box-shadow:0 0 10px rgba(205,127,50,0.6),0 0 20px rgba(205,127,50,0.2);animation:borderPulse 2s ease infinite;--bc:205,127,50';
@@ -2977,18 +2977,18 @@ function getBorderStyle(){
   if(b==='century_border')return 'border:3px solid #c0c0c0;box-shadow:0 0 16px rgba(220,220,255,0.9),0 0 32px rgba(180,180,255,0.4);animation:borderPulse 2s ease infinite;--bc:200,200,255';
   if(b==='legendary_border')return 'border:3px solid #ff8800;box-shadow:0 0 18px rgba(255,136,0,0.9),0 0 36px rgba(255,68,0,0.4),0 0 8px rgba(255,215,0,0.3);animation:borderPulse 1.5s ease infinite,borderRotate 4s linear infinite;--bc:255,136,0';
   if(b==='transcendent_border')return 'border:3px solid #ffffff;box-shadow:0 0 20px rgba(255,255,255,0.9),0 0 40px rgba(255,209,102,0.5),0 0 60px rgba(131,56,236,0.3);animation:borderPulse 1s ease infinite,borderRotate 3s linear infinite;--bc:255,255,255';
-  if(b==='ch_obsidian_border')return 'border:3px solid #e94560;box-shadow:0 0 14px rgba(233,69,96,0.9),0 0 28px rgba(233,69,96,0.4);animation:borderPulse 1.5s ease infinite,borderFlicker 3s ease infinite;--bc:233,69,96';
+  if(b==='ch_obsidian_border')return 'border:3px solid #cc4400;box-shadow:0 0 14px rgba(204,68,0,0.9),0 0 28px rgba(160,50,0,0.4);animation:borderPulse 1.5s ease infinite,borderFlicker 3s ease infinite;--bc:204,68,0';
   if(b==='ch_void_border')return 'border:3px solid #9900ff;box-shadow:0 0 16px rgba(153,0,255,0.9),0 0 32px rgba(153,0,255,0.4);animation:borderRotate 3s linear infinite;--bc:153,0,255';
   if(b==='ch_eternal_border')return 'border:3px solid #00cc44;box-shadow:0 0 16px rgba(0,204,68,0.9),0 0 32px rgba(0,150,50,0.4);animation:borderPulse 1.2s ease infinite;--bc:0,204,68';
   if(b==='ch_nexus_border')return 'border:3px solid #ff00ff;box-shadow:0 0 18px rgba(255,0,255,0.9),0 0 36px rgba(0,255,255,0.3),0 0 8px rgba(255,255,0,0.2);animation:borderPulse 1s ease infinite,borderRotate 4s linear infinite;--bc:255,0,255';
   // Achievement borders
   if(b==='achieve_ch1')return 'border:2px solid #ffaa00;box-shadow:0 0 8px rgba(255,170,0,0.5)';
   if(b==='achieve_ch2')return 'border:2px solid #118ab2;box-shadow:0 0 8px rgba(17,138,178,0.5)';
-  if(b==='achieve_ch3')return 'border:2px solid #ff9f1c;box-shadow:0 0 10px rgba(255,159,28,0.6)';
+  if(b==='achieve_ch3')return 'border:2px solid #cc5599;box-shadow:0 0 10px rgba(204,85,153,0.6)';
   if(b==='achieve_ch4')return 'border:2px solid #ef476f;box-shadow:0 0 12px rgba(239,71,111,0.6);animation:borderPulse 2s ease infinite;--bc:239,71,111';
   if(b==='achieve_vsai_hard')return 'border:2px solid #228833;box-shadow:0 0 10px rgba(34,136,51,0.6);animation:borderBreathe 2.5s ease infinite';
-  if(b==='achieve_vsai_insane')return 'border:3px solid #77ee00;box-shadow:0 0 14px rgba(119,238,0,0.8);animation:borderPulse 1.5s ease infinite;--bc:119,238,0';
-  if(b==='achieve_level25')return 'border:2px solid #88ff00;box-shadow:0 0 8px rgba(136,255,0,0.6);animation:borderBreathe 3s ease infinite';
+  if(b==='achieve_vsai_insane')return 'border:3px solid #003399;box-shadow:0 0 14px rgba(0,51,153,0.8);animation:borderPulse 1.5s ease infinite;--bc:0,51,153';
+  if(b==='achieve_level25')return 'border:2px solid #bb9900;box-shadow:0 0 8px rgba(187,153,0,0.6);animation:borderBreathe 3s ease infinite';
   if(b==='achieve_level50')return 'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7);animation:borderPulse 2s ease infinite;--bc:131,56,236';
   return 'border:2px solid var(--p1)';
 }
