@@ -2034,7 +2034,7 @@ function renderProfileTab(tab,externalCont){
       var el=document.createElement('div');el.className='shop-item';
       el.innerHTML='<div class="si-preview" style="background:'+(item.colors?item.colors[0]:'var(--dim)')+';padding:2px">'+makeSkinPreview(item.colors||['#333','#666'],16,item.symbols)+'</div><div class="si-info"><div class="si-name">'+item.name+(item.season?' <span style="font-size:8px;color:var(--gold)">S'+item.season+'</span>':'')+'</div></div>'
         +(isActive?'<div class="si-equipped">Active ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
-      (function(id){el.onclick=function(){save.activeSkin=id;save.equipped.theme=id;saveProg();updateTopBar();renderProfileTab('owned');playSfx('click')};})(item.id);
+      (function(id){el.onclick=function(){save.activeSkin=id;save.equipped.theme=id;saveProg();updateTopBar();if(document.getElementById('profileContent'))renderProfileTab('owned');playSfx('click')};})(item.id);
       cont.appendChild(el);
     });
 
