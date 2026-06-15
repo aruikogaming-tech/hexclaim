@@ -2515,13 +2515,13 @@ const SEASONAL_SKINS=[
 const CHALLENGE_SKINS=[
   // Medium difficulty rewards
   {id:'ch_emerald',name:'Emerald Pulse',desc:'🏆 Challenge: Emerald Rush',preview:'💚',tier:2,
-   colors:['#001a0a','#00ff88','#00cc66','#44ffaa','#88ffcc','#00aa55','#22dd77','#66eebb'],
+   colors:['#080010','#cc44ff','#9900cc','#ff00ff','#770099','#aa22ee','#440077','#dd66ff'],
    symbols:['◈','◆','✦','◇','⬡','●','▲','✚']},
   {id:'ch_storm',name:'Storm Surge',desc:'🏆 Challenge: Storm Chaser',preview:'⛈️',tier:2,
    colors:['#000810','#0088ff','#4444cc','#00ccff','#8866ff','#0044aa','#22aaff','#6644dd'],
    symbols:['⚡','◎','▽','✧','◈','△','≋','⌇']},
   {id:'ch_shadow',name:'Shadow Walker',desc:'🏆 Challenge: Shadow Walk',preview:'🌑',tier:2,
-   colors:['#020408','#0a1a2a','#1a3344','#2a4455','#0d2233','#3a5566','#153344','#4a6677'],
+   colors:['#080500','#cc5500','#994400','#ff7722','#662200','#bb4400','#441100','#ff9944'],
    symbols:['◇','◎','▽','✧','◈','△','○','◆']},
   {id:'ch_prism',name:'Prism Core',desc:'🏆 Challenge: Prism Break',preview:'🔷',tier:2,
    colors:['#0a0015','#ff00ff','#00ffff','#ffff00','#ff0088','#0088ff','#88ff00','#ff8800'],
@@ -2532,7 +2532,7 @@ const CHALLENGE_SKINS=[
    symbols:['♛','💀','✦','⬡','❖','☠','◆','👑'],
    glowColor:'rgba(233,69,96,0.8)'},
   {id:'ch_void_emperor',name:'Void Emperor',desc:'💀 Challenge: Suicide Mission — Rarest tile',preview:'👁️',tier:4,rankReq:'legendary',
-   colors:['#000000','#1a0033','#330066','#5500aa','#7700dd','#9900ff','#bb44ff','#dd88ff'],
+   colors:['#000a08','#003333','#006655','#009977','#004444','#00bb88','#002222','#44ffcc'],
    symbols:['☠','👁','⊘','∞','⊛','✦','⊕','💀'],
    glowColor:'rgba(136,0,255,0.8)'},
   {id:'ch_eternal',name:'Eternal Flame',desc:'💀 Challenge: Iron Curtain — Rarest tile',preview:'🔱',tier:4,rankReq:'legendary',
@@ -2733,7 +2733,7 @@ const LIMITED_EDITION_POOL=[
   {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
   {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
   {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
-  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#0a0800','#ffd700','#ffaa00','#ffee44','#cc8800','#ffcc00','#ff9900','#eecc44'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
+  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#000a05','#00cc66','#008844','#44ff88','#006633','#22dd77','#004422','#88ffaa'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
   {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Eclipse of silver and shadow',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#050010','#9966cc','#cc99ff','#6633aa','#440088','#bb77ee','#330066','#eeccff'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
   {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1300,currency:'chromas',preview:'🌞',tier:4,colors:['#010810','#336677','#224455','#558899','#113344','#447788','#002233','#66aabb'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
   {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1200,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
@@ -3190,8 +3190,8 @@ const SHOP_TITLES=[
   {id:'Shade Slayer',name:'Shade Slayer',achievement:'Beat Hard AI',color:'#cc0000',style:'bold',glow:0},
   {id:'Hex Legend',name:'Hex Legend',achievement:'Complete all Campaign chapters',color:'#00ccff',style:'gradient',glow:2},
   {id:'The Perfect',name:'The Perfect',achievement:'💀 Complete Perfect Storm challenge',color:'#e94560',style:'gradient',font:'Archivo Black',glow:1},
-  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#ff9900',style:'gradient',glow:2},
-  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#ff00aa',style:'gradient',font:'Archivo Black',glow:3},
+  {id:'Deathless',name:'Deathless',achievement:'💀 Complete Suicide Mission challenge',color:'#00ffaa',style:'gradient',glow:2},
+  {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#5500ff',style:'gradient',font:'Archivo Black',glow:3},
   {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#ff00ff',style:'bold',glow:4},
   {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
 ];
@@ -5958,7 +5958,7 @@ function draw(){
         ctx.restore();
       } else if(eff==='hex_glow'){
         // ARCANE RITUAL — spinning rune circle with vortex
-        ctx.fillStyle='rgba(131,56,236,'+claimAnim*0.4+')';ctx.fill();
+        ctx.fillStyle='rgba(0,220,100,'+claimAnim*0.4+')';ctx.fill();
         ctx.save();
         ctx.translate(cx2,cy2);ctx.rotate(t*2);
         // Rune circle
