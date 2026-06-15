@@ -2989,7 +2989,7 @@ function getBorderStyle(){
   if(b==='achieve_vsai_hard')return 'border:2px solid #228833;box-shadow:0 0 10px rgba(34,136,51,0.6);animation:borderBreathe 2.5s ease infinite';
   if(b==='achieve_vsai_insane')return 'border:3px solid #003399;box-shadow:0 0 14px rgba(0,51,153,0.8);animation:borderPulse 1.5s ease infinite;--bc:0,51,153';
   if(b==='achieve_level25')return 'border:2px solid #bb9900;box-shadow:0 0 8px rgba(187,153,0,0.6);animation:borderBreathe 3s ease infinite';
-  if(b==='achieve_level50')return 'border:3px solid #8338ec;box-shadow:0 0 12px rgba(131,56,236,0.7);animation:borderPulse 2s ease infinite;--bc:131,56,236';
+  if(b==='achieve_level50')return 'border:3px solid #ff6600;box-shadow:0 0 12px rgba(255,102,0,0.7);animation:borderPulse 2s ease infinite;--bc:255,102,0';
   return 'border:2px solid var(--p1)';
 }
 
@@ -5878,7 +5878,7 @@ function draw(){
       if(eff==='sparkle'){
         // STARDUST BURST — exploding rotating 4-point stars with trails
         ctx.fillStyle='rgba('+baseColor+','+claimAnim*0.4+')';ctx.fill();
-        ctx.shadowColor='rgba(255,255,200,0.9)';ctx.shadowBlur=claimAnim*20;ctx.fill();ctx.shadowBlur=0;
+        ctx.shadowColor='rgba(255,200,0,0.9)';ctx.shadowBlur=claimAnim*20;ctx.fill();ctx.shadowBlur=0;
         for(var s=0;s<8;s++){
           var angle=s*Math.PI/4+t*3;
           var dist=cellW*0.3*(1-claimAnim*0.3);
