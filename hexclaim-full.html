@@ -2946,7 +2946,7 @@ function getBorderStyle(){
   if(b==='magma_border')return 'border:3px solid #dd5500;box-shadow:0 0 12px rgba(221,85,0,0.6),0 0 24px rgba(170,50,0,0.3);animation:borderPulse 2s ease infinite;--bc:221,85,0';
   if(b==='thunder_border')return 'border:3px solid #ff0055;box-shadow:0 0 14px rgba(255,0,85,0.7),0 0 28px rgba(255,0,85,0.3);animation:borderFlicker 0.4s ease infinite';
   if(b==='cosmic_border')return 'border:3px solid #ff0088;box-shadow:0 0 14px rgba(255,0,136,0.7),0 0 28px rgba(200,0,100,0.3);animation:borderRotate 5s linear infinite';
-  if(b==='storm_border')return 'border:3px solid #ff2200;box-shadow:0 0 14px rgba(255,34,0,0.7),0 0 28px rgba(200,20,0,0.3);animation:borderFlicker 0.5s ease infinite';
+  if(b==='storm_border')return 'border:3px solid #0066ff;box-shadow:0 0 14px rgba(0,102,255,0.7),0 0 28px rgba(0,60,200,0.3);animation:borderFlicker 0.5s ease infinite';
   if(b==='abyssal_border')return 'border:3px solid #006699;box-shadow:0 0 14px rgba(0,102,153,0.7),0 0 28px rgba(0,50,100,0.5);animation:borderBreathe 4s ease infinite';
   // Limited edition borders
   if(b==='le_phoenix')return 'border:3px solid #5500cc;box-shadow:0 0 16px rgba(85,0,204,0.8),0 0 32px rgba(60,0,150,0.3);animation:borderFlicker 0.6s ease infinite';
@@ -5903,7 +5903,7 @@ function draw(){
       } else if(eff==='fire_trail'){
         // INFERNO BLAST — layered radial fire with ember particles
         var grad1=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.8);
-        grad1.addColorStop(0,'rgba(255,255,200,'+claimAnim*0.7+')');
+        grad1.addColorStop(0,'rgba(255,120,0,'+claimAnim*0.7+')');
         grad1.addColorStop(0.3,'rgba(255,150,0,'+claimAnim*0.6+')');
         grad1.addColorStop(0.6,'rgba(255,50,0,'+claimAnim*0.4+')');
         grad1.addColorStop(1,'rgba(100,0,0,'+claimAnim*0.1+')');
@@ -5938,7 +5938,7 @@ function draw(){
         ctx.restore();
       } else if(eff==='lightning'){
         // THUNDER GOD — multiple forked bolts with bright flash
-        ctx.fillStyle='rgba(255,230,0,'+claimAnim*0.5+')';ctx.fill();
+        ctx.fillStyle='rgba(0,100,255,'+claimAnim*0.5+')';ctx.fill();
         // White flash
         ctx.fillStyle='rgba(255,255,255,'+claimAnim*claimAnim*0.4+')';ctx.fill();
         ctx.save();
@@ -5963,8 +5963,8 @@ function draw(){
         ctx.translate(cx2,cy2);ctx.rotate(t*2);
         // Rune circle
         ctx.beginPath();ctx.arc(0,0,cellW*0.35*claimAnim,0,Math.PI*2);
-        ctx.strokeStyle='rgba(0,255,120,'+claimAnim+')';ctx.lineWidth=2;
-        ctx.shadowColor='rgba(0,220,100,1)';ctx.shadowBlur=claimAnim*28;ctx.stroke();ctx.shadowBlur=0;
+          ctx.strokeStyle='rgba(0,255,120,'+claimAnim+')';ctx.lineWidth=2;
+          ctx.shadowColor='rgba(0,220,100,1)';ctx.shadowBlur=claimAnim*28;ctx.stroke();ctx.shadowBlur=0;
         // Rune marks
         for(var rn=0;rn<6;rn++){
           var ra=rn*Math.PI/3;var rd=cellW*0.35*claimAnim;
@@ -6106,13 +6106,13 @@ function draw(){
         ctx.restore();
       } else if(eff==='supernova'){
         // SUPERNOVA — blinding white shockwave implosion
-        ctx.fillStyle='rgba(255,255,255,'+claimAnim*claimAnim*0.7+')';ctx.fill();
-        ctx.shadowColor='rgba(255,255,255,1)';ctx.shadowBlur=claimAnim*60;ctx.fill();ctx.shadowBlur=0;
+        ctx.fillStyle='rgba(100,0,255,'+claimAnim*claimAnim*0.7+')';ctx.fill();
+        ctx.shadowColor='rgba(100,0,255,1)';ctx.shadowBlur=claimAnim*60;ctx.fill();ctx.shadowBlur=0;
         ctx.save();
         for(var ring=0;ring<4;ring++){
           var ringR2=cellW*(0.15+ring*0.2)*(1-claimAnim*0.4);
           ctx.beginPath();ctx.arc(cx2,cy2,ringR2,0,Math.PI*2);
-          ctx.strokeStyle='rgba(255,255,255,'+claimAnim*(0.9-ring*0.15)+')';
+          ctx.strokeStyle='rgba(150,50,255,'+claimAnim*(0.9-ring*0.15)+')';
           ctx.lineWidth=(4-ring)*claimAnim*1.5;ctx.stroke();
         }
         ctx.restore();
