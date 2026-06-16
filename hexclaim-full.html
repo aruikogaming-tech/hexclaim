@@ -4907,7 +4907,7 @@ function startTutorial(){
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
-  movesLeft=999;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
+  movesLeft=curConfig.baseMoves||30;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
   document.getElementById('gChapter').textContent='TUTORIAL';
   document.getElementById('gLevel').textContent='How to Play';
   resize();initGame();playSfx('menuOpen');
