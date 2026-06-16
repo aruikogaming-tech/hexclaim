@@ -5938,7 +5938,7 @@ function draw(){
         ctx.restore();
       } else if(eff==='lightning'){
         // THUNDER GOD — multiple forked bolts with bright flash
-        ctx.fillStyle='rgba(100,200,255,'+claimAnim*0.5+')';ctx.fill();
+        ctx.fillStyle='rgba(255,230,0,'+claimAnim*0.5+')';ctx.fill();
         // White flash
         ctx.fillStyle='rgba(255,255,255,'+claimAnim*claimAnim*0.4+')';ctx.fill();
         ctx.save();
@@ -5963,8 +5963,8 @@ function draw(){
         ctx.translate(cx2,cy2);ctx.rotate(t*2);
         // Rune circle
         ctx.beginPath();ctx.arc(0,0,cellW*0.35*claimAnim,0,Math.PI*2);
-        ctx.strokeStyle='rgba(180,100,255,'+claimAnim+')';ctx.lineWidth=2;
-        ctx.shadowColor='rgba(131,56,236,1)';ctx.shadowBlur=claimAnim*28;ctx.stroke();ctx.shadowBlur=0;
+        ctx.strokeStyle='rgba(0,255,120,'+claimAnim+')';ctx.lineWidth=2;
+        ctx.shadowColor='rgba(0,220,100,1)';ctx.shadowBlur=claimAnim*28;ctx.stroke();ctx.shadowBlur=0;
         // Rune marks
         for(var rn=0;rn<6;rn++){
           var ra=rn*Math.PI/3;var rd=cellW*0.35*claimAnim;
