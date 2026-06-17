@@ -4974,7 +4974,8 @@ function tutOnGameEnd(){
   ol.innerHTML='<div style="font-size:40px">'+(won?'🎉':'💪')+'</div>'
     +'<div style="font-family:Archivo Black,sans-serif;font-size:22px;color:'+(won?'var(--p1)':'var(--c4)')+';">'+(won?'You Win!':'Good Try!')+'</div>'
     +'<div style="font-size:13px;color:var(--muted)">Tutorial Complete! You claimed '+p1+' tiles.</div>'
-    +'<button onclick="completeTutorial()" style="margin-top:12px;padding:12px 32px;background:var(--p1);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:Manrope,sans-serif">Start Playing</button>';
+    +'<button onclick="this.parentElement.remove();completeTutorial()" style="margin-top:12px;padding:12px 32px;background:var(--p1);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:Manrope,sans-serif">Start Playing</button>';
+  ol.id='tutEndOverlay';
   document.body.appendChild(ol);
 }
 
@@ -6498,7 +6499,7 @@ async function playerMove(colorIdx){
   if(colorIdx===p1Color||colorIdx===p2Color)return;
   if(colorIdx===p1LastColor&&colorIdx!==p1Color)return; // Cooldown — can't repeat last color
   tutOnPlayerMove();
-  if(curConfig&&curConfig.isTutorial){if(!(window._tutMoves))window._tutMoves=0;window._tutMoves++;if(window._tutMoves>=25&&!gameOver){gameOver=true;stopGameTimer();var _ind=document.querySelector('.turn-indicator');if(_ind)_ind.style.display='none';setTimeout(tutOnGameEnd,1500);}}
+ 
   if(activePower)usePower(activePower);
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
@@ -6647,7 +6648,7 @@ function checkEnd(){
     stalemateTurns=0;
   }
   lastP1Count=p1raw;lastP2Count=p2raw;
-  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?4:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
+  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?8:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
   if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;const reqPct2=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct2;reason='Moves exhausted'}
