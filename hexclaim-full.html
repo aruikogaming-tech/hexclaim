@@ -4971,8 +4971,15 @@ function tutOnGameEnd(){
   if(!curConfig||!curConfig.isTutorial)return;
   var ind=document.querySelector('.turn-indicator');if(ind)ind.style.display='none';
   if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
-  tutGameStep=tutGameSteps.length-1;
-  showTutGameOverlay();
+  var p1=countOwnedRaw(1),p2=countOwnedRaw(2);
+  var won=p1>p2;
+  var ol=document.createElement('div');
+  ol.style.cssText='position:fixed;inset:0;background:rgba(8,8,16,0.92);z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center';
+  ol.innerHTML='<div style="font-size:40px">'+(won?'🎉':'💪')+'</div>'
+    +'<div style="font-family:Archivo Black,sans-serif;font-size:22px;color:'+(won?'var(--p1)':'var(--c4)')+';">'+(won?'You Win!':'Good Try!')+'</div>'
+    +'<div style="font-size:13px;color:var(--muted)">Tutorial Complete! You claimed '+p1+' tiles.</div>'
+    +'<button onclick="completeTutorial()" style="margin-top:12px;padding:12px 32px;background:var(--p1);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:Manrope,sans-serif">Start Playing</button>';
+  document.body.appendChild(ol);
 }
 
 function renderTutStep(){
