@@ -4897,7 +4897,7 @@ var tutOverlayEl=null;
 
 function startTutorial(){
   // Launch a small tutorial game then show overlay
-  tutGameStep=0;tutMovesThisStep=0;
+  tutGameStep=0;tutMovesThisStep=0;window._tutMoves=0;
   // Start a small campaign-style game
   curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
   curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:0,isTutorial:true};
@@ -4967,6 +4967,7 @@ function tutOnPlayerMove(){
 
 function tutOnGameEnd(){
   if(!curConfig||!curConfig.isTutorial)return;
+  var ind=document.querySelector('.turn-indicator');if(ind)ind.style.display='none';
   if(tutOverlayEl){tutOverlayEl.remove();tutOverlayEl=null;}
   tutGameStep=tutGameSteps.length-1;
   showTutGameOverlay();
@@ -6492,6 +6493,7 @@ async function playerMove(colorIdx){
   if(colorIdx===p1Color||colorIdx===p2Color)return;
   if(colorIdx===p1LastColor&&colorIdx!==p1Color)return; // Cooldown — can't repeat last color
   tutOnPlayerMove();
+  if(curConfig&&curConfig.isTutorial){if(!(window._tutMoves))window._tutMoves=0;window._tutMoves++;if(window._tutMoves>=25&&!gameOver){gameOver=true;stopGameTimer();var _ind=document.querySelector('.turn-indicator');if(_ind)_ind.style.display='none';setTimeout(tutOnGameEnd,1500);}}
   if(activePower)usePower(activePower);
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
@@ -6640,7 +6642,7 @@ function checkEnd(){
     stalemateTurns=0;
   }
   lastP1Count=p1raw;lastP2Count=p2raw;
-  if(stalemateTurns>=14||(curConfig.isTutorial&&p1n+p2n>=totalCells*0.85)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
+  if(stalemateTurns>=14){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
   if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;const reqPct2=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct2;reason='Moves exhausted'}
@@ -6648,6 +6650,7 @@ function checkEnd(){
 
   gameOver=true;
   stopGameTimer();
+  var ind=document.querySelector('.turn-indicator');if(ind)ind.style.display='none';
   if(curConfig&&curConfig.isTutorial){setTimeout(tutOnGameEnd,1500);return;}
 
   // ELO calculation for ranked
