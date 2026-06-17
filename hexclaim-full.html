@@ -6650,6 +6650,7 @@ function checkEnd(){
   lastP1Count=p1raw;lastP2Count=p2raw;
   if(stalemateTurns>=(curConfig&&curConfig.isTutorial?8:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
+  if(unclaimed>0&&!ended){if(p1n>p2n+unclaimed){ended=true;won=true;reason='Result decided'}else if(p2n>p1n+unclaimed){ended=true;won=false;reason='Result decided'}}
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
   if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;const reqPct2=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct2;reason='Moves exhausted'}
   if(!ended)return false;
