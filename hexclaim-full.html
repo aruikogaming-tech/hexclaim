@@ -3991,7 +3991,7 @@ function loadRealLeaderboard(container){
     return;
   }
   container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Loading leaderboard...</div>';
-  firebaseDB.ref('leaderboard').orderByChild('elo').limitToLast(20).once('value').then(function(snap){
+  firebaseDB.ref('leaderboard').orderByChild('elo').limitToLast(100).once('value').then(function(snap){
     var lb=[];
     snap.forEach(function(child){
       var d=child.val();
