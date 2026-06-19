@@ -4423,7 +4423,7 @@ async function showMatchmaking(){
 async function cancelQueue(){
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
   if(window._queueId){await pvpDB.remove('pvp-queue/'+window._queueId)}
-  buildPVP();
+  showScreen('menuScreen');
 }
 
 async function cancelRoom(){
