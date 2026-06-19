@@ -5575,20 +5575,20 @@ function expandTerritory(player,newColor){
   let changed=true;
   let capturedThisTurn=0;
   const MAX_CAPTURE=2; // Max tiles per move
-  while(changed){changed=false;
-    if(capturedThisTurn>=MAX_CAPTURE)break;
+ while(changed){changed=false;
+    const candidates=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]!==player)continue;
-      if(capturedThisTurn>=MAX_CAPTURE)break;
       [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;
-        if(capturedThisTurn>=MAX_CAPTURE)return;
         if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===0&&grid[nr][nc]===newColor){
-          owner[nr][nc]=player;changed=true;capturedThisTurn++;
-          newlyClaimed.push({r:nr,c:nc,player});
-          const pi=powerTiles.findIndex(p=>p.r===nr&&p.c===nc);
-          if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups()}}})}}
-
+          if(!candidates.some(x=>x.r===nr&&x.c===nc))candidates.push({r:nr,c:nc});}});}
+    for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
+    for(let i=0;i<candidates.length&&capturedThisTurn<MAX_CAPTURE;i++){
+      const {r:nr,c:nc}=candidates[i];
+      owner[nr][nc]=player;changed=true;capturedThisTurn++;
+      newlyClaimed.push({r:nr,c:nc,player});
+      const pi=powerTiles.findIndex(p=>p.r===nr&&p.c===nc);
+      if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups();}}}
 }
-
 // Animated expand — reveals cells wave by wave
 function expandTerritoryAnimated(player,newColor,callback){
   const groupsBefore=countGroups(player);
