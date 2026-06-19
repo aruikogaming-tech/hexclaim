@@ -2580,6 +2580,37 @@ function getAvailableSeasonalSkins(){
 }
 
 // Check if season has ended and grant earned skins
+function adminRecoverSeasonRewards(targetUid){
+  // Can be called from admin panel to re-grant season rewards to a player
+  // Checks what rank they achieved and grants anything missing
+  if(!firebaseReady||!firebaseDB){showToast('Firebase not ready');return}
+  firebaseDB.ref('users/'+targetUid+'/save').once('value').then(function(snap){
+    var data=snap.val();
+    if(!data){showToast('Player not found');return}
+    var highElo=data.seasonHighElo||data.elo||0;
+    var rank=getRank(highElo);
+    var s=data.season||1;
+    var rankRewards={
+      'Unranked':{coins:50,diamonds:10},
+      'Bronze':{coins:100,diamonds:25,title:'S'+s+' Bronze Learner',border:'season_bronze_border'},
+      'Silver':{coins:200,diamonds:50,title:'S'+s+' Silver Starter',border:'season_silver_border'},
+      'Gold':{coins:400,diamonds:100,title:'S'+s+' Gold Average',border:'season_gold_border'},
+      'Platinum':{coins:600,diamonds:200,title:'S'+s+' Platinum Superior',border:'season_plat_border'},
+      'Diamond':{coins:800,diamonds:350,title:'S'+s+' Diamond Elite',border:'season_diamond_border'},
+      'Master':{coins:1000,diamonds:500,title:'S'+s+' Master Tryhard',border:'season_master_border'},
+      'Chromancer':{coins:1500,diamonds:1000,title:'S'+s+' Chromancer Legend',border:'season_chroma_border'},
+    };
+    var r=rankRewards[rank.name]||rankRewards['Unranked'];
+    // Grant missing rewards
+    if(r.title&&!data.owned['title_'+r.title])data.owned['title_'+r.title]=true;
+    if(r.border&&!data.owned['border_'+r.border])data.owned['border_'+r.border]=true;
+    data.coins=(data.coins||0)+r.coins;
+    data.chromas=(data.chromas||0)+r.diamonds;
+    firebaseDB.ref('users/'+targetUid+'/save').set(data).then(function(){
+      showToast('✅ Season rewards recovered for '+rank.name+' player!');
+    }).catch(function(e){showToast('Failed: '+e.message)});
+  });
+}
 function checkSeasonEnd(){
   const SEASON_DURATION=60*24*60*60*1000;
   const elapsed=Date.now()-save.seasonStart;
