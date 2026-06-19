@@ -3998,6 +3998,8 @@ function showScreen(id){
 
 function updateMenuStats(){
   var sd=document.getElementById('sideStreakDay');if(sd)sd.textContent='Day '+(save.loginStreak||1);
+  var badge=document.getElementById('menuRankBadge');var widget=document.getElementById('streakSideWidget');
+  if(badge&&widget){var r=badge.getBoundingClientRect();var menuEl=badge.closest('.screen');var menuR=menuEl?menuEl.getBoundingClientRect():{top:0};widget.style.top=(r.top-menuR.top+r.height/2)+'px';widget.style.transform='translateY(-50%)';}
   // Rank badge
   const r=getRank(save.elo);
   const prog=getRankProgress(save.elo);
