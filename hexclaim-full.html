@@ -2539,6 +2539,40 @@ function setVolume(type,val){
 }
 
 // ===== MONETIZATION DATA =====
+// ===== SKIN COLOR CLASH REFERENCE — CHECK BEFORE ADDING ANY NEW SKIN =====
+// When adding a new skin, compare its dominant hue against this list.
+// Dominant hue must be >25° different from existing skins with similar saturation.
+// Background color (colors[0]) must be unique — no two skins share the same dark bg.
+//
+// LOCKED HUES (taken):
+// ~0°   Red/Crimson   — Hellfire, Bloodmoon, Eternal Flame, ch_shadow (orange-red)
+// ~45°  Gold/Amber    — Solar Crown, le_golden, le_sandstorm
+// ~90°  Yellow-green  — OPEN
+// ~120° Pure Green    — OPEN (Stormcaller uses dark desaturated green ~110°)
+// ~160° Teal/Cyan-grn — Default, Aurora, Stormcaller, Void Emperor
+// ~180° Cyan          — ch_storm, Galaxy Core, le_deep_ocean
+// ~200° Blue          — Deep Sea, le_blood_moon (purple-blue)
+// ~220° Steel Blue    — OPEN
+// ~270° Purple/Violet — Galaxy Nebula, Void Nexus, Dragon, ch_emerald, le_nether
+// ~300° Pink/Magenta  — le_sakura, le_blood_moon
+// ~330° Rose/Hot pink — OPEN
+// ~360° Full rainbow  — ch_nexus, Celestial Ascension, ch_prism
+//
+// OPEN SAFE ZONES FOR NEW SKINS:
+// ~90°  Lime/Yellow-green
+// ~220° Steel blue / silver / metallic
+// ~330° Rose / hot pink
+// White/silver/monochrome (low saturation <15%)
+// Pastel (high lightness >70%, low saturation)
+// Earth tones — brown/rust (hue ~25-35°, low sat)
+//
+// BACKGROUND COLORS TAKEN (colors[0]):
+// #0a0020 Neon Rush   #1a0000 Hellfire    #000010 Galaxy
+// #0a0000 Bloodmoon   #000005 Void Nexus  #080600 Solar Crown
+// #000a10 Aurora      #000a05 Stormcaller #080010 Dragon
+// #000005 Celestial   #000000 ch_nexus    #050005 le_nether
+// #0a0014 le_vaporwave #080808 le_midnight #1a0810 le_sakura
+// ===== END SKIN REFERENCE =====
 const SHOP_THEMES=[
   {tier:0,id:'default',name:'Default',desc:'Classic chromatic tiles',price:0,currency:'free',preview:'🎨',colors:['#3a3660','#06d6a0','#118ab2','#ffd166','#ef476f','#8338ec','#ff8c42','#2ec4b6'],symbols:['◆','●','▲','✦','✚','⬡','◐','◈']},
   {tier:0,id:'ocean',name:'Deep Sea',desc:'Calm underwater blues',price:500,currency:'coins',preview:'🌊',colors:['#020c1b','#00ccaa','#0066dd','#33dd88','#dd3366','#6622ee','#ff6622','#22ccff'],symbols:['〰','◎','▽','≋','◇','⌇','≈','◌']},
