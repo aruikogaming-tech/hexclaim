@@ -322,9 +322,9 @@ body{display:flex;align-items:flex-start;justify-content:center;
 <div class="screen active" id="menuScreen" style="position:relative">
   
  <div id="streakSideWidget" onclick="showStreakPopup();playSfx('menuNav')" style="position:absolute;left:0;top:41%;transform:translateY(-50%);z-index:85;cursor:pointer;display:flex;flex-direction:column;align-items:center;background:var(--surface);border:1px solid var(--p1);border-left:none;border-radius:0 10px 10px 0;padding:8px 6px;gap:4px;box-shadow:2px 0 12px rgba(6,214,160,0.2)">
-  <div class="menu-logo" style="margin-top:8px">
-    <h1>HEXCLAIM</h1>
-    <p>Chromatic Conquest</p>
+    <span style="font-size:20px">🔥</span>
+    <div style="font-size:8px;font-weight:800;color:var(--p1);text-align:center;line-height:1.2" id="sideStreakDay">Day 1</div>
+    <div id="sideStreakDot" style="width:8px;height:8px;border-radius:50%;background:var(--p1)"></div>
   </div>
 
   <!-- News Banner -->
@@ -341,6 +341,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
   <div class="rank-badge-big" id="menuRankBadge"></div>
   
  <!-- Main action buttons -->
+  <button class="menu-btn secondary" onclick="showStreakPopup();playSfx('menuNav')">🔥 Daily Login — <span id="sideStreakDay">Day 1</span></button>
   <button class="menu-btn ranked" id="pvpBtn" style="opacity:0.4;pointer-events:none;position:relative" disabled>⚔ Ranked PVP <span style="font-size:8px;background:var(--gold);color:#0d0b14;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:800">COMING SOON</span></button>
   <button class="menu-btn campaign" onclick="showScreen('chapterScreen');setTimeout(function(){buildChapters()},50);playSfx('menuNav')">📖 Campaign</button>
   <button class="menu-btn challenge" onclick="showScreen('challengeScreen');buildChallenges();playSfx('menuNav')">🏆 Challenges</button>
