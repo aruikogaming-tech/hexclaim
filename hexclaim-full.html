@@ -4308,13 +4308,12 @@ async function showMatchmaking(){
 
       // Look for other queued players
       const keys=await pvpDB.list('pvp-queue');
-      if(!keys||!keys.keys)return;
-      for(const key of keys.keys){
-        if(key==='pvp-queue:'+queueId)continue;
+      if(!keys||!Array.isArray(keys))return;
+      for(const item of keys){
+        if(!item||!item.value)continue;
+        const other=item.value;
+        if(item.key==='pvp-queue/'+queueId)continue;
         try{
-          const otherVal=item.value;const otherRes=otherVal;
-          if(!otherRes)continue;
-          const other=otherRes;
           if(Math.abs(other.elo-save.elo)<=300&&Date.now()-other.time<60000){
             // Match found! Create room
             matched=true;clearInterval(pollInterval);pollInterval=null;
@@ -4335,7 +4334,7 @@ async function showMatchmaking(){
             await pvpDB.set('pvp-matched/'+other.id,{roomCode:code});
             // Clean up queue entries
             await pvpDB.remove('pvp-queue/'+queueId)
-            await pvpDB.remove(item.key)
+            await pvpDB.remove(item.key.replace('pvp-queue/','pvp-queue/'))
 
             pvpRoomData=roomData;
             document.getElementById('queueStatus').textContent='Opponent found!';
