@@ -1296,8 +1296,9 @@ function initFirebase(){
         save.isGuest=false;
         saveProg();
         updateAuthUI();
-        // Load cloud save
+        // Load cloud save + register public profile
         loadCloudSave(user.uid);
+        setTimeout(pushPublicProfile,2000);
       } else {
         updateAuthUI();
       }
@@ -1407,6 +1408,31 @@ function authLinkProvider(provider){
 }
 
 // ===== CLOUD SAVE =====
+function pushPublicProfile(){
+  if(!firebaseReady||!save.authUid)return;
+  var uid=save.authUid;
+  var code=save.friendCode||('HX'+Math.random().toString(36).substring(2,8).toUpperCase());
+  save.friendCode=code;
+  var pub={
+    name:save.playerName||'Player',
+    elo:save.elo||1000,
+    level:save.profileLevel||1,
+    wins:save.pvpWins||0,
+    losses:save.pvpLosses||0,
+    streak:save.pvpStreak||0,
+    rank:getRank(save.elo||1000).name,
+    friendCode:code,
+    uid:uid,
+    updatedAt:Date.now()
+  };
+  // Write public profile (for leaderboard + friend search)
+  firebaseDB.ref('users/'+uid+'/public').set(pub).catch(function(e){console.log('Public profile save failed:',e.message)});
+  // Register friend code for lookup
+  firebaseDB.ref('friendCodes/'+code).set(uid).catch(function(e){console.log('Friend code register failed:',e.message)});
+  // Write to leaderboard index
+  firebaseDB.ref('leaderboard/'+uid).set({name:pub.name,elo:pub.elo,rank:pub.rank,uid:uid}).catch(function(e){console.log('Leaderboard write failed:',e.message)});
+}
+
 function saveToCloud(){
   if(!firebaseReady||!save.authUid)return;
   var cloudData=JSON.parse(JSON.stringify(save));
@@ -3887,7 +3913,7 @@ function grantMatchXP(won,isRanked){
   saveProg();
 }
 
-// Fake leaderboard
+// Real leaderboard from Firebase (falls back to fake if offline)
 function generateLeaderboard(){
   const lb=[];
   const baseElos=[2950,2780,2650,2500,2380,2200,2050,1900,1750,1600,1450,1350,1250,1150,1050,950,880,800,750,700];
@@ -3895,10 +3921,48 @@ function generateLeaderboard(){
     const elo=baseElos[i]+Math.floor(Math.random()*80-40);
     lb.push({name:OPP_NAMES[i],elo,rank:getRank(elo)});
   }
-  // Insert player
   lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true});
   lb.sort((a,b)=>b.elo-a.elo);
   return lb;
+}
+
+function loadRealLeaderboard(container){
+  if(!firebaseReady||!firebaseDB){
+    renderLeaderboardList(container,generateLeaderboard());
+    return;
+  }
+  container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Loading leaderboard...</div>';
+  firebaseDB.ref('leaderboard').orderByChild('elo').limitToLast(20).once('value').then(function(snap){
+    var lb=[];
+    snap.forEach(function(child){
+      var d=child.val();
+      var isYou=d.uid===save.authUid;
+      lb.push({name:d.name,elo:d.elo,rank:getRank(d.elo),isYou:isYou});
+    });
+    lb.sort(function(a,b){return b.elo-a.elo});
+    // Always show player even if not in top 20
+    var inList=lb.some(function(x){return x.isYou});
+    if(!inList)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
+    renderLeaderboardList(container,lb);
+  }).catch(function(){
+    renderLeaderboardList(container,generateLeaderboard());
+  });
+}
+
+function renderLeaderboardList(container,lb){
+  var html='<div class="leaderboard" style="margin-top:6px">';
+  lb.forEach(function(p,i){
+    var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    var outside=p.outsideTop?'<span style="font-size:9px;color:var(--muted)"> (not in top 20)</span>':'';
+    html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:'+(p.isYou?'rgba(6,214,160,0.1)':'var(--dim)')+';border:1px solid '+(p.isYou?'var(--p1)':'var(--border)')+';">'
+      +'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted);width:18px">'+(medal||'#'+(i+1))+'</div>'
+      +'<div style="flex:1;font-size:12px;font-weight:700;color:'+(p.isYou?'var(--p1)':'var(--text)')+'">'+p.name+outside+'</div>'
+      +'<div style="font-size:10px;color:'+p.rank.color+'">'+p.rank.icon+' '+p.rank.name+'</div>'
+      +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:var(--gold)">'+p.elo+'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  container.innerHTML=html;
 }
 
 // ===== CHAPTERS =====
@@ -6675,6 +6739,9 @@ function checkEnd(){
     else{save.pvpLosses++;save.pvpStreak=0}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
+    // Push ELO + public profile to Firebase after ranked match
+    saveToCloud();
+    pushPublicProfile();
   } else if(!isPVP){
     save.totalGames++;if(won)save.totalWins++;
   }
