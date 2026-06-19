@@ -4695,16 +4695,7 @@ function showRankTab(tab,btn){
   if(btn){document.querySelectorAll('#rankScreen .tab').forEach(t=>t.classList.remove('active'));btn.classList.add('active')}
   const cont=document.getElementById('rankTabContent');
   if(tab==='lb'){
-    const lb=generateLeaderboard();
-    let html='<div class="leaderboard" style="margin-top:6px">';
-    lb.forEach((p,i)=>{
-      const posClass=i===0?'gold':i===1?'silver':i===2?'bronzec':'';
-      html+=`<div class="lb-row${p.isYou?' you':''}">
-        <div class="lb-pos ${posClass}">${i+1}</div>
-        <div class="lb-info"><div class="lb-name">${p.isYou?'⬡ ':''} ${p.name}</div><div class="lb-rank">${p.rank.icon} ${p.rank.name}</div></div>
-        <div class="lb-elo">${p.elo}</div></div>`;
-    });
-    cont.innerHTML=html+'</div>';
+    loadRealLeaderboard(cont);
   } else if(tab==='profile'){
     checkIconUnlocks();checkTitleUnlocks();
     var wrap=document.createElement('div');wrap.style.marginTop='6px';
