@@ -2939,7 +2939,7 @@ function shiftHue(hex,degrees){
 }
 function registerSeasonCosmetics(){
   var s=save.season||1;var p=getSeasonPalette(s);
-  var sBorders=[{id:'season_gold_border',rank:'Gold'},{id:'season_plat_border',rank:'Platinum'},{id:'season_diamond_border',rank:'Diamond'},{id:'season_master_border',rank:'Master'},{id:'season_chroma_border',rank:'Chromancer'}];
+  var sBorders=[{id:'season_bronze_border',rank:'Bronze'},{id:'season_silver_border',rank:'Silver'},{id:'season_gold_border',rank:'Gold'},{id:'season_plat_border',rank:'Platinum'},{id:'season_diamond_border',rank:'Diamond'},{id:'season_master_border',rank:'Master'},{id:'season_chroma_border',rank:'Chromancer'}];
   sBorders.forEach(function(sb){if(!SHOP_BORDERS.find(function(b){return b.id===sb.id;}))SHOP_BORDERS.push({id:sb.id,name:'Season '+s+' '+sb.rank+' Frame',price:0,currency:'season',preview:'🏆',seasonal:true,season:s});});
   var sEffects=[{id:'season_diamond_fx',name:'Season '+s+' Diamond Aura'},{id:'season_master_fx',name:'Season '+s+' Master Surge'},{id:'season_chroma_fx',name:'Season '+s+' Chromancer Nova'}];
   sEffects.forEach(function(se){if(!SHOP_EFFECTS.find(function(e){return e.id===se.id;}))SHOP_EFFECTS.push({id:se.id,name:se.name,desc:'Season '+s+' exclusive',price:0,currency:'season',preview:'✨',seasonal:true});});
