@@ -284,6 +284,9 @@ body{display:flex;align-items:flex-start;justify-content:center;
 .bp-xp-bar{width:100%;height:8px;background:var(--dim);border-radius:4px;overflow:hidden;margin-top:8px}
 .bp-xp-fill{height:100%;background:linear-gradient(90deg,var(--p1),var(--gold));border-radius:4px;transition:width 0.5s}
 </style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -1257,14 +1260,13 @@ function renderQuestTab(tab){
 // 4. Add Firebase SDK scripts to the HTML <head>
 
 const FIREBASE_CONFIG = {
-  // ⚠️ REPLACE THESE with your Firebase project credentials:
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBrdKwcH41-Ti7su5Cz8zX3HlmGX0snnJA",
+  authDomain: "hexclaim-adb56.firebaseapp.com",
+  databaseURL: "https://hexclaim-adb56-default-rtdb.firebaseio.com",
+  projectId: "hexclaim-adb56",
+  storageBucket: "hexclaim-adb56.firebasestorage.app",
+  messagingSenderId: "942689952462",
+  appId: "1:942689952462:web:3d4936223cb2e285c4669f"
 };
 
 let firebaseReady=false;
