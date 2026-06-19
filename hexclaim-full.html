@@ -4483,9 +4483,12 @@ async function showMatchmaking(){
 async function cancelQueue(){
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
   if(window._queueId){await pvpDB.remove('pvp-queue/'+window._queueId)}
-  showScreen('menuScreen');
+  // Silently swap screens without triggering layout jump
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   var menu=document.getElementById('menuScreen');
-  if(menu)menu.scrollTop=0;
+  if(menu){menu.classList.add('active');menu.scrollTop=0;}
+  var tb=document.getElementById('topBar');
+  if(tb)tb.style.display='block';
 }
 
 async function cancelRoom(){
