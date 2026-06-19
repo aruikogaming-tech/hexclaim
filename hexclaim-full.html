@@ -4338,7 +4338,7 @@ async function showMatchmaking(){
     <div class="card" style="text-align:center;padding:24px">
       <div class="mm-spinner" style="margin:0 auto"></div>
       <div style="font-size:13px;color:var(--muted);margin-top:12px">Searching for players...</div>
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);margin-top:4px">ELO ${save.elo} ± 200</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);margin-top:4px" id="eloRangeDisplay">ELO ${save.elo} ± 200</div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px" id="queueStatus">Joining queue...</div>
     </div>
     <button class="menu-btn secondary" style="margin-top:8px" onclick="cancelQueue()">Cancel</button>`;
@@ -4377,7 +4377,9 @@ async function showMatchmaking(){
         const other=item.value;
         if(item.key==='pvp-queue/'+queueId)continue;
         try{
-          if(Math.abs(other.elo-save.elo)<=300&&Date.now()-other.time<60000){
+          const waitSec=Math.floor((Date.now()-queueEntry.time)/1000);
+        const eloRange=Math.min(600,200+waitSec*10); // Starts ±200, widens to ±600 over 40s
+        if(Math.abs(other.elo-save.elo)<=eloRange&&Date.now()-other.time<120000){
             // Match found! Create room
             matched=true;clearInterval(pollInterval);pollInterval=null;
             const code=genRoomCode();myRoomCode=code;myPlayerSlot=1;
@@ -4397,7 +4399,7 @@ async function showMatchmaking(){
             await pvpDB.set('pvp-matched/'+other.id,{roomCode:code});
             // Clean up queue entries
             await pvpDB.remove('pvp-queue/'+queueId)
-            await pvpDB.remove(item.key.replace('pvp-queue/','pvp-queue/'))
+            await pvpDB.remove(item.key)
 
             pvpRoomData=roomData;
             document.getElementById('queueStatus').textContent='Opponent found!';
@@ -4406,7 +4408,11 @@ async function showMatchmaking(){
           }
         }catch(e){}
       }
-      document.getElementById('queueStatus').textContent='Searching... '+Math.floor((Date.now()-queueEntry.time)/1000)+'s';
+      const elapsed=Math.floor((Date.now()-queueEntry.time)/1000);
+      const currentRange=Math.min(600,200+elapsed*10);
+      const rd=document.getElementById('eloRangeDisplay');
+      if(rd)rd.textContent='ELO '+save.elo+' ± '+currentRange;
+      document.getElementById('queueStatus').textContent='Searching... '+elapsed+'s';
     }catch(e){}
   },2000);
 
