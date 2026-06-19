@@ -480,7 +480,36 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.1</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px;cursor:pointer" onclick="var c=prompt('Admin code:');if(c===save.adminCode){save.isAdmin=true;saveProg();document.getElementById('adminPanel').style.display='block';showToast('🔧 Admin mode enabled')}else if(c){showToast('Wrong code')}">HexClaim v1.1</div>
+
+  <!-- ADMIN PANEL — only visible to isAdmin accounts -->
+  <div id="adminPanel" style="display:none;margin-top:16px;border:2px solid var(--c4);border-radius:14px;padding:14px">
+    <div style="font-size:13px;font-weight:800;color:var(--c4);margin-bottom:10px">🔧 Admin Panel</div>
+
+    <!-- Give coins/diamonds -->
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">CURRENCY</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <button onclick="save.coins+=10000;saveProg();updateShopCurrency();showToast('💰 +10000 coins')" style="flex:1;padding:8px;background:var(--surface);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:10px;font-weight:800;cursor:pointer">+10k Coins</button>
+      <button onclick="save.chromas+=1000;saveProg();updateShopCurrency();showToast('💎 +1000 diamonds')" style="flex:1;padding:8px;background:var(--surface);border:1px solid var(--diamond);border-radius:8px;color:var(--diamond);font-size:10px;font-weight:800;cursor:pointer">+1k 💎</button>
+    </div>
+
+    <!-- Set ELO -->
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">SET ELO</div>
+    <div style="display:flex;gap:6px;margin-bottom:10px">
+      <input id="adminEloInput" type="number" placeholder="ELO value" style="flex:1;padding:8px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;outline:none">
+      <button onclick="var v=parseInt(document.getElementById('adminEloInput').value);if(v>=0){save.elo=v;saveProg();updateAllUI();showToast('ELO set to '+v)}" style="padding:8px 12px;background:var(--surface);border:1px solid var(--c5);border-radius:8px;color:var(--c5);font-size:10px;font-weight:800;cursor:pointer">Set</button>
+    </div>
+
+    <!-- Season reward recovery -->
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">RECOVER SEASON REWARDS</div>
+    <div style="font-size:9px;color:var(--muted);margin-bottom:6px">Paste a player UID to grant any missing season rewards based on their peak ELO</div>
+    <input id="adminUidInput" type="text" placeholder="Player UID" style="width:100%;padding:8px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;outline:none;margin-bottom:6px;box-sizing:border-box">
+    <button onclick="adminRecoverSeasonRewards(document.getElementById('adminUidInput').value.trim())" style="width:100%;padding:8px;background:var(--surface);border:1px solid var(--p1);border-radius:8px;color:var(--p1);font-size:11px;font-weight:800;cursor:pointer;margin-bottom:10px">🔄 Recover Rewards</button>
+
+    <!-- Wipe Firebase -->
+    <div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:6px">DANGER ZONE</div>
+    <button onclick="if(confirm('Wipe ALL Firebase data? This cannot be undone!')){firebaseDB.ref('/').remove().then(function(){showToast('🗑 All Firebase data wiped!')})}" style="width:100%;padding:8px;background:rgba(239,71,111,0.1);border:1px solid var(--c4);border-radius:8px;color:var(--c4);font-size:11px;font-weight:800;cursor:pointer">🗑 Wipe All Firebase Data</button>
+  </div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -626,7 +655,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Profile
   profileLevel:1,profileXP:0,portrait:'⬡',
   tutorialDone:false,
-  isAdmin:false,
+  isAdmin:false,adminCode:'hexclaim2026',
   nameChangesFree:1, // First name change is free, after that costs diamonds
   activeSkin:'default', // Currently active theme applied to game board
   // Monetization
