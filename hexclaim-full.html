@@ -1415,12 +1415,12 @@ function pushPublicProfile(){
   save.friendCode=code;
   var pub={
     name:save.playerName||'Player',
-    elo:save.elo||1000,
+    elo:save.elo||0,
     level:save.profileLevel||1,
     wins:save.pvpWins||0,
     losses:save.pvpLosses||0,
     streak:save.pvpStreak||0,
-    rank:getRank(save.elo||1000).name,
+    rank:getRank(save.elo||0).name,
     friendCode:code,
     uid:uid,
     updatedAt:Date.now()
@@ -2457,9 +2457,9 @@ function updateAllUI(){
   // Show admin panel if admin
   const ap=document.getElementById('adminPanel');
   if(ap&&save.isAdmin)ap.style.display='block';
-  // Ranked PVP is coming soon — always locked
+  // Ranked PVP enabled
   const pvpBtn=document.getElementById('pvpBtn');
-  if(pvpBtn){pvpBtn.style.opacity='0.4';pvpBtn.style.pointerEvents='none';pvpBtn.innerHTML='⚔ Ranked PVP <span style="font-size:8px;background:var(--gold);color:#0d0b14;padding:2px 6px;border-radius:4px;margin-left:6px;font-weight:800">COMING SOON</span>';}
+  if(pvpBtn){pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';}
 }
 
 function getTitleDisplayStyle(titleId){
