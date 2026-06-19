@@ -4484,6 +4484,8 @@ async function cancelQueue(){
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
   if(window._queueId){await pvpDB.remove('pvp-queue/'+window._queueId)}
   showScreen('menuScreen');
+  var menu=document.getElementById('menuScreen');
+  if(menu)menu.scrollTop=0;
 }
 
 async function cancelRoom(){
