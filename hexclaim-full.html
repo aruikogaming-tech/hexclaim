@@ -2431,7 +2431,7 @@ function tryRankedPVP(){
     showToast('Reach Level 10 for Ranked PVP! You are Level '+save.profileLevel);
     return;
   }
-  showScreen('pvpScreen');buildPVP();
+  showScreen('pvpScreen');showMatchmaking();
 }
 
 // ===== UPDATE ALL UI =====
@@ -3898,7 +3898,7 @@ function claimBPReward(track,level){
   const reward=track==='free'?tier.free:tier.premium;
   // Grant reward
   if(reward.type==='coins')save.coins+=reward.amount;
-  else if(reward.type==='coins')save.coins+=reward.amount;
+  else if(reward.type==='chromas')save.chromas+=reward.amount;
   else if(reward.type==='power')save.powerStock[reward.id]=(save.powerStock[reward.id]||0)+reward.amount;
   else if(reward.type==='theme')save.owned['theme_'+reward.id]=true;
   else if(reward.type==='border')save.owned['border_'+reward.id]=true;
@@ -3980,7 +3980,7 @@ function checkRankUp(oldElo,newElo){
     }
 
     // Close button
-    html+='<button onclick="this.closest(\'#rankUpPopup\').remove();playSfx(\'claimBig\')" style="padding:10px 28px;background:linear-gradient(135deg,'+borderColor+',#ffd166);border:none;border-radius:10px;color:#0d0b14;font-weight:800;font-size:14px;cursor:pointer;font-family:Manrope,sans-serif">Claim Rewards</button>';
+    html+='<button onclick="document.getElementById(\'rankUpPopup\').remove();playSfx(\'claimBig\')" style="padding:10px 28px;background:linear-gradient(135deg,'+borderColor+',#ffd166);border:none;border-radius:10px;color:#0d0b14;font-weight:800;font-size:14px;cursor:pointer;font-family:Manrope,sans-serif">Claim Rewards</button>';
     html+='</div>';
 
     popup.innerHTML=html;
@@ -4618,24 +4618,7 @@ function startOnlinePoll(){
       if(data.state==='finished'&&!gameOver){
         gameOver=true;checkEnd();
       }
-      // Disconnect timeout — if no new moves for 90 seconds, opponent left
-      var lastMove=data.moves&&data.moves.length>0?data.moves[data.moves.length-1].time:data.created;
-      if(Date.now()-lastMove>90000&&!gameOver){
-        showToast('Opponent disconnected — you win!');
-        pvpOpponent={name:pvpOpponent?pvpOpponent.name:'Opponent',elo:pvpOpponent?pvpOpponent.elo:1000};
-        gameOver=true;
-        if(myRoomCode)pvpDB.set('pvp-rooms/'+myRoomCode,{...pvpRoomData,state:'finished'});
-        checkEnd();
-      }
-    // Disconnect timeout — if no move for 90s, opponent left
-      var lastMoveTime=data.moves&&data.moves.length>0?data.moves[data.moves.length-1].time:data.created;
-      if(lastMoveTime&&Date.now()-lastMoveTime>90000&&!gameOver&&!isMyTurn()){
-        showToast('⚠️ Opponent disconnected — you win!',4000);
-        if(myRoomCode)pvpDB.set('pvp-rooms/'+myRoomCode,Object.assign({},pvpRoomData,{state:'finished'}));
-        gameOver=true;
-        checkEnd();
-      }
-    // Disconnect timeout — if no move for 90s, opponent left
+      // Disconnect timeout — if no move for 90s, opponent left
       var lastMoveTime=data.moves&&data.moves.length>0?data.moves[data.moves.length-1].time:data.created;
       if(lastMoveTime&&Date.now()-lastMoveTime>90000&&!gameOver&&!isMyTurn()){
         showToast('⚠️ Opponent disconnected — you win!',4000);
