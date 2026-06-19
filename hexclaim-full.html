@@ -4401,7 +4401,7 @@ async function showMatchmaking(){
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);margin-top:4px" id="eloRangeDisplay">ELO ${save.elo} ± 200</div>
       <div style="font-size:11px;color:var(--muted);margin-top:12px" id="queueStatus">Joining queue...</div>
     </div>
-    <button class="menu-btn secondary" style="margin-top:8px" onclick="cancelQueue()">Cancel</button>`;
+    <button onclick="cancelQueue()" style="margin-top:16px;padding:12px 40px;background:none;border:1px solid var(--c4);border-radius:10px;color:var(--c4);font-family:'Manrope',sans-serif;font-size:13px;font-weight:800;cursor:pointer;display:block;margin-left:auto;margin-right:auto">✕ Cancel Search</button>`;
 
   // Post ourselves to the matchmaking queue
   const queueId='queue:'+Date.now()+':'+Math.random().toString(36).substring(2,6);
