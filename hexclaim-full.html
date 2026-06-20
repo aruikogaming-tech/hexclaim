@@ -686,7 +686,9 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Starter pack
   starterPackBought:false,
   // Rewarded ads
-  adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,limitedShopRotation:null,limitedShopItems:null,
+  adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
+        adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,limitedShopRotation:null,limitedShopItems:null,
+  adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,
   friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[]
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
@@ -772,6 +774,7 @@ function resetAllProgress(){
         isAdmin:wasAdmin,adminCode:'hexclaim2026',seasonTempCosmetics:[],consistentWins:0,consistentFailed:false,lossInRow:0,best80pct:false,best90pct:false,aiHardWins:0,maxWinStreak:0,winStreak:0,
         pvpLossStreak:0,hasRated:false,ratePromptCount:0,starterPackBought:false,
         adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
+        adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,
         limitedShopRotation:null,limitedShopItems:null,
         friends:[],friendRequests:[],sentRequests:[],friendCode:null,
         localPvpWins:0,localPvpLosses:0,
@@ -985,7 +988,7 @@ function showLuckySpin(){
       document.getElementById('spinPopup').remove();
       showRewardedAd('Earn 1 extra Lucky Spin!',function(){
         save.freeSpinsToday=Math.max(0,save.freeSpinsToday-1);saveProg();showLuckySpin();
-      });
+      },'adSpinToday',1);
     };
   }
 }
@@ -1250,8 +1253,24 @@ function renderQuestTab(tab){
     // Ad bonus for extra BP XP
     var adBonus=document.createElement('div');adBonus.className='shop-item';adBonus.style.cursor='pointer';
     adBonus.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">🎬</div><div class="si-info"><div class="si-name">Watch Ad for BP XP</div><div style="font-size:9px;color:var(--muted)">Earn +50 bonus Battle Pass XP</div></div><div style="font-size:9px;color:var(--p1);font-weight:800">Free</div>';
-    adBonus.onclick=function(){showRewardedAd('Earn +50 Battle Pass XP!',function(){save.bpXP+=50;saveProg();showToast('+50 BP XP earned!');renderQuestTab('daily')})};
+    var bpAdUsed=save.adBpToday||0;
+    adBonus.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">🎬</div><div class="si-info"><div class="si-name">Watch Ad for BP XP</div><div style="font-size:9px;color:var(--muted)">Earn +50 bonus Battle Pass XP ('+bpAdUsed+'/2 used today)</div></div><div style="font-size:9px;color:'+(bpAdUsed>=2?'var(--muted)':'var(--p1)')+';font-weight:800">'+(bpAdUsed>=2?'Done':'Free')+'</div>';
+    adBonus.onclick=function(){showRewardedAd('Earn +50 Battle Pass XP!',function(){save.bpXP+=50;saveProg();showToast('+50 BP XP earned!');renderQuestTab('daily')},'adBpToday',2)};
     cont.appendChild(adBonus);
+
+    // Ad: Free Power-Up
+    var adPower=document.createElement('div');adPower.className='shop-item';adPower.style.cursor='pointer';
+    var powerUsed=save.adPowerToday||0;
+    adPower.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">💥</div><div class="si-info"><div class="si-name">Watch Ad for Power-Up</div><div style="font-size:9px;color:var(--muted)">Get 1 free Bomb power-up ('+powerUsed+'/1 used today)</div></div><div style="font-size:9px;color:'+(powerUsed>=1?'var(--muted)':'var(--c3)')+';font-weight:800">'+(powerUsed>=1?'Done':'Free')+'</div>';
+    adPower.onclick=function(){showRewardedAd('Get 1 free Bomb power-up!',function(){save.powerStock.bomb=(save.powerStock.bomb||0)+1;saveProg();showToast('💥 Free Bomb added!');renderQuestTab('daily')},'adPowerToday',1)};
+    cont.appendChild(adPower);
+
+    // Ad: Free Diamonds
+    var adDiamonds=document.createElement('div');adDiamonds.className='shop-item';adDiamonds.style.cursor='pointer';
+    var diaUsed=save.adDiamondsToday||0;
+    adDiamonds.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">💎</div><div class="si-info"><div class="si-name">Watch Ad for Diamonds</div><div style="font-size:9px;color:var(--muted)">Earn +10 free diamonds ('+diaUsed+'/1 used today)</div></div><div style="font-size:9px;color:'+(diaUsed>=1?'var(--muted)':'var(--diamond)')+';font-weight:800">'+(diaUsed>=1?'Done':'Free')+'</div>';
+    adDiamonds.onclick=function(){showRewardedAd('Earn +10 free Diamonds!',function(){save.chromas=(save.chromas||0)+10;saveProg();updateShopCurrency();showToast('💎 +10 Diamonds earned!');renderQuestTab('daily')},'adDiamondsToday',1)};
+    cont.appendChild(adDiamonds);
   }
 
   // Main quests
@@ -2274,34 +2293,46 @@ function showRatePrompt(){
 // ===== REWARDED ADS (Placeholder — activate with AdMob in Capacitor) =====
 function checkAdReset(){
   var today=getGameDay();
-  if(save.lastAdDate!==today){save.adWatchedToday=0;save.lastAdDate=today;saveProg()}
+  if(save.lastAdDate!==today){
+    save.adWatchedToday=0;
+    save.adBpToday=0;save.adCoinsToday=0;save.adSpinToday=0;
+    save.adPowerToday=0;save.adDiamondsToday=0;save.adShopToday=0;
+    save.lastAdDate=today;saveProg();
+  }
 }
 
-function showRewardedAd(rewardType,callback){
-  // In production with Capacitor + AdMob, this would show a real ad
-  // For now, simulate the flow
+function showRewardedAd(rewardType,callback,placementKey,placementMax){
+  // placementKey = save field e.g. 'adBpToday', placementMax = daily limit for this slot
   checkAdReset();
-  if(save.adWatchedToday>=5){showToast('Max 5 ad rewards per day');return}
+  if(save.adWatchedToday>=5){showToast('Daily ad limit reached (5/day)');return}
+  if(placementKey&&placementMax&&(save[placementKey]||0)>=placementMax){
+    showToast('You\'ve used all '+placementMax+' ad rewards for this today!');return;
+  }
+  var remaining=5-save.adWatchedToday;
   var popup=document.createElement('div');popup.id='adPopup';
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.9)';
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:24px;text-align:center;max-width:280px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:28px;margin-bottom:8px">🎬</div>'
     +'<div style="font-size:14px;font-weight:800;color:var(--p1)">Watch Ad for Reward</div>'
     +'<div style="font-size:10px;color:var(--muted);margin:8px 0">'+rewardType+'</div>'
-    +'<div style="font-size:9px;color:var(--muted);margin-bottom:10px">Ad rewards today: '+(save.adWatchedToday)+'/5</div>'
+    +'<div style="font-size:9px;color:var(--muted);margin-bottom:10px">Daily ads remaining: '+remaining+'/5</div>'
     +'<button id="adWatch" style="padding:10px 24px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">▶ Watch Ad</button>'
     +'<div style="margin-top:8px"><button id="adSkip" style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline">No thanks</button></div>'
     +'</div>';
   document.body.appendChild(popup);
   document.getElementById('adSkip').onclick=function(){popup.remove()};
   document.getElementById('adWatch').onclick=function(){
-    // Simulate ad watching (3 second countdown)
     var btn=document.getElementById('adWatch');btn.disabled=true;
     var sec=3;btn.textContent='Watching... '+sec+'s';
     var timer=setInterval(function(){
       sec--;btn.textContent=sec>0?'Watching... '+sec+'s':'✓ Complete!';
-      if(sec<=0){clearInterval(timer);save.adWatchedToday++;saveProg();
-        setTimeout(function(){popup.remove();if(callback)callback();playSfx('claimBig')},500)}
+      if(sec<=0){
+        clearInterval(timer);
+        save.adWatchedToday++;
+        if(placementKey)save[placementKey]=(save[placementKey]||0)+1;
+        saveProg();
+        setTimeout(function(){popup.remove();if(callback)callback();playSfx('claimBig')},500);
+      }
     },1000);
   };
 }
@@ -6918,7 +6949,7 @@ async function playerMove(colorIdx){
     if(curConfig.moveLimit)movesLeft--;
     updateFog();updateUI();buildColorPicker();updateObjBar();
 
-    if(doubleActive){doubleActive=false;buildPowerups();animatingMove=false;if(!checkEnd())return;return}
+    if(doubleActive){doubleActive=false;buildPowerups();animatingMove=false;window._checkEndRunning=false;if(!checkEnd())return;return}
 
     // Chain bonus — stay as player 1's turn
     if(chainBonus&&!gameOver){
@@ -6932,11 +6963,14 @@ async function playerMove(colorIdx){
     // Pause before switching to AI
     turn=2;updateUI();
     if(isLocalPVP){animatingMove=false;}
-    else if(!checkEnd()){
-      // AI thinks for a moment, then plays with animation
-      const aiDelay=1200+Math.random()*800;
-      setTimeout(aiMove,aiDelay);
-    } else {animatingMove=false}
+    else {
+      window._checkEndRunning=false;
+      if(!checkEnd()){
+        // AI thinks for a moment, then plays with animation
+        const aiDelay=1200+Math.random()*800;
+        setTimeout(aiMove,aiDelay);
+      } else {animatingMove=false}
+    }
   });
 }
 
@@ -7035,7 +7069,7 @@ function aiMove(){
 }
 
 function checkEnd(){
-  if(window._checkEndRunning)return;
+  if(window._checkEndRunning)return false;
   window._checkEndRunning=true;
   setTimeout(function(){window._checkEndRunning=false;},3000);
   window.extraCoinsEarned=0;
@@ -7249,7 +7283,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     const adDiv=document.createElement('div');
     adDiv.style.cssText='margin-top:4px;cursor:pointer;font-size:10px;color:var(--p1);font-weight:700;text-align:center';
     adDiv.textContent='🎬 Watch Ad → Double Coins';
-    adDiv.onclick=function(){showRewardedAd('Double your coin reward!',function(){save.coins+=coinsEarned;saveProg();updateShopCurrency();adDiv.textContent='✓ Coins doubled!';adDiv.onclick=null})};
+    adDiv.onclick=function(){showRewardedAd('Double your coin reward!',function(){save.coins+=coinsEarned;saveProg();updateShopCurrency();adDiv.textContent='✓ Coins doubled!';adDiv.onclick=null},'adCoinsToday',3)};
     reward.parentElement.appendChild(adDiv);
   }
   // Track mode stats
