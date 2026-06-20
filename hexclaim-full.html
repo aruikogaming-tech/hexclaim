@@ -7063,8 +7063,11 @@ function aiMove(){
     resetTurnTimer();
     updateFog();updateUI();buildColorPicker();draw();
     // Brief cooldown — prevent instant player clicks after AI
-    setTimeout(function(){animatingMove=false},400);
-    checkEnd();
+    setTimeout(function(){
+      animatingMove=false;
+      window._checkEndRunning=false;
+      checkEnd();
+    },400);
   });
 }
 
