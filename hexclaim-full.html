@@ -5117,10 +5117,10 @@ function startTutorial(){
   // Launch a small tutorial game then show overlay
   tutGameStep=0;tutMovesThisStep=0;window._tutMoves=0;
   if(window._tutTimeout)clearTimeout(window._tutTimeout);
-  window._tutTimeout=setTimeout(function(){if(!gameOver&&curConfig&&curConfig.isTutorial){gameOver=true;stopGameTimer();var _i=document.querySelector('.turn-indicator');if(_i)_i.style.display='none';setTimeout(tutOnGameEnd,500);}},120000);
+  window._tutTimeout=setTimeout(function(){if(!gameOver&&curConfig&&curConfig.isTutorial){gameOver=true;stopGameTimer();var _i=document.querySelector('.turn-indicator');if(_i)_i.style.display='none';setTimeout(tutOnGameEnd,500);}},300000);
   // Start a small campaign-style game
   curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
-  curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:0,isTutorial:true};
+  curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:30,isTutorial:true};
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
@@ -7071,7 +7071,7 @@ function checkEnd(){
     stalemateTurns=0;
   }
   lastP1Count=p1raw;lastP2Count=p2raw;
-  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?8:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
+  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?20:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
 
   if(unclaimed>0&&!ended){if(p1n>p2n+unclaimed){ended=true;won=true;reason='Result decided'}else if(p2n>p1n+unclaimed){ended=true;won=false;reason='Result decided'}}
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
