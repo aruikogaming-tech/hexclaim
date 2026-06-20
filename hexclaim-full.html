@@ -2596,6 +2596,24 @@ const SHOP_THEMES=[
   {tier:4,id:'dragon',name:'Dragonfire',desc:'Ancient dragon scales with molten core',price:0,currency:'free',achievement:true,hidden:true,shopLocked:true,preview:'🐉',colors:['#080010','#1a0044','#2d0077','#440099','#5500bb','#6600cc','#330066','#8833ff'],symbols:['🜂','🜄','🜁','🜃','⍟','✴','⊛','☉']},
 ];
 
+// ===== BATTLE PASS EXCLUSIVE COSMETICS =====
+// These are granted at BP levels 50/60/75 — not purchasable
+const BP_EXCLUSIVE_THEMES=[
+  {tier:3,id:'bp_season1',name:'Season 1 Champion',desc:'BP Level 50 exclusive — Season 1 prestige skin',price:0,currency:'free',preview:'🏆',achievement:true,hidden:true,
+   colors:['#000814','#ffd700','#ff6b00','#ffaa00','#cc5500','#ffdd44','#aa4400','#ffe066'],
+   symbols:['🏆','★','◆','✦','⬡','◈','⊛','✧']},
+  {tier:4,id:'bp_prestige_skin',name:'Prestige',desc:'BP Level 75 exclusive — ultimate prestige skin',price:0,currency:'free',preview:'🌟',achievement:true,hidden:true,
+   colors:['#080010','#c084fc','#e879f9','#a855f7','#7c3aed','#d946ef','#6d28d9','#f0abfc'],
+   symbols:['🌟','⬡','◈','✦','⊛','◆','✧','⊹']},
+];
+const BP_EXCLUSIVE_BORDERS=[
+  {id:'bp_prestige_border',name:'Prestige Frame',price:0,currency:'free',preview:'⭐',achievement:true,
+   color:'#c084fc',style:'gradient',glow:3},
+];
+// Register BP exclusives into main arrays
+BP_EXCLUSIVE_THEMES.forEach(function(s){if(!SHOP_THEMES.find(function(t){return t.id===s.id}))SHOP_THEMES.push(s)});
+BP_EXCLUSIVE_BORDERS.forEach(function(b){if(!SHOP_BORDERS.find(function(x){return x.id===b.id}))SHOP_BORDERS.push(b)});
+
 const SEASONAL_SKINS=[
   // Season 1 — Chromancer only exclusive skin
   {id:'season_chroma_s1',name:'Season 1 Chromancer',desc:'Season 1 exclusive — Chromancer only',preview:'🔮',season:1,colors:['#000000','#ffd166','#06d6a0','#ef476f','#8338ec','#118ab2','#ff9f1c','#ccaaff'],symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],tier:4,rankReq:'Chromancer'},
@@ -6316,6 +6334,135 @@ function draw(){
           ctx.ellipse(0,0,3*claimAnim,5*claimAnim,0,0,Math.PI*2);
           ctx.fillStyle='rgba(255,'+Math.floor(100+80*Math.sin(t*3+gp))+',170,'+claimAnim*0.9+')';
           ctx.fill();ctx.restore();
+        }
+        ctx.restore();
+      } else if(eff==='storm_fx'){
+        // LIGHTNING STORM — multiple chaotic bolts
+        ctx.fillStyle='rgba(100,180,255,'+claimAnim*0.3+')';ctx.fill();
+        ctx.fillStyle='rgba(255,255,255,'+claimAnim*claimAnim*0.5+')';ctx.fill();
+        ctx.save();
+        for(var sf=0;sf<4;sf++){
+          ctx.beginPath();var sbx=cx2+(sf-1.5)*cellW*0.25,sby=y+2;ctx.moveTo(sbx,sby);
+          for(var ss2=0;ss2<6;ss2++){sbx+=(Math.random()-0.5)*cellW*0.3;sby+=cellH*0.15;ctx.lineTo(sbx,sby)}
+          ctx.strokeStyle='rgba(180,230,255,'+claimAnim+')';ctx.lineWidth=2*claimAnim;
+          ctx.shadowColor='rgba(100,200,255,1)';ctx.shadowBlur=claimAnim*20;ctx.stroke();ctx.shadowBlur=0;
+        }
+        ctx.restore();
+      } else if(eff==='le_meteor'){
+        // METEOR STRIKE — flaming rock crashes down
+        var mGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.8);
+        mGrad.addColorStop(0,'rgba(255,200,50,'+claimAnim*0.8+')');
+        mGrad.addColorStop(0.4,'rgba(255,80,0,'+claimAnim*0.6+')');
+        mGrad.addColorStop(1,'rgba(100,0,0,'+claimAnim*0.1+')');
+        ctx.fillStyle=mGrad;ctx.fill();
+        ctx.shadowColor='rgba(255,120,0,1)';ctx.shadowBlur=claimAnim*35;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var mt=0;mt<8;mt++){
+          var ma=mt*Math.PI/4+Math.PI/8;var ml=cellW*(0.3+Math.random()*0.3)*claimAnim;
+          ctx.beginPath();ctx.moveTo(cx2,cy2);ctx.lineTo(cx2+Math.cos(ma)*ml,cy2+Math.sin(ma)*ml);
+          ctx.strokeStyle='rgba(255,'+(100+Math.floor(100*Math.random()))+',0,'+claimAnim*0.7+')';
+          ctx.lineWidth=2*claimAnim;ctx.stroke();
+        }
+        ctx.restore();
+      } else if(eff==='le_golden_fx'){
+        // GOLD RUSH — coins and sparkles scatter
+        ctx.fillStyle='rgba(255,200,0,'+claimAnim*0.3+')';ctx.fill();
+        ctx.shadowColor='rgba(255,215,0,1)';ctx.shadowBlur=claimAnim*25;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var gf=0;gf<10;gf++){
+          var gfa=gf*Math.PI*2/10+t*3;var gfd=cellW*0.4*(1-claimAnim*0.3);
+          var gfx=cx2+Math.cos(gfa)*gfd,gfy=cy2+Math.sin(gfa)*gfd;
+          ctx.save();ctx.translate(gfx,gfy);ctx.rotate(t*5);
+          ctx.beginPath();ctx.arc(0,0,2.5*claimAnim,0,Math.PI*2);
+          ctx.fillStyle='rgba(255,215,0,'+claimAnim*0.9+')';ctx.fill();ctx.restore();
+        }
+        ctx.restore();
+      } else if(eff==='le_cherry_pop'){
+        // CHERRY BLOSSOM — pink petals burst
+        ctx.fillStyle='rgba(255,150,180,'+claimAnim*0.2+')';ctx.fill();
+        ctx.save();
+        for(var cp=0;cp<12;cp++){
+          var cpa=cp*Math.PI/6+t*2;var cpd=cellW*0.45*(1-claimAnim*0.4);
+          var cpx=cx2+Math.cos(cpa)*cpd,cpy=cy2+Math.sin(cpa)*cpd;
+          ctx.save();ctx.translate(cpx,cpy);ctx.rotate(cpa+t*3);
+          ctx.beginPath();ctx.ellipse(0,0,2*claimAnim,3.5*claimAnim,0,0,Math.PI*2);
+          ctx.fillStyle='rgba(255,'+(130+Math.floor(60*Math.sin(t+cp)))+',170,'+claimAnim*0.85+')';
+          ctx.fill();ctx.restore();
+        }
+        ctx.restore();
+      } else if(eff==='le_electric_surge'){
+        // ELECTRIC SURGE — crackling arcs across tile
+        ctx.fillStyle='rgba(50,255,200,'+claimAnim*0.25+')';ctx.fill();
+        ctx.shadowColor='rgba(0,255,180,1)';ctx.shadowBlur=claimAnim*25;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var es=0;es<5;es++){
+          ctx.beginPath();var esx=cx2+(Math.random()-0.5)*cellW,esy=y;ctx.moveTo(esx,esy);
+          for(var eseg=0;eseg<4;eseg++){esx+=(Math.random()-0.5)*cellW*0.4;esy+=cellH*0.22;ctx.lineTo(esx,esy)}
+          ctx.strokeStyle='rgba(0,255,180,'+claimAnim+')';ctx.lineWidth=1.5*claimAnim;
+          ctx.shadowColor='rgba(0,255,200,1)';ctx.shadowBlur=claimAnim*12;ctx.stroke();ctx.shadowBlur=0;
+        }
+        ctx.restore();
+      } else if(eff==='le_frost_shatter'){
+        // FROST SHATTER — ice crystals explode
+        var fGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.8);
+        fGrad.addColorStop(0,'rgba(180,240,255,'+claimAnim*0.6+')');
+        fGrad.addColorStop(0.5,'rgba(100,180,220,'+claimAnim*0.3+')');
+        fGrad.addColorStop(1,'rgba(0,50,100,0)');
+        ctx.fillStyle=fGrad;ctx.fill();
+        ctx.save();
+        for(var fr=0;fr<8;fr++){
+          var fra=fr*Math.PI/4;var frl=cellW*0.45*claimAnim;
+          ctx.beginPath();ctx.moveTo(cx2,cy2);
+          ctx.lineTo(cx2+Math.cos(fra)*frl,cy2+Math.sin(fra)*frl);
+          ctx.strokeStyle='rgba(180,240,255,'+claimAnim*0.9+')';ctx.lineWidth=2*claimAnim;
+          ctx.shadowColor='rgba(150,220,255,1)';ctx.shadowBlur=claimAnim*10;ctx.stroke();ctx.shadowBlur=0;
+          // Crystal tip
+          ctx.beginPath();ctx.arc(cx2+Math.cos(fra)*frl,cy2+Math.sin(fra)*frl,2*claimAnim,0,Math.PI*2);
+          ctx.fillStyle='rgba(220,250,255,'+claimAnim+')';ctx.fill();
+        }
+        ctx.restore();
+      } else if(eff==='le_glitch'){
+        // GLITCH — digital corruption pixel scatter
+        ctx.fillStyle='rgba(0,255,0,'+claimAnim*0.15+')';ctx.fill();
+        ctx.save();
+        var glColors=['rgba(255,0,0,','rgba(0,255,0,','rgba(0,0,255,','rgba(255,255,0,'];
+        for(var gl=0;gl<12;gl++){
+          var glW=cellW*(0.1+Math.random()*0.3)*claimAnim;
+          var glH=cellH*(0.05+Math.random()*0.1);
+          var glX=x+Math.random()*cellW;var glY=y+Math.random()*cellH;
+          ctx.fillStyle=glColors[gl%4]+claimAnim*0.7+')';
+          ctx.fillRect(glX,glY,glW,glH);
+        }
+        ctx.restore();
+      } else if(eff==='le_void_collapse'){
+        // VOID COLLAPSE — dark matter implosion
+        var vcGrad=ctx.createRadialGradient(cx2,cy2,cellW*0.6*(1-claimAnim),cx2,cy2,cellW*0.8);
+        vcGrad.addColorStop(0,'rgba(0,0,0,'+claimAnim*0.9+')');
+        vcGrad.addColorStop(0.5,'rgba(60,0,100,'+claimAnim*0.5+')');
+        vcGrad.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=vcGrad;ctx.fill();
+        ctx.save();ctx.translate(cx2,cy2);ctx.rotate(t*3);
+        for(var vc=0;vc<6;vc++){
+          var vca=vc*Math.PI/3;var vcl=cellW*0.4*claimAnim;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.quadraticCurveTo(Math.cos(vca+0.6)*vcl*0.7,Math.sin(vca+0.6)*vcl*0.7,Math.cos(vca)*vcl,Math.sin(vca)*vcl);
+          ctx.strokeStyle='rgba(150,0,255,'+claimAnim*0.8+')';ctx.lineWidth=2*claimAnim;
+          ctx.shadowColor='rgba(120,0,255,1)';ctx.shadowBlur=claimAnim*12;ctx.stroke();ctx.shadowBlur=0;
+        }
+        ctx.restore();
+      } else if(eff==='le_stardust'){
+        // STARDUST BURST — sparkling stars scatter
+        ctx.fillStyle='rgba(255,255,200,'+claimAnim*0.2+')';ctx.fill();
+        ctx.save();
+        for(var sd2=0;sd2<15;sd2++){
+          var sda=sd2*Math.PI*2/15+t*2;var sdd=cellW*0.45*(1-claimAnim*0.3);
+          var sdx=cx2+Math.cos(sda)*sdd*claimAnim,sdy=cy2+Math.sin(sda)*sdd*claimAnim;
+          var sdSize=1.5+2*claimAnim;
+          ctx.save();ctx.translate(sdx,sdy);ctx.rotate(t*4+sd2);
+          ctx.beginPath();
+          for(var sp=0;sp<4;sp++){var spa=sp*Math.PI/2;ctx.lineTo(Math.cos(spa)*sdSize,Math.sin(spa)*sdSize);ctx.lineTo(Math.cos(spa+Math.PI/4)*sdSize*0.3,Math.sin(spa+Math.PI/4)*sdSize*0.3)}
+          ctx.closePath();ctx.fillStyle='rgba(255,240,'+(150+Math.floor(105*Math.sin(t*2+sd2)))+','+claimAnim*0.9+')';ctx.fill();
+          ctx.restore();
         }
         ctx.restore();
       } else {
