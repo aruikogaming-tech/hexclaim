@@ -6431,12 +6431,12 @@ function draw(){
         // GLITCH — digital corruption pixel scatter
         ctx.fillStyle='rgba(0,255,0,'+claimAnim*0.15+')';ctx.fill();
         ctx.save();
-        var glColors=['rgba(255,0,0,','rgba(0,255,0,','rgba(0,0,255,','rgba(255,255,0,'];
+        var glColors=['255,0,0','0,255,0','0,0,255','255,255,0'];
         for(var gl=0;gl<12;gl++){
           var glW=cellW*(0.1+Math.random()*0.3)*claimAnim;
           var glH=cellH*(0.05+Math.random()*0.1);
           var glX=x+Math.random()*cellW;var glY=y+Math.random()*cellH;
-          ctx.fillStyle=glColors[gl%4]+claimAnim*0.7+')';
+          ctx.fillStyle='rgba('+glColors[gl%4]+','+claimAnim*0.7+')';
           ctx.fillRect(glX,glY,glW,glH);
         }
         ctx.restore();
