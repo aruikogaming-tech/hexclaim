@@ -4107,10 +4107,12 @@ function renderLeaderboardList(container,lb){
 
 // ===== CHAPTERS =====
 const CHAPTERS=[
-  {name:"The Awakening",desc:"Learn the basics of chromatic warfare.",mechanic:"Standard Rules",mechanicDesc:"Flood-fill from your corner. Claim more tiles than your opponent to win.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.45,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[54,60,68]},
-  {name:"Fog of War",desc:"Enemy territory is hidden.",mechanic:"Fog Mechanic",mechanicDesc:"You can only see cells adjacent to your territory.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.65,story:"SHADE has deployed a veil of darkness. You can no longer see the full battlefield — only the edges of your domain are visible. Trust your instincts.",starThresholds:[52,57,63],fog:true},
-  {name:"Power Surge",desc:"Claim power tiles for special abilities.",mechanic:"Power Tiles",mechanicDesc:"Golden tiles grant powers: Bomb, Scout, Double Turn.",levels:5,cols:13,rows:15,colors:5,aiSmart:0.75,story:"The Chromatic Council has scattered power crystals across the battlefield. Race to claim them before SHADE does.",starThresholds:[52,57,63],powerTiles:true},
-  {name:"The Last Stand",desc:"SHADE at full power. Limited moves.",mechanic:"Move Limit + Boss AI",mechanicDesc:"Limited moves. SHADE plays at full intelligence.",levels:5,cols:14,rows:16,colors:6,aiSmart:0.97,story:"The core of Chromara trembles. SHADE has evolved into its final form. Every choice must count.",starThresholds:[48,53,58],moveLimit:true,baseMoves:100}
+  {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[54,60,68]},
+  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb clears a zone, 👁 Scout reveals the board, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[52,57,63],powerTiles:true},
+  {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[52,57,63],powerTiles:true},
+  {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[51,56,62],powerTiles:true},
+  {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[50,55,61],powerTiles:true,darkZones:true},
+  {name:"The Last Stand",desc:"All mechanics. Limited moves. SHADE at full power.",mechanic:"FINAL TRIAL",mechanicDesc:"Every mechanic is active — Power Tiles, Decay, King of the Hill, Dark Zones, and a strict move limit. Make every move count.",levels:5,cols:14,rows:16,colors:6,aiSmart:0.97,story:"The core of Chromara trembles. SHADE has evolved into its ultimate form, wielding every weapon at its disposal. You have limited moves to claim dominion. This is the final battle. Win — or let Chromara fall.",starThresholds:[48,53,58],powerTiles:true,darkZones:true,moveLimit:true,baseMoves:130}
 ];
 const CHALLENGES=[
  {name:"Territory Lord",desc:"Win 25 games to prove your dominance.",reward:"Title: Territory Lord",rewardTitle:'Territory Lord',cols:9,rows:11,colors:5,aiSmart:0.5,reqChapter:0},
@@ -5457,37 +5459,53 @@ function startCampaignLevel(ci,li){
   curChapter=ci;curLevel=li;isFreeplay=false;isPVP=false;
   const ch=CHAPTERS[ci];
   const levelProgression=[
-    // Chapter 1 — BASICS: small boards, no fog, no powers, easy AI
+    // Chapter 1 — AWAKENING: basics + bonus cells
     [
-      {cols:10,rows:12,colors:4,aiSmart:0.25,baseMoves:999,fog:false,powerTiles:false},
-      {cols:10,rows:12,colors:4,aiSmart:0.32,baseMoves:999,fog:false,powerTiles:false},
-      {cols:11,rows:13,colors:4,aiSmart:0.40,baseMoves:999,fog:false,powerTiles:false},
-      {cols:11,rows:13,colors:5,aiSmart:0.48,baseMoves:999,fog:false,powerTiles:false},
-      {cols:12,rows:14,colors:5,aiSmart:0.55,baseMoves:999,fog:false,powerTiles:false}
+      {cols:10,rows:12,colors:4,aiSmart:0.20,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:10,rows:12,colors:4,aiSmart:0.27,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:11,rows:13,colors:4,aiSmart:0.33,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.38,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.43,baseMoves:999,fog:false,powerTiles:false,darkZones:false}
     ],
-    // Chapter 2 — BLOCKING: fog introduced level 3+, smarter AI
+    // Chapter 2 — POWER SURGE: power tiles from level 1
     [
-      {cols:11,rows:13,colors:4,aiSmart:0.58,baseMoves:999,fog:false,powerTiles:false},
-      {cols:11,rows:13,colors:5,aiSmart:0.63,baseMoves:999,fog:false,powerTiles:false},
-      {cols:12,rows:14,colors:5,aiSmart:0.68,baseMoves:999,fog:true,powerTiles:false},
-      {cols:12,rows:14,colors:5,aiSmart:0.72,baseMoves:999,fog:true,powerTiles:false},
-      {cols:12,rows:14,colors:6,aiSmart:0.77,baseMoves:999,fog:true,powerTiles:false}
+      {cols:10,rows:12,colors:4,aiSmart:0.48,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:4,aiSmart:0.54,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.60,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.65,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.70,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
     ],
-    // Chapter 3 — POWER-UPS: power tiles from level 1, fog throughout
+    // Chapter 3 — THE ROT: decay active throughout
     [
-      {cols:12,rows:14,colors:5,aiSmart:0.75,baseMoves:999,fog:true,powerTiles:true},
-      {cols:12,rows:14,colors:5,aiSmart:0.80,baseMoves:999,fog:true,powerTiles:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.83,baseMoves:999,fog:true,powerTiles:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.87,baseMoves:999,fog:true,powerTiles:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:true,powerTiles:true}
+      {cols:11,rows:13,colors:5,aiSmart:0.68,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.73,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.77,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.81,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
     ],
-    // Chapter 4 — ELITE: move limit, fog, powers, brutal AI
+    // Chapter 4 — KING'S COURT: king of the hill active
     [
-      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:150,fog:true,powerTiles:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:140,fog:true,powerTiles:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.95,baseMoves:135,fog:true,powerTiles:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:130,fog:true,powerTiles:true},
-      {cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:120,fog:true,powerTiles:true}
+      {cols:12,rows:14,colors:6,aiSmart:0.78,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.82,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
+    ],
+    // Chapter 5 — DARK FRONTIER: dark zones active
+    [
+      {cols:12,rows:14,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:12,rows:14,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.95,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
+    ],
+    // Chapter 6 — THE LAST STAND: all mechanics + move limit
+    [
+      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:150,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.95,baseMoves:140,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:135,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.98,baseMoves:130,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:120,fog:false,powerTiles:true,darkZones:true}
     ]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
