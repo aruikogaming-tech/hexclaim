@@ -5871,7 +5871,19 @@ let comboCount=0, comboTimer=null, bestCombo=0;
 let shakeAmount=0, shakeTimer=null;
 let stalemateTurns=0, lastP1Count=0, lastP2Count=0;
 
-for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
+function checkDarkZoneReveal(r,c){
+  if(!darkZones.length)return;
+  darkZones.forEach(function(dz){
+    if(dz.revealed)return;
+    for(var dr=-(dz.size);dr<=dz.size;dr++){
+      for(var dc=-(dz.size);dc<=dz.size;dc++){
+        if(dz.r+dr===r&&dz.c+dc===c){dz.revealed=true;showToast('🌑 Dark Zone revealed!',2000);return;}
+      }
+    }
+  });
+}
+function expandTerritory(player,newColor){
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
   const MAX_CAPTURE=2; // Max tiles per move
@@ -6691,6 +6703,29 @@ function draw(){
           ctx.textAlign='center';ctx.textBaseline='middle';
           ctx.fillStyle='rgba(160,80,255,'+pulse+')';
           ctx.fillText('?',zx,zy);
+        }
+        ctx.restore();
+      }
+    }
+  });
+  // Dark Zones — mystery patches only revealed when claimed adjacent
+  darkZones.forEach(function(dz){
+    if(dz.revealed)return;
+    var pulse=0.6+0.2*Math.sin(Date.now()*0.002);
+    for(var dr=0;dr<dz.size;dr++){
+      for(var dc=0;dc<dz.size;dc++){
+        var zr=dz.r+dr,zc=dz.c+dc;
+        if(zr>=ROWS||zc>=COLS)continue;
+        ctx.save();
+        ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+        ctx.fillStyle='rgba(2,4,12,0.92)';ctx.fill();
+        ctx.strokeStyle='rgba(120,0,200,'+pulse+')';ctx.lineWidth=1.5;
+        ctx.shadowColor='rgba(120,0,200,0.8)';ctx.shadowBlur=8*pulse;ctx.stroke();ctx.shadowBlur=0;
+        if(dr===Math.floor(dz.size/2)&&dc===Math.floor(dz.size/2)){
+          ctx.font='bold '+Math.min(cellW*0.45,13)+'px Manrope';
+          ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillStyle='rgba(160,80,255,'+pulse+')';
+          ctx.fillText('?',zc*cellW+cellW/2,zr*cellH+cellH/2);
         }
         ctx.restore();
       }
