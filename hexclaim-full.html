@@ -6679,7 +6679,26 @@ function buildPowerups(){
     b.onclick=()=>{if(!playerPowers[type])return;activePower=activePower===type?null:type;buildPowerups()};c.appendChild(b)})
 }
 function usePower(type){
-  if(type==='bomb'){const cr=Math.floor(ROWS/2),cc=Math.floor(COLS/2);for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=cr+dr,nc=cc+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){owner[nr][nc]=1;grid[nr][nc]=p1Color}}}
+  if(type==='bomb'){
+    // Find the most recently claimed player tile as bomb center
+    var bcr=Math.floor(ROWS/2),bcc=Math.floor(COLS/2);
+    var maxR=-1;
+    for(let rr=0;rr<ROWS;rr++)for(let cc2=0;cc2<COLS;cc2++){
+      if(owner[rr][cc2]===1){
+        // Pick tile closest to enemy territory
+        var enemyAdj=[[0,1],[0,-1],[1,0],[-1,0]].some(function(d){
+          var nr=rr+d[0],nc=cc2+d[1];
+          return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===2;
+        });
+        if(enemyAdj){bcr=rr;bcc=cc2;}
+      }
+    }
+    for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){
+      const nr=bcr+dr,nc=bcc+dc;
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){owner[nr][nc]=1;grid[nr][nc]=p1Color}
+    }
+    updateFog();draw();
+  }
   else if(type==='scout'){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)fogRevealed[r][c]=true}
   else if(type==='double'){doubleActive=true}
   playerPowers[type]--;activePower=null;buildPowerups();
