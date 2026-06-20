@@ -4603,7 +4603,7 @@ function startOnlineMatch(data){
   curChapter=-1;curLevel=-1;isFreeplay=false;
   curConfig={cols:rc.cols,rows:rc.rows,colors:rc.colors,aiSmart:0,fog:rc.fog||false,
     powerTiles:rc.powerTiles||false,moveLimit:rc.moveLimit||false,baseMoves:rc.baseMoves||999,
-    starThresholds:[55,65,80],winPct:75,isRanked:true,
+    starThresholds:[55,65,80],winPct:0,isRanked:true,chapterIdx:-1,
     isOnline:true,aiLookahead:0,aiBlock:false};
 
   gameLocked=true;showScreen('gameScreen');
@@ -4618,7 +4618,7 @@ function startOnlineMatch(data){
   owner=b.owner.map(r=>[...r]);
   powerTiles=b.powers?b.powers.map(p=>({...p})):[];
   fogRevealed=[];
-  for(let r=0;r<ROWS;r++){fogRevealed[r]=[];for(let c=0;c<COLS;c++)fogRevealed[r][c]=true}
+  for(let r=0;r<ROWS;r++){fogRevealed[r]=[];for(let c=0;c<COLS;c++)fogRevealed[r][c]=!rc.fog;}
   p1Color=b.p1Color;p2Color=b.p2Color;
 
   // Apply any moves already made
@@ -4636,6 +4636,21 @@ function startOnlineMatch(data){
   document.getElementById('p1name').textContent=myPlayerSlot===1?'⬡ You':(data.host.name+' ⬡');
   document.getElementById('p2name').textContent=myPlayerSlot===2?'⬡ You':(opp.name+' ⬡');
 
+  // Initialize bonus cells for online ranked
+  bonusCells=[];
+  const numBonus2=Math.floor(COLS*ROWS*0.04)+2;
+  for(let i=0;i<numBonus2;i++){
+    let br,bc;let tries=0;
+    do{br=Math.floor(ROWS*0.25+Math.random()*ROWS*0.5);bc=Math.floor(COLS*0.25+Math.random()*COLS*0.5);tries++}
+    while(tries<50&&(owner[br][bc]!==0||bonusCells.some(b=>b.r===br&&b.c===bc)));
+    if(tries<50)bonusCells.push({r:br,c:bc});
+  }
+  // King of the Hill for Master+ online ranked
+  kingTile=null;
+  if(save.elo>=2500){
+    const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
+    kingTile={r:kr,c:kc};
+  }
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
