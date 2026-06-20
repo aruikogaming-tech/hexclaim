@@ -2393,6 +2393,8 @@ function addProfileXP(amount){
     const reward=getRewardForLevel(save.profileLevel);
     if(reward){
       if(reward.type==='coins'){save.coins+=reward.amount;if(reward.amount>=300)save.wonJackpot=true;}
+      else if(reward.type==='chromas'){save.chromas=(save.chromas||0)+reward.amount;}
+      else if(reward.type==='unlock'){if(reward.id==='ranked')showToast('🔓 Ranked PVP Unlocked!');}
       else if(reward.type==='portrait')save.owned['portrait_'+reward.id]=true;
       else if(reward.type==='milestone'){
         var lv2=save.profileLevel;
@@ -4752,8 +4754,7 @@ function launchCustomGame(){
     var friends=save.friends||[];
     var friend=friends.find(function(f){return f.code===code});
     var friendName=friend?friend.name:'Friend ('+code+')';
-    if(!friend)showToast('Starting local match — online play coming soon!');
-    startLocalPVPWithName(friendName,{cols:cols,rows:rows,colors:colors});
+    showCreateRoom();
     if(isBlitz){var t3=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t3},200)}
   }
 }
@@ -6973,8 +6974,8 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     eloEl.textContent=(eloChange>=0?'+':'')+eloChange+' ELO';
     eloEl.className='elo-change '+(eloChange>=0?'pos':'neg');
     reward.innerHTML=`${r.icon} ${r.name} — ${save.elo} ELO<br><span style="font-size:9px;color:var(--gold)">+${xpEarned+xpBonus} XP  ·  +${coinsEarned} 🟡</span>`;
-    nextBtn.textContent='Rematch';nextBtn.style.display='block';
-    nextBtn.onclick=()=>{document.getElementById('overlay').classList.remove('active');showScreen('pvpScreen');buildPVP()};
+    nextBtn.textContent='Find Match';nextBtn.style.display='block';
+    nextBtn.onclick=()=>{document.getElementById('overlay').classList.remove('active');showScreen('pvpScreen');showMatchmaking()};
   } else if(curConfig.vsAiDiff){
     // VS AI result
     const diffIdx=AI_DIFFICULTIES.findIndex(d=>d.id===curConfig.vsAiDiff);
