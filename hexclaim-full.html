@@ -1258,7 +1258,7 @@ function renderQuestTab(tab){
     if(claimed)el.style.opacity='0.4';
     var rewardText='';
     if(quest.reward.coins)rewardText+='🟡'+quest.reward.coins+' ';
-    
+    if(quest.reward.chromas)rewardText+='💎'+quest.reward.chromas+' ';
     if(quest.reward.bpXP)rewardText+='🏅'+quest.reward.bpXP+'BP';
     el.innerHTML='<div class="si-preview" style="background:'+(done&&!claimed?'rgba(6,214,160,0.15)':'var(--dim)')+';font-size:18px">'+quest.icon+'</div>'
       +'<div class="si-info"><div class="si-name">'+quest.name+'</div>'
@@ -1271,7 +1271,7 @@ function renderQuestTab(tab){
     if(done&&!claimed){
       el.onclick=function(){
         if(quest.reward.coins)save.coins+=quest.reward.coins;
-        
+        if(quest.reward.chromas)save.chromas=(save.chromas||0)+quest.reward.chromas;
         if(quest.reward.bpXP)save.bpXP+=quest.reward.bpXP;
         save.questClaimed[quest.id]=true;
         saveProg();updateShopCurrency();
@@ -4798,7 +4798,7 @@ function buildRankScreen(){
     <div class="season-card">
       <div class="sc-title">🏆 Season ${save.season}</div>
       <div class="sc-desc">Climb the ranks and earn your title.</div>
-      <div class="sc-time">Season ends in ${Math.floor(30-((Date.now()-save.seasonStart)/(1000*60*60*24)))} days</div>
+      <div class="sc-time">Season ends in ${Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))))} days</div>
     </div>
     <div class="tabs" style="margin-top:4px">
       <button class="tab active" onclick="showRankTab('lb',this)" style="font-size:9px;padding:6px 8px">Leaderboard</button>
@@ -6817,6 +6817,7 @@ function checkEnd(){
   if(window._checkEndRunning)return;
   window._checkEndRunning=true;
   setTimeout(function(){window._checkEndRunning=false;},3000);
+  window.extraCoinsEarned=0;
   const p1n=countOwnedRaw(1),p2n=countOwnedRaw(2),unclaimed=totalCells-p1n-p2n;
   const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
   let ended=false,won=false,reason='';
@@ -6851,7 +6852,8 @@ function checkEnd(){
     save.elo=Math.max(0,save.elo+eloChange);
     checkRankUp(oldElo2,save.elo);
     if(won){save.pvpWins++;save.pvpStreak++;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak)}
-    else{save.pvpLosses++;save.pvpStreak=0}
+    else{save.pvpLosses++;save.pvpStreak=0;save.pvpLossStreak=(save.pvpLossStreak||0)+1;}
+    if(won){save.pvpLossStreak=0;}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
     // Push ELO + public profile to Firebase after ranked match
@@ -6912,7 +6914,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
         grantAchievementReward('chapter_'+(curChapter+1));
       }
       saveProg();updateShopCurrency();
-      coinsEarned=(coinsEarned||0)+totalBonus;
+      extraCoinsEarned=(extraCoinsEarned||0)+totalBonus;
     }
   }
   if(won&&curConfig.challengeIdx!==undefined){
@@ -6966,7 +6968,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   detail.textContent=`${p1p}% vs ${p2p}%`;
 
   // XP/Coins earned display
-  const xpEarned=won?65:15;const coinsEarned=won?40:15;addProfileXP(xpEarned);
+  const xpEarned=won?65:15;const coinsEarned=(won?40:15)+(extraCoinsEarned||0);extraCoinsEarned=0;
   const xpBonus=curConfig.isRanked?15:0;
 
   if(curConfig.isRanked){
