@@ -663,7 +663,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   chromas:0, coins:0,
   owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:''},
   bpPremium:false, bpLevel:0, bpXP:0, bpClaimed:{},
-  powerStock:{bomb:2,scout:2,double:1,undo:1,reroll:1},
+  powerStock:{},
   dailyReward:0,
   // Daily Login Streak
   loginStreak:0, lastLoginDate:null, streakClaimed:{},
@@ -760,7 +760,7 @@ function resetAllProgress(){
         chromas:0,coins:0,
         owned:{},equipped:{theme:'default',border:'default',effect:'none',trail:'none',icon:'⬡',title:''},
         bpPremium:false,bpLevel:0,bpXP:0,bpClaimed:{},
-        powerStock:{bomb:2,scout:2,double:1,undo:1,reroll:1},
+        powerStock:{},
         dailyReward:0,
         loginStreak:0,lastLoginDate:null,streakClaimed:{},
         lastSpinTime:0,freeSpinsToday:0,
@@ -1258,12 +1258,12 @@ function renderQuestTab(tab){
     adBonus.onclick=function(){showRewardedAd('Earn +50 Battle Pass XP!',function(){save.bpXP+=50;saveProg();showToast('+50 BP XP earned!');renderQuestTab('daily')},'adBpToday',2)};
     cont.appendChild(adBonus);
 
-    // Ad: Free Power-Up
-    var adPower=document.createElement('div');adPower.className='shop-item';adPower.style.cursor='pointer';
-    var powerUsed=save.adPowerToday||0;
-    adPower.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">💥</div><div class="si-info"><div class="si-name">Watch Ad for Power-Up</div><div style="font-size:9px;color:var(--muted)">Get 1 free Bomb power-up ('+powerUsed+'/1 used today)</div></div><div style="font-size:9px;color:'+(powerUsed>=1?'var(--muted)':'var(--c3)')+';font-weight:800">'+(powerUsed>=1?'Done':'Free')+'</div>';
-    adPower.onclick=function(){showRewardedAd('Get 1 free Bomb power-up!',function(){save.powerStock.bomb=(save.powerStock.bomb||0)+1;saveProg();showToast('💥 Free Bomb added!');renderQuestTab('daily')},'adPowerToday',1)};
-    cont.appendChild(adPower);
+    // Ad: Free Coins
+    var adCoins2=document.createElement('div');adCoins2.className='shop-item';adCoins2.style.cursor='pointer';
+    var coins2Used=save.adPowerToday||0;
+    adCoins2.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">🟡</div><div class="si-info"><div class="si-name">Watch Ad for Coins</div><div style="font-size:9px;color:var(--muted)">Earn +75 free coins ('+coins2Used+'/1 used today)</div></div><div style="font-size:9px;color:'+(coins2Used>=1?'var(--muted)':'var(--gold)')+';font-weight:800">'+(coins2Used>=1?'Done':'Free')+'</div>';
+    adCoins2.onclick=function(){showRewardedAd('Earn +75 free Coins!',function(){save.coins=(save.coins||0)+75;saveProg();updateShopCurrency();showToast('🟡 +75 Coins earned!');renderQuestTab('daily')},'adPowerToday',1)};
+    cont.appendChild(adCoins2);
 
     // Ad: Free Diamonds
     var adDiamonds=document.createElement('div');adDiamonds.className='shop-item';adDiamonds.style.cursor='pointer';
@@ -3387,14 +3387,6 @@ const CHROMA_BUNDLES=[
   {amount:6000,bonus:1000,price:'$49.99',tag:'MEGA'},
 ];
 
-const POWER_SHOP=[
-  {id:'bomb',name:'Bomb',icon:'💥',desc:'Clear a 3×3 area',price:30,currency:'chromas'},
-  {id:'scout',name:'Scout',icon:'👁',desc:'Reveal all fog',price:25,currency:'chromas'},
-  {id:'double',name:'Double Turn',icon:'⚡',desc:'Take two turns in a row',price:40,currency:'chromas'},
-  {id:'undo',name:'Undo',icon:'↩️',desc:'Take back your last move',price:20,currency:'chromas'},
-  {id:'reroll',name:'Board Reroll',icon:'🔄',desc:'Regenerate the board colors',price:35,currency:'chromas'},
-];
-
 // Battle Pass tiers
 const BP_XP_PER_LEVEL=100;
 const BP_TIERS=[{level:1,  free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},         premium:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'}},
@@ -3873,14 +3865,6 @@ function buyItem(type,item){
   saveProg();updateShopCurrency();playSfx('claimBig');
   return true;
 }
-
-function buyPower(item){
-  if(save.chromas<item.price){showToast('Not enough chromas!');return}
-  save.chromas-=item.price;
-  save.powerStock[item.id]=(save.powerStock[item.id]||0)+1;
-  saveProg();updateShopCurrency();renderShopTab('effects');playSfx('click');
-}
-
 function changePlayerName(){
   const input=document.getElementById('shopNameInput');
   const newName=(input?input.value:'').trim();
@@ -3965,7 +3949,6 @@ function claimBPReward(track,level){
   // Grant reward
   if(reward.type==='coins')save.coins+=reward.amount;
   else if(reward.type==='chromas')save.chromas+=reward.amount;
-  else if(reward.type==='power')save.powerStock[reward.id]=(save.powerStock[reward.id]||0)+reward.amount;
   else if(reward.type==='theme')save.owned['theme_'+reward.id]=true;
   else if(reward.type==='border')save.owned['border_'+reward.id]=true;
   else if(reward.type==='icon')save.owned['icon_'+reward.id]=true;
