@@ -5311,10 +5311,12 @@ function buildChapters(){
   tutCard.onclick=function(){playSfx('menuNav');startTutorial();};
   list.appendChild(tutCard);
   var chapters=[
-    {num:1,name:'The First Claim',desc:'Learn the basics of territory control. Small board, easy AI.',mechanic:'BASICS',levels:5,color:'var(--p1)'},
-    {num:2,name:'Color Wars',desc:'The AI gets smarter. Master blocking and chain reactions.',mechanic:'BLOCKING',levels:5,color:'var(--c2)'},
-    {num:3,name:'The Surge',desc:'Larger boards, power-ups, and a cunning opponent.',mechanic:'POWER-UPS',levels:5,color:'var(--c5)'},
-    {num:4,name:'Chromatic End',desc:'The ultimate challenge. Prove you are the Chromancer.',mechanic:'ELITE',levels:5,color:'var(--c4)'},
+    {num:1,name:'The Awakening',desc:'Learn the basics. Claim Bonus Cells for extra territory.',mechanic:'BONUS CELLS',levels:5,color:'var(--p1)'},
+    {num:2,name:'Power Surge',desc:'Race for Power Tiles — Bomb, Scout, and Double Turn.',mechanic:'POWER TILES',levels:5,color:'var(--c3)'},
+    {num:3,name:'The Rot',desc:'Your borders crumble every 6 turns. Expand or die.',mechanic:'TERRITORY DECAY',levels:5,color:'var(--c5)'},
+    {num:4,name:"King's Court",desc:'Control the crown tile at the center to gain a bonus.',mechanic:'KING OF THE HILL',levels:5,color:'var(--gold)'},
+    {num:5,name:'Dark Frontier',desc:'Mystery zones hide secrets. Expand to reveal them.',mechanic:'DARK ZONES',levels:5,color:'var(--master)'},
+    {num:6,name:'The Last Stand',desc:'All mechanics. Limited moves. SHADE at full power.',mechanic:'FINAL TRIAL',levels:5,color:'var(--c4)'},
   ];
   chapters.forEach(function(ch){
     var unlocked=ch.num===1?save.tutorialDone:Object.keys(save.cleared||{}).some(function(k){return k.startsWith('ch'+(ch.num-1)+'_')})&&save.tutorialDone;
@@ -5489,7 +5491,7 @@ function startCampaignLevel(ci,li){
     ]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
-  curConfig={cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),fog:lp.fog!=null?lp.fog:ch.fog||false,powerTiles:lp.powerTiles!=null?lp.powerTiles:ch.powerTiles||false,moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,baseMoves:lp.baseMoves||999,starThresholds:ch.starThresholds,winPct:0,chapterIdx:ci,levelIdx:li};
+  curConfig={cols:lp.cols||ch.cols,rows:lp.rows||ch.rows,colors:lp.colors||ch.colors,aiSmart:lp.aiSmart!=null?lp.aiSmart:Math.min(1,ch.aiSmart+(li*0.08)),fog:lp.fog!=null?lp.fog:ch.fog||false,powerTiles:lp.powerTiles!=null?lp.powerTiles:ch.powerTiles||false,darkZones:lp.darkZones!=null?lp.darkZones:ch.darkZones||false,moveLimit:ch.moveLimit||(lp.baseMoves&&lp.baseMoves<999)||false,baseMoves:lp.baseMoves||999,starThresholds:ch.starThresholds,winPct:0,chapterIdx:ci,levelIdx:li};
   if(li===0){showStory(ch,ci)}else{launchLevel()}
 }
 function startChallenge(i){
@@ -5784,9 +5786,9 @@ function initGame(){
       }
     }
   }
-  // King of the Hill tile — center tile worth 10% bonus (Diamond+ ranked only)
+  // King of the Hill — Diamond+ ranked OR Chapter 4+ campaign
   kingTile=null;
-  if(curConfig.isRanked&&save.elo>=2600){
+  if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
     const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
     kingTile={r:kr,c:kc};
   }
