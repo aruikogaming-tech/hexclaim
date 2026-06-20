@@ -5329,7 +5329,8 @@ function buildChallenges(){
   // Section headers
   let lastDiff='';
   CHALLENGES.forEach((ch,i)=>{
-    const unlocked=save.cleared[`${ch.reqChapter}-0`]||ch.reqChapter===0,done=save.challengesDone[i];
+    const unlocked=ch.reqChapter===0||save.cleared[`${ch.reqChapter}-0`]||Object.keys(save.cleared||{}).some(function(k){return k.startsWith('ch'+ch.reqChapter+'_')});
+    const done=save.challengesDone[i];
     // Add section headers
     const diff=ch.difficulty||'standard';
     if(diff!==lastDiff){
