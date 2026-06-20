@@ -2617,9 +2617,6 @@ const BP_EXCLUSIVE_BORDERS=[
    color:'#c084fc',style:'gradient',glow:3},
 ];
 // Register BP exclusives into main arrays
-BP_EXCLUSIVE_THEMES.forEach(function(s){if(!SHOP_THEMES.find(function(t){return t.id===s.id}))SHOP_THEMES.push(s)});
-BP_EXCLUSIVE_BORDERS.forEach(function(b){if(!SHOP_BORDERS.find(function(x){return x.id===b.id}))SHOP_BORDERS.push(b)});
-
 const SEASONAL_SKINS=[
   // Season 1 — Chromancer only exclusive skin
   {id:'season_chroma_s1',name:'Season 1 Chromancer',desc:'Season 1 exclusive — Chromancer only',preview:'🔮',season:1,colors:['#000000','#ffd166','#06d6a0','#ef476f','#8338ec','#118ab2','#ff9f1c','#ccaaff'],symbols:['🔮','★','◆','✦','⬡','●','✧','◈'],tier:4,rankReq:'Chromancer'},
@@ -3312,6 +3309,8 @@ function registerAchievementCosmetics(){
 
 registerAchievementCosmetics();
 registerSeasonCosmetics();
+BP_EXCLUSIVE_THEMES.forEach(function(s){if(!SHOP_THEMES.find(function(t){return t.id===s.id}))SHOP_THEMES.push(s)});
+BP_EXCLUSIVE_BORDERS.forEach(function(b){if(!SHOP_BORDERS.find(function(x){return x.id===b.id}))SHOP_BORDERS.push(b)});
 function grantAchievementReward(key){
   var r=ACHIEVEMENT_REWARDS[key];if(!r)return;
   if(r.type==='title'){
