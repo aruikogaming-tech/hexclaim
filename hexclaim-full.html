@@ -7005,7 +7005,10 @@ function usePower(type){
     showToast('💥 Tap any tile to place your Bomb!',2000);
     return; // Don't deactivate — canvas click will handle it
   }
-  else if(type==='scout'){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)fogRevealed[r][c]=true}
+  else if(type==='scout'){
+    showToast('👁 Tap any tile to scout that area!',2000);
+    return;
+  }
   else if(type==='double'){doubleActive=true}
   playerPowers[type]--;activePower=null;buildPowerups();
 }
