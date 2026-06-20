@@ -4177,6 +4177,7 @@ let lastTickTime=0;
 let p1LastColor=-1, p2LastColor=-1; // Cooldown — can't repeat your last color
 let decayTimer=0; // Every N turns, unprotected border cells decay
 let bonusCells=[]; // High-value cells worth 2x territory
+let kingTile=null; // King of the Hill tile — worth 10% bonus at game end (Master+)
 let previewColor=-1; // Which color is being previewed on hover
 
 let canvas,ctx,W,H,cellW,cellH;
@@ -5638,7 +5639,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  myRoomCode=null;pvpRoomData=null;
+  myRoomCode=null;pvpRoomData=null;kingTile=null;
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -5717,6 +5718,12 @@ function initGame(){
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
 
+  // King of the Hill tile — center tile worth 10% bonus (Master+ ranked only)
+  kingTile=null;
+  if(curConfig.isRanked&&save.elo>=2500){
+    const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
+    kingTile={r:kr,c:kc};
+  }
   // Bonus cells — worth 2x territory, placed in contested middle areas
   bonusCells=[];
   const numBonus=Math.floor(COLS*ROWS*0.04)+2; // ~4-8 bonus cells
@@ -6021,12 +6028,15 @@ function showCellsGained(count,player){
 
 function countOwned(p){
   let n=0;
-  const centerR=Math.floor(ROWS/2),centerC=Math.floor(COLS/2);
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(owner[r][c]===p){
       n++;
       if(bonusCells.some(b=>b.r===r&&b.c===c))n++;
     }
+  }
+  // King of the Hill bonus — worth 10% of total cells extra
+  if(kingTile&&owner[kingTile.r][kingTile.c]===p){
+    n+=Math.floor(totalCells*0.10);
   }
   return n;
 }
@@ -6592,6 +6602,29 @@ function draw(){
     ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
   });
+  // King of the Hill tile — glowing crown at center
+  if(kingTile&&fogRevealed[kingTile.r][kingTile.c]){
+    const kx=kingTile.c*cellW+cellW/2,ky=kingTile.r*cellH+cellH/2;
+    const pulse=0.7+0.3*Math.sin(Date.now()*0.003);
+    ctx.save();
+    // Outer glow ring
+    ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,215,0,'+pulse+')';ctx.lineWidth=3;
+    ctx.shadowColor='rgba(255,215,0,0.9)';ctx.shadowBlur=15*pulse;ctx.stroke();ctx.shadowBlur=0;
+    // Crown emoji
+    ctx.font='bold '+Math.min(cellW*0.5,14)+'px sans-serif';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('👑',kx,ky);
+    // Owner indicator
+    if(owner[kingTile.r][kingTile.c]===1){
+      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
+      ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=2;ctx.stroke();
+    } else if(owner[kingTile.r][kingTile.c]===2){
+      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
+      ctx.strokeStyle='rgba(239,71,111,0.8)';ctx.lineWidth=2;ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // Power tiles
   powerTiles.forEach(p=>{if(!fogRevealed[p.r][p.c])return;const x=p.c*cellW+cellW/2,y=p.r*cellH+cellH/2;
@@ -6909,6 +6942,14 @@ function updateObjBar(){
   bar.appendChild(p2pill);
 
   // Moves remaining (if applicable)
+  if(kingTile){
+    var kOwner=owner[kingTile.r][kingTile.c];
+    var kStatus=kOwner===1?'👑 YOU hold the Hill +10%':kOwner===2?'👑 ENEMY holds the Hill +10%':'👑 Hill is CONTESTED';
+    var kColor=kOwner===1?'var(--p1)':kOwner===2?'var(--p2)':'var(--gold)';
+    var kEl=document.getElementById('kingHillStatus');
+    if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
+    kEl.style.color=kColor;kEl.textContent=kStatus;
+  }
   if(curConfig.moveLimit){
     const mp=document.createElement('div');mp.className='obj-pill';
     mp.innerHTML=`<span class="ol">Moves</span><span class="ov ${movesLeft<=5?'warn':'ok'}">${movesLeft}</span>`;
