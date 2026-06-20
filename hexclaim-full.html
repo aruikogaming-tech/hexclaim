@@ -313,7 +313,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
         <span style="font-size:12px">🟡</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--gold)" id="tbCoins">0</span>
       </div>
 
-        </div>
+    </div>
   </div>
 </div>
 
@@ -1685,10 +1685,10 @@ function renderFriendsTab(tab){
     } else {
       save.friends.forEach(function(friend,idx){
         var el=document.createElement('div');el.className='shop-item';
-        var rankObj=getRank(friend.elo||1000);
+        var rankObj=getRank(friend.elo||0);
         el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+(friend.icon||'⬡')+'</div>'
           +'<div class="si-info"><div class="si-name">'+friend.name+'</div>'
-          +'<div style="font-size:9px;color:'+rankObj.color+'">'+rankObj.icon+' '+rankObj.name+' — '+(friend.elo||1000)+' ELO</div>'
+          +'<div style="font-size:9px;color:'+rankObj.color+'">'+rankObj.icon+' '+rankObj.name+' — '+(friend.elo||0)+' ELO</div>'
           +'<div style="font-size:8px;color:var(--muted);margin-top:1px">Level '+(friend.level||1)+'</div></div>'
           +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
           +'<div class="challenge-btn" style="cursor:pointer;font-size:9px;color:#fff;font-weight:800;padding:4px 10px;background:var(--p1);border-radius:6px" data-idx="'+idx+'">⚔️ Challenge</div>'
@@ -1815,7 +1815,7 @@ function renderFriendsTab(tab){
     var onlineCard=document.createElement('div');onlineCard.className='card';onlineCard.style.cssText='margin-top:8px;text-align:center;padding:16px;opacity:0.6';
     onlineCard.innerHTML='<div style="font-size:20px;margin-bottom:4px">🌐</div>'
       +'<div style="font-size:11px;font-weight:800;color:var(--muted)">Online PVP</div>'
-      +'<div style="font-size:9px;color:var(--muted);margin-top:4px">Challenge friends online — coming soon!</div>';
+      +'<div style="font-size:9px;color:var(--muted);margin-top:4px">Challenge friends online via room code!</div>';
     cont.appendChild(onlineCard);
   }
 }
@@ -1857,7 +1857,7 @@ function addFriendByCode(){
       var newFriend={
         name:userData.playerName||'Player',
         code:code,uid:uid,
-        elo:userData.elo||1000,
+        elo:userData.elo||0,
         level:userData.profileLevel||1,
         icon:userData.equipped?userData.equipped.icon:'⬡',
         lastOnline:Date.now()
@@ -1889,7 +1889,7 @@ function searchFriendByName(){
         +'<div class="si-info"><div class="si-name">'+u.playerName+'</div><div style="font-size:9px;color:var(--muted)">Level '+(u.profileLevel||1)+'</div></div>'
         +'<button style="padding:4px 10px;background:var(--p1);border:none;border-radius:6px;color:#fff;font-weight:800;cursor:pointer;font-size:9px">Add</button>';
       el.querySelector('button').onclick=function(){
-        save.friends.push({name:u.playerName,uid:uid,elo:u.elo||1000,level:u.profileLevel||1,icon:u.equipped?u.equipped.icon:'⬡'});
+        save.friends.push({name:u.playerName,uid:uid,elo:u.elo||0,level:u.profileLevel||1,icon:u.equipped?u.equipped.icon:'⬡'});
         saveProg();showToast('Added '+u.playerName+'!');playSfx('claimBig');renderFriendsTab('add');
       };
       results.appendChild(el);
