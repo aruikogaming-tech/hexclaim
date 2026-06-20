@@ -6986,7 +6986,6 @@ function fireScout(row,col){
   playSfx('claim');
   draw();
 }
-var bombTargetMode=false;
 function fireBomb(row,col){
   bombTargetMode=false;
   // Claim 3x3 area around tapped tile
@@ -6996,14 +6995,21 @@ function fireBomb(row,col){
       owner[nr][nc]=1;grid[nr][nc]=p1Color;
     }
   }
+  // Chain any newly same-colored adjacent cells
+  expandTerritory(1,p1Color);
   playerPowers.bomb--;
   activePower=null;
   buildPowerups();
-  playSfx('claim');
+  playSfx('claimBig');
   updateFog();updateUI();buildColorPicker();updateObjBar();draw();
-  // Check if game ended
   window._checkEndRunning=false;
-  checkEnd();
+  // Brief delay before AI fires so board renders first
+  turn=2;
+  animatingMove=true;
+  setTimeout(function(){
+    animatingMove=false;
+    if(!checkEnd())setTimeout(aiMove,800);
+  },300);
 }
 
 function buildColorPicker(){
@@ -7072,18 +7078,8 @@ function buildPowerups(){
     };c.appendChild(b)})
 }
 function usePower(type){
-  if(type==='bomb'){
-    // Bomb is now tap-to-target — handled by canvas click
-    // Just enter targeting mode, actual explosion in fireBomb()
-    showToast('💥 Tap any tile to place your Bomb!',2000);
-    return; // Don't deactivate — canvas click will handle it
-  }
-  else if(type==='scout'){
-    showToast('👁 Tap a 🌑 Dark Zone to reveal its contents!',2000);
-    return;
-  }
-  else if(type==='double'){doubleActive=true}
-  playerPowers[type]--;activePower=null;buildPowerups();
+  if(type==='double'){doubleActive=true;playerPowers.double--;activePower=null;buildPowerups();}
+  // bomb and scout are handled by fireBomb()/fireScout() on canvas tap
 }
 function updateUI(){
   const p1n=countOwned(1),p2n=countOwned(2),p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
@@ -7324,7 +7320,8 @@ async function playerMove(colorIdx){
   if(colorIdx===p1LastColor&&colorIdx!==p1Color)return; // Cooldown — can't repeat last color
   tutOnPlayerMove();
  
-  if(activePower)usePower(activePower);
+  // Double power fires on color pick; bomb/scout fire on canvas tap
+  if(activePower==='double')usePower('double');
   animatingMove=true;
   previewColor=-1;previewReachable=null; // Clear preview
   p1Color=colorIdx;
@@ -7345,7 +7342,7 @@ async function playerMove(colorIdx){
     if(curConfig.moveLimit)movesLeft--;
     updateFog();updateUI();buildColorPicker();updateObjBar();
 
-    if(doubleActive){doubleActive=false;buildPowerups();animatingMove=false;window._checkEndRunning=false;if(!checkEnd())return;return}
+    if(doubleActive){doubleActive=false;buildPowerups();animatingMove=false;p1LastColor=-1;buildColorPicker();window._checkEndRunning=false;if(!checkEnd())return;return}
 
     // Chain bonus — stay as player 1's turn
     if(chainBonus&&!gameOver){
