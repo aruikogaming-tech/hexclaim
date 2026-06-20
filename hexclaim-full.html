@@ -4178,7 +4178,7 @@ let p1LastColor=-1, p2LastColor=-1; // Cooldown — can't repeat your last color
 let decayTimer=0; // Every N turns, unprotected border cells decay
 let bonusCells=[]; // High-value cells worth 2x territory
 let kingTile=null; // King of the Hill tile — worth 10% bonus at game end (Master+)
-  let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
+let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
 
 let canvas,ctx,W,H,cellW,cellH;
@@ -5871,34 +5871,7 @@ let comboCount=0, comboTimer=null, bestCombo=0;
 let shakeAmount=0, shakeTimer=null;
 let stalemateTurns=0, lastP1Count=0, lastP2Count=0;
 
-// Dark Zones — hidden mystery patches (Chromancer only, scaled to board size)
-  darkZones=[];
-  if(curConfig.darkZones){
-    var totalCells2=COLS*ROWS;
-    // Scale: 3 zones on small board, up to 6 on large board
-    var numZones=Math.max(3,Math.floor(totalCells2/30));
-    // Scale: 2x2 on small, 3x3 on large boards
-    var zoneSize=totalCells2>160?3:2;
-    var attempts=0;
-    while(darkZones.length<numZones&&attempts<200){
-      attempts++;
-      // Place in middle 60% of board only, away from corners
-      var zr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);
-      var zc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);
-      // Make sure zone doesn't overlap existing zones or starting positions
-      var overlaps=false;
-      for(var dz of darkZones){
-        if(Math.abs(dz.r-zr)<=zoneSize+1&&Math.abs(dz.c-zc)<=zoneSize+1){overlaps=true;break;}
-      }
-      if(!overlaps&&owner[zr][zc]===0){
-        darkZones.push({r:zr,c:zc,size:zoneSize,revealed:false});
-      }
-    }
-  }
-  // King of the Hill tile — center tile worth 10% bonus (Diamond+ ranked only)
-  kingTile=null;
-  if(curConfig.isRanked&&save.elo>=2600){
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
   const MAX_CAPTURE=2; // Max tiles per move
@@ -7123,8 +7096,8 @@ async function playerMove(colorIdx){
   newlyClaimed=[];
   resetTurnTimer();
 
-  // Territory decay — Diamond+ ranked only, every 6 turns
-  if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
+  // Territory decay — Platinum+ ranked, every 6 turns
+  if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
