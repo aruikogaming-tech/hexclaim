@@ -6028,9 +6028,21 @@ function countOwnedRaw(p){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)
 
 function updateFog(){
   if(!curConfig.fog)return;
+  // Deep fog (2 tiles) for Chapter 3+, ranked Diamond+, and ranked Master/Chromancer
+  var isDeepFog=(curConfig.chapterIdx>=2)||(curConfig.isRanked&&save.elo>=1900);
+  var radius=isDeepFog?2:1;
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(owner[r][c]===1)fogRevealed[r][c]=true;
-    if(owner[r][c]===1){[[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS)fogRevealed[nr][nc]=true})}}
+    if(owner[r][c]===1){
+      for(let dr=-radius;dr<=radius;dr++){
+        for(let dc=-radius;dc<=radius;dc++){
+          if(dr===0&&dc===0)continue;
+          const nr=r+dr,nc=c+dc;
+          if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS)fogRevealed[nr][nc]=true;
+        }
+      }
+    }
+  }
 }
 
 function draw(){
