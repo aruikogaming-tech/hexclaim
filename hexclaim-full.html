@@ -217,6 +217,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
 .pu-btn{padding:5px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all 0.15s;text-transform:uppercase;letter-spacing:1px}
 .pu-btn:hover{border-color:var(--c3);color:var(--c3)}
 .pu-btn.active{border-color:var(--c3);color:var(--c3);background:rgba(255,209,102,0.08)}
+.pu-btn.has-power{animation:colorBtnGlow 1.5s ease infinite;border-color:var(--c3)}
 .pu-btn .pu-count{color:var(--c3);margin-left:3px}
 .pu-btn.empty{opacity:0.3;pointer-events:none}
 
@@ -6872,9 +6873,18 @@ function buildColorPicker(){
 }
 function buildPowerups(){
   const c=document.getElementById('powerups');c.innerHTML='';if(!curConfig.powerTiles)return;
+  var anyPower=playerPowers.bomb>0||playerPowers.scout>0||playerPowers.double>0;
+  if(anyPower&&!activePower&&turn===1){
+    var hint=document.createElement('div');
+    hint.style.cssText='font-size:8px;color:var(--c3);text-align:center;width:100%;margin-bottom:3px;font-weight:700;letter-spacing:1px;animation:titleGlow 1s ease infinite';
+    hint.textContent='⬆ TAP A POWER-UP TO ACTIVATE';
+    c.appendChild(hint);
+  }
   ['bomb','scout','double'].forEach(type=>{const b=document.createElement('button');
-    b.className='pu-btn'+(playerPowers[type]?'':' empty')+(activePower===type?' active':'');
-    b.innerHTML={bomb:'💥 Bomb',scout:'👁 Scout',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`;
+    var hasPow=playerPowers[type]>0;
+    var isActive=activePower===type;
+    b.className='pu-btn'+(hasPow?'':' empty')+(isActive?' active':hasPow?' has-power':'');
+    b.innerHTML={bomb:'💥 Bomb',scout:'👁 Scout',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?'<div style="font-size:7px;color:var(--c3);margin-top:1px">ACTIVE — pick color</div>':'');
     b.onclick=()=>{if(!playerPowers[type])return;activePower=activePower===type?null:type;buildPowerups()};c.appendChild(b)})
 }
 function usePower(type){
