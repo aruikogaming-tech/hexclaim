@@ -366,7 +366,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <button onclick="showScreen('bpScreen');buildBattlePass();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:18px">🔥</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Pass</div>
     </button>
-    <button onclick="showScreen('settingsScreen');playSfx('menuNav')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.15s" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
+    <button onclick="showScreen('settingsScreen');updateAuthUI();updateAllUI();playSfx('menuNav')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.15s" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:18px">⚙️</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Settings</div>
     </button>
   </div>
