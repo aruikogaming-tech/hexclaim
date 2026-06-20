@@ -4544,10 +4544,21 @@ async function showMatchmaking(){
             const seed=Math.floor(Math.random()*2147483647);
             const board=generateBoard(seed,rc.cols,rc.rows,rc.colors);
 
+            // Generate shared bonus cells using seed
+            const rng2=seededRandom(seed+1);
+            const sharedBonus=[];
+            const numB=Math.floor(rc.cols*rc.rows*0.04)+2;
+            for(let i=0;i<numB;i++){
+              let br,bc,tries=0;
+              do{br=Math.floor(rc.rows*0.25+rng2()*rc.rows*0.5);bc=Math.floor(rc.cols*0.25+rng2()*rc.cols*0.5);tries++}
+              while(tries<50&&sharedBonus.some(b=>b.r===br&&b.c===bc));
+              if(tries<50)sharedBonus.push({r:br,c:bc});
+            }
+            const sharedKingTile=avgElo>=2500?{r:Math.floor(rc.rows/2),c:Math.floor(rc.cols/2)}:null;
             const roomData={
               code,host:{name:save.playerName||'Player',elo:save.elo},
               guest:{name:other.name,elo:other.elo},
-              state:'playing',seed,config:rc,board,moves:[],turn:1,created:Date.now()
+              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,moves:[],turn:1,created:Date.now()
             };
             await pvpDB.set('pvp-rooms/'+code,roomData);
             // Notify the other player
@@ -4636,21 +4647,10 @@ function startOnlineMatch(data){
   document.getElementById('p1name').textContent=myPlayerSlot===1?'⬡ You':(data.host.name+' ⬡');
   document.getElementById('p2name').textContent=myPlayerSlot===2?'⬡ You':(opp.name+' ⬡');
 
-  // Initialize bonus cells for online ranked
-  bonusCells=[];
-  const numBonus2=Math.floor(COLS*ROWS*0.04)+2;
-  for(let i=0;i<numBonus2;i++){
-    let br,bc;let tries=0;
-    do{br=Math.floor(ROWS*0.25+Math.random()*ROWS*0.5);bc=Math.floor(COLS*0.25+Math.random()*COLS*0.5);tries++}
-    while(tries<50&&(owner[br][bc]!==0||bonusCells.some(b=>b.r===br&&b.c===bc)));
-    if(tries<50)bonusCells.push({r:br,c:bc});
-  }
-  // King of the Hill for Master+ online ranked
-  kingTile=null;
-  if(save.elo>=2500){
-    const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
-    kingTile={r:kr,c:kc};
-  }
+  // Load shared bonus cells from room data (same for both players)
+  bonusCells=data.bonusCells?data.bonusCells.map(b=>({...b})):[];
+  // King of the Hill — shared from room data
+  kingTile=data.kingTile||null;
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
@@ -4681,7 +4681,12 @@ function startOnlinePoll(){
         }
         pvpRoomData=data;
         turn=expectedMoves%2===0?1:2;
-        updateUI();buildColorPicker();updateObjBar();draw();
+        // Apply decay on opponent's turn too
+        if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
+          decayTimer++;
+          if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
+        }
+        updateFog();updateUI();buildColorPicker();updateObjBar();draw();
         checkEnd();
       }
 
@@ -6870,6 +6875,7 @@ function formatClock(seconds){
 }
 
 function forceGameEnd(won,reason){
+  kingTile=null;
   // Trigger checkEnd-like logic
   const p1n=countOwned(1),p2n=countOwned(2);
   const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
@@ -7018,7 +7024,7 @@ async function playerMove(colorIdx){
   resetTurnTimer();
 
   // Territory decay — Diamond+ ranked only, every 6 turns
-  if(curConfig.isRanked&&save.elo>=2600||curConfig.chapterIdx>=3){
+  if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
