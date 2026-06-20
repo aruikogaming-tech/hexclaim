@@ -307,17 +307,13 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <!-- Currencies right -->
     <div style="display:flex;gap:6px;align-items:center">
       <div style="display:flex;align-items:center;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer" onclick="showScreen('shopScreen');buildShop()">
-      </div>
-      <div style="display:flex;align-items:center;gap:3px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 7px;cursor:pointer" onclick="showScreen('shopScreen');buildShop()">
         <span style="font-size:12px">💎</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--diamond)" id="tbChromas">0</span>
       </div>
       <div style="display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:2px 6px;cursor:pointer" onclick="showScreen('shopScreen');buildShop();playSfx('menuOpen')">
         <span style="font-size:12px">🟡</span><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700;color:var(--gold)" id="tbCoins">0</span>
       </div>
 
-        <span style="font-size:8px;color:var(--p1);font-weight:800;cursor:pointer">+</span>
-      </div>
-    </div>
+        </div>
   </div>
 </div>
 
@@ -344,7 +340,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
   <div class="rank-badge-big" id="menuRankBadge"></div>
   
  <!-- Main action buttons -->
-  <button class="menu-btn ranked" id="pvpBtn" onclick="showScreen('pvpScreen');showMatchmaking();playSfx('menuNav')">⚔ Ranked PVP</button>
+  <button class="menu-btn ranked" id="pvpBtn" onclick="tryRankedPVP();playSfx('menuNav')">⚔ Ranked PVP</button>
   <button class="menu-btn campaign" onclick="showScreen('chapterScreen');setTimeout(function(){buildChapters()},50);playSfx('menuNav')">📖 Campaign</button>
   <button class="menu-btn challenge" onclick="showScreen('challengeScreen');buildChallenges();playSfx('menuNav')">🏆 Challenges</button>
   <button class="menu-btn pvp" onclick="showScreen('localPvpScreen');buildCustomGame();playSfx('menuNav')">🎮 Custom Game</button>
