@@ -18,6 +18,7 @@
 
 :root{
   --bg:#1a2540;--surface:#162040;--border:#1e3060;
+  --blue:#118ab2;--red:#ef476f;--yellow:#ffd166;
   --text:#eef2ff;--muted:#6b7fa8;--dim:#1a2b50;
   --p1:#06d6a0;--p1g:rgba(6,214,160,0.35);--p1bg:#0a2e24;
   --p2:#ef476f;--p2g:rgba(239,71,111,0.35);--p2bg:#2e0a16;
@@ -6848,12 +6849,23 @@ function checkEnd(){
     const expected=1/(1+Math.pow(10,(pvpOpponent.elo-save.elo)/400));
     const K=32;
     eloChange=Math.round(K*(won?1-expected:0-expected));
+    // Win streak ELO bonus
+    if(won){
+      var streak=save.pvpStreak||0;
+      if(streak>=9)eloChange+=20;
+      else if(streak>=4)eloChange+=10;
+      else if(streak>=2)eloChange+=5;
+    }
+    // Loss streak protection
+    if(!won){
+      var lossStreak=save.pvpLossStreak||0;
+      if(lossStreak>=2)eloChange=Math.max(eloChange,-Math.abs(eloChange)+5);
+    }
     const oldElo2=save.elo;
     save.elo=Math.max(0,save.elo+eloChange);
     checkRankUp(oldElo2,save.elo);
-    if(won){save.pvpWins++;save.pvpStreak++;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak)}
+    if(won){save.pvpWins++;save.pvpStreak++;save.pvpLossStreak=0;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak)}
     else{save.pvpLosses++;save.pvpStreak=0;save.pvpLossStreak=(save.pvpLossStreak||0)+1;}
-    if(won){save.pvpLossStreak=0;}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
     // Push ELO + public profile to Firebase after ranked match
@@ -6958,6 +6970,14 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   // Grant XP and coins for playing
   grantMatchXP(won,curConfig.isRanked||false);
   trackGameEnd(won,p1p,curConfig.isRanked||false,curChapter>=0,!!(curConfig&&curConfig.vsAiDiff));
+  // Track win/loss streaks and stats (mirrors forceGameEnd)
+  var _p1pctRaw=Math.round(countOwnedRaw(1)/totalCells*100);
+  if(won&&_p1pctRaw>=90)save.best90pct=true;
+  if(won&&_p1pctRaw>=80)save.best80pct=true;
+  if(won){save.winStreak=(save.winStreak||0)+1;save.maxWinStreak=Math.max(save.maxWinStreak||0,save.winStreak);save.lossInRow=0;if(!save.consistentFailed)save.consistentWins=(save.consistentWins||0)+1;if(save.maxWinStreak>=15)trackQuest('monthlyWinStreak',1);}
+  else{save.winStreak=0;save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
+  if(curConfig.vsAiDiff&&['hard','expert','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
+  checkIconUnlocks();checkTitleUnlocks();
   saveProg();updateShopCurrency();
 
   // Overlay
