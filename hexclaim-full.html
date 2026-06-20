@@ -6465,6 +6465,64 @@ function draw(){
           ctx.restore();
         }
         ctx.restore();
+      } else if(eff==='season_diamond_fx'){
+        // DIAMOND FROST — crystalline blue-white shards
+        var dfGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.8);
+        dfGrad.addColorStop(0,'rgba(185,242,255,'+claimAnim*0.7+')');
+        dfGrad.addColorStop(0.5,'rgba(100,200,240,'+claimAnim*0.4+')');
+        dfGrad.addColorStop(1,'rgba(0,80,120,0)');
+        ctx.fillStyle=dfGrad;ctx.fill();
+        ctx.shadowColor='rgba(185,242,255,1)';ctx.shadowBlur=claimAnim*30;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var df=0;df<8;df++){
+          var dfa=df*Math.PI/4+t*0.5;var dfl=cellW*0.42*claimAnim;
+          ctx.beginPath();ctx.moveTo(cx2,cy2);
+          ctx.lineTo(cx2+Math.cos(dfa)*dfl,cy2+Math.sin(dfa)*dfl);
+          ctx.strokeStyle='rgba(185,242,255,'+claimAnim*0.9+')';ctx.lineWidth=2*claimAnim;
+          ctx.shadowColor='rgba(185,242,255,1)';ctx.shadowBlur=claimAnim*8;ctx.stroke();ctx.shadowBlur=0;
+          ctx.beginPath();ctx.arc(cx2+Math.cos(dfa)*dfl,cy2+Math.sin(dfa)*dfl,2*claimAnim,0,Math.PI*2);
+          ctx.fillStyle='rgba(255,255,255,'+claimAnim+')';ctx.fill();
+        }
+        ctx.restore();
+      } else if(eff==='season_master_fx'){
+        // MASTER SURGE — royal purple crown energy burst
+        var msGrad=ctx.createRadialGradient(cx2,cy2,0,cx2,cy2,cellW*0.85);
+        msGrad.addColorStop(0,'rgba(192,132,252,'+claimAnim*0.7+')');
+        msGrad.addColorStop(0.4,'rgba(109,40,217,'+claimAnim*0.5+')');
+        msGrad.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=msGrad;ctx.fill();
+        ctx.shadowColor='rgba(192,132,252,1)';ctx.shadowBlur=claimAnim*35;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();ctx.translate(cx2,cy2);ctx.rotate(t*1.5);
+        for(var ms=0;ms<6;ms++){
+          var msa=ms*Math.PI/3;var msl=cellW*0.4*claimAnim;
+          ctx.beginPath();ctx.moveTo(0,0);
+          ctx.quadraticCurveTo(Math.cos(msa+0.5)*msl*0.6,Math.sin(msa+0.5)*msl*0.6,Math.cos(msa)*msl,Math.sin(msa)*msl);
+          ctx.strokeStyle='rgba(216,180,254,'+claimAnim*0.9+')';ctx.lineWidth=2.5*claimAnim;
+          ctx.shadowColor='rgba(192,132,252,1)';ctx.shadowBlur=claimAnim*10;ctx.stroke();ctx.shadowBlur=0;
+        }
+        ctx.restore();
+      } else if(eff==='season_chroma_fx'){
+        // CHROMANCER NOVA — full spectrum supernova with rainbow rings
+        var hue2=Math.floor((t*180+r*50+c*50)%360);
+        ctx.fillStyle='hsla('+hue2+',100%,60%,'+claimAnim*0.4+')';ctx.fill();
+        ctx.shadowColor='hsla('+hue2+',100%,50%,1)';ctx.shadowBlur=claimAnim*40;ctx.fill();ctx.shadowBlur=0;
+        ctx.save();
+        for(var cn=0;cn<3;cn++){
+          var cnR=cellW*(0.2+cn*0.15)*(1-claimAnim*0.2);
+          ctx.beginPath();ctx.arc(cx2,cy2,cnR,0,Math.PI*2);
+          var cnHue=(hue2+cn*120)%360;
+          ctx.strokeStyle='hsla('+cnHue+',100%,65%,'+claimAnim*(0.9-cn*0.2)+')';
+          ctx.lineWidth=(3-cn)*claimAnim;ctx.stroke();
+        }
+        for(var cr2=0;cr2<10;cr2++){
+          var cra=cr2*Math.PI*2/10+t*2;var crd=cellW*0.4*claimAnim;
+          ctx.beginPath();ctx.moveTo(cx2,cy2);
+          ctx.lineTo(cx2+Math.cos(cra)*crd,cy2+Math.sin(cra)*crd);
+          var crHue2=(hue2+cr2*36)%360;
+          ctx.strokeStyle='hsla('+crHue2+',100%,70%,'+claimAnim*0.8+')';
+          ctx.lineWidth=2*claimAnim;ctx.stroke();
+        }
+        ctx.restore();
       } else {
         // Default glow
         ctx.fillStyle='rgba('+baseColor+','+claimAnim*0.5+')';ctx.fill();
@@ -6723,6 +6781,8 @@ function forceGameEnd(won,reason){
     if(won){save.pvpWins++;save.pvpStreak++;save.pvpLossStreak=0;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak);}
     else{save.pvpLosses++;save.pvpStreak=0;save.pvpLossStreak=(save.pvpLossStreak||0)+1;}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
+    if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
+    saveToCloud();pushPublicProfile();
   } else if(!isPVP){save.totalGames++;if(won)save.totalWins++}
   if(curConfig.vsAiDiff){
     if(!save.aiStats)save.aiStats={};
