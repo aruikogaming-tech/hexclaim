@@ -6039,7 +6039,10 @@ function draw(){
     ctx.save();ctx.beginPath();ctx.roundRect(x+pad,y+pad,cellW-pad*2,cellH-pad*2,rad);
 
     if(!fogRevealed[r][c]){ctx.fillStyle='#0c0c18';ctx.fill();ctx.restore();continue}
-    ctx.fillStyle=COLOR_HEX[grid[r][c]];ctx.fill();
+    // Darken unclaimed tiles so they don't appear too bright
+    var rawColor=COLOR_HEX[grid[r][c]];
+    ctx.fillStyle=owner[r][c]===0?rawColor+'cc':rawColor;ctx.fill();
+    if(owner[r][c]===0){ctx.fillStyle='rgba(10,12,25,0.45)';ctx.fill();}
 
     // Tier-based tile effects — no shadowBlur for performance
     const tileColor=grid[r][c];
