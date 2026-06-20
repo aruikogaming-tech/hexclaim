@@ -349,7 +349,6 @@ body{display:flex;align-items:flex-start;justify-content:center;
   <button class="menu-btn ranked" id="pvpBtn" onclick="tryRankedPVP();playSfx('menuNav')">⚔ Ranked PVP</button>
   <button class="menu-btn campaign" onclick="showScreen('chapterScreen');setTimeout(function(){buildChapters()},50);playSfx('menuNav')">📖 Campaign</button>
   <button class="menu-btn challenge" onclick="showScreen('challengeScreen');buildChallenges();playSfx('menuNav')">🏆 Challenges</button>
-  <button class="menu-btn freeplay" onclick="showScreen('vsAiScreen');buildVsAi();playSfx('menuNav')">🤖 VS AI Practice</button>
   <button class="menu-btn pvp" onclick="showScreen('localPvpScreen');buildCustomGame();playSfx('menuNav')">🎮 Custom Game</button>
 
   <!-- Bottom icon bar -->
@@ -2499,7 +2498,14 @@ function updateAllUI(){
   if(ap&&save.isAdmin)ap.style.display='block';
   // Ranked PVP enabled
   const pvpBtn=document.getElementById('pvpBtn');
-  if(pvpBtn){pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';}
+  if(pvpBtn){
+    if(save.profileLevel<10){
+      pvpBtn.style.opacity='0.45';pvpBtn.style.pointerEvents='auto';
+      pvpBtn.innerHTML='⚔ Ranked PVP <span style="font-size:9px;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;letter-spacing:0">Lv.10 Required</span>';
+    } else {
+      pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';
+    }
+  }
 }
 
 function getTitleDisplayStyle(titleId){
