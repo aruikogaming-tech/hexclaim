@@ -6947,17 +6947,30 @@ var bombTargetMode=false;
 var scoutTargetMode=false;
 function fireScout(row,col){
   scoutTargetMode=false;
-  // Reveal 7x7 area around tapped tile
-  var radius=3;
-  for(let r=row-radius;r<=row+radius;r++)for(let c=col-radius;c<=col+radius;c++){
-    if(r>=0&&r<ROWS&&c>=0&&c<COLS)fogRevealed[r][c]=true;
+  // Check if tapped tile is inside an unrevealed dark zone
+  var foundZone=false;
+  darkZones.forEach(function(dz){
+    if(dz.revealed||dz.scoutedByP1)return;
+    for(var dr=0;dr<dz.size;dr++){
+      for(var dc=0;dc<dz.size;dc++){
+        if(dz.r+dr===row&&dz.c+dc===col){
+          dz.scoutedByP1=true;
+          foundZone=true;
+          showToast('👁 Dark Zone contents revealed — only you can see this!',2500);
+        }
+      }
+    }
+  });
+  if(!foundZone){
+    showToast('👁 Tap a 🌑 Dark Zone to scout it!',2000);
+    scoutTargetMode=true; // Keep targeting mode active so player can try again
+    return;
   }
   playerPowers.scout--;
   activePower=null;
   buildPowerups();
   playSfx('claim');
-  showToast('👁 Area revealed!',1500);
-  updateFog();draw();
+  draw();
 }
 var bombTargetMode=false;
 function fireBomb(row,col){
