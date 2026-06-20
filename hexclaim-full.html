@@ -4672,7 +4672,7 @@ function startOnlineMatch(data){
   // King of the Hill — shared from room data
   kingTile=data.kingTile||null;
   // Dark Zones — shared from room data
-  darkZones=data.darkZones?data.darkZones.map(d=>({...d})):[];
+  darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
@@ -5799,7 +5799,7 @@ function initGame(){
         if(Math.abs(dz.r-zr)<=zoneSize+1&&Math.abs(dz.c-zc)<=zoneSize+1){overlaps=true;break;}
       }
       if(!overlaps&&owner[zr][zc]===0){
-        darkZones.push({r:zr,c:zc,size:zoneSize,revealed:false});
+        darkZones.push({r:zr,c:zc,size:zoneSize,revealed:false,scoutedByP1:false});
       }
     }
   }
@@ -5893,7 +5893,22 @@ let stalemateTurns=0, lastP1Count=0, lastP2Count=0;
 function checkDarkZoneReveal(r,c){
   if(!darkZones.length)return;
   darkZones.forEach(function(dz){
-    if(dz.revealed)return;
+    if(dz.revealed)return; // Fully revealed by claiming adjacent
+    if(dz.scoutedByP1){
+      // Show contents with blue tint (only this player can see)
+      for(var dr=0;dr<dz.size;dr++){
+        for(var dc=0;dc<dz.size;dc++){
+          var zr=dz.r+dr,zc=dz.c+dc;
+          if(zr>=ROWS||zc>=COLS)continue;
+          ctx.save();
+          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+          ctx.fillStyle='rgba(17,138,178,0.25)';ctx.fill();
+          ctx.strokeStyle='rgba(17,138,178,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+          ctx.restore();
+        }
+      }
+      return;
+    }
     for(var dr=-(dz.size);dr<=dz.size;dr++){
       for(var dc=-(dz.size);dc<=dz.size;dc++){
         if(dz.r+dr===r&&dz.c+dc===c){dz.revealed=true;showToast('🌑 Dark Zone revealed!',2000);return;}
@@ -6735,7 +6750,22 @@ function draw(){
   }
   // Dark Zones — mystery patches only revealed when claimed adjacent
   darkZones.forEach(function(dz){
-    if(dz.revealed)return;
+    if(dz.revealed)return; // Fully revealed by claiming adjacent
+    if(dz.scoutedByP1){
+      // Show contents with blue tint (only this player can see)
+      for(var dr=0;dr<dz.size;dr++){
+        for(var dc=0;dc<dz.size;dc++){
+          var zr=dz.r+dr,zc=dz.c+dc;
+          if(zr>=ROWS||zc>=COLS)continue;
+          ctx.save();
+          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+          ctx.fillStyle='rgba(17,138,178,0.25)';ctx.fill();
+          ctx.strokeStyle='rgba(17,138,178,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+          ctx.restore();
+        }
+      }
+      return;
+    }
     var pulse=0.6+0.2*Math.sin(Date.now()*0.002);
     for(var dr=0;dr<dz.size;dr++){
       for(var dc=0;dc<dz.size;dc++){
@@ -6795,7 +6825,22 @@ function draw(){
   }
   // Dark Zones — mystery patches only revealed when claimed adjacent
   darkZones.forEach(function(dz){
-    if(dz.revealed)return;
+    if(dz.revealed)return; // Fully revealed by claiming adjacent
+    if(dz.scoutedByP1){
+      // Show contents with blue tint (only this player can see)
+      for(var dr=0;dr<dz.size;dr++){
+        for(var dc=0;dc<dz.size;dc++){
+          var zr=dz.r+dr,zc=dz.c+dc;
+          if(zr>=ROWS||zc>=COLS)continue;
+          ctx.save();
+          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+          ctx.fillStyle='rgba(17,138,178,0.25)';ctx.fill();
+          ctx.strokeStyle='rgba(17,138,178,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+          ctx.restore();
+        }
+      }
+      return;
+    }
     var pulse=0.6+0.2*Math.sin(Date.now()*0.002);
     for(var dr=0;dr<dz.size;dr++){
       for(var dc=0;dc<dz.size;dc++){
