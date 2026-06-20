@@ -5700,7 +5700,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  myRoomCode=null;pvpRoomData=null;kingTile=null;darkZones=[];
+  myRoomCode=null;pvpRoomData=null;kingTile=null;darkZones=[];bombTargetMode=false;
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -6700,6 +6700,25 @@ function draw(){
     ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
   });
+  // Bomb targeting crosshair — show where bomb will land
+  if(bombTargetMode&&activePower==='bomb'){
+    var pulse2=0.5+0.3*Math.sin(Date.now()*0.008);
+    // Highlight all non-player tiles with red tint to show they're targetable
+    for(var br=0;br<ROWS;br++)for(var bc=0;bc<COLS;bc++){
+      if(owner[br][bc]!==1){
+        ctx.save();
+        ctx.beginPath();ctx.roundRect(bc*cellW+1.5,br*cellH+1.5,cellW-3,cellH-3,4);
+        ctx.fillStyle='rgba(239,71,111,'+pulse2*0.25+')';ctx.fill();
+        ctx.restore();
+      }
+    }
+    // Show crosshair cursor hint
+    var ch2=document.getElementById('canvas');
+    ch2.style.cursor='crosshair';
+  } else {
+    var ch3=document.getElementById('canvas');
+    ch3.style.cursor='default';
+  }
   // Dark Zones — mystery patches only revealed when claimed adjacent
   darkZones.forEach(function(dz){
     if(dz.revealed)return;
@@ -6727,6 +6746,25 @@ function draw(){
       }
     }
   });
+  // Bomb targeting crosshair — show where bomb will land
+  if(bombTargetMode&&activePower==='bomb'){
+    var pulse2=0.5+0.3*Math.sin(Date.now()*0.008);
+    // Highlight all non-player tiles with red tint to show they're targetable
+    for(var br=0;br<ROWS;br++)for(var bc=0;bc<COLS;bc++){
+      if(owner[br][bc]!==1){
+        ctx.save();
+        ctx.beginPath();ctx.roundRect(bc*cellW+1.5,br*cellH+1.5,cellW-3,cellH-3,4);
+        ctx.fillStyle='rgba(239,71,111,'+pulse2*0.25+')';ctx.fill();
+        ctx.restore();
+      }
+    }
+    // Show crosshair cursor hint
+    var ch2=document.getElementById('canvas');
+    ch2.style.cursor='crosshair';
+  } else {
+    var ch3=document.getElementById('canvas');
+    ch3.style.cursor='default';
+  }
   // Dark Zones — mystery patches only revealed when claimed adjacent
   darkZones.forEach(function(dz){
     if(dz.revealed)return;
@@ -6832,6 +6870,26 @@ function computePreview(colorIdx){
   draw();
 }
 
+var bombTargetMode=false;
+function fireBomb(row,col){
+  bombTargetMode=false;
+  // Claim 3x3 area around tapped tile
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=row+dr,nc=col+dc;
+    if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){
+      owner[nr][nc]=1;grid[nr][nc]=p1Color;
+    }
+  }
+  playerPowers.bomb--;
+  activePower=null;
+  buildPowerups();
+  playSfx('claim');
+  updateFog();updateUI();buildColorPicker();updateObjBar();draw();
+  // Check if game ended
+  window._checkEndRunning=false;
+  checkEnd();
+}
+
 function buildColorPicker(){
   const picker=document.getElementById('colorPicker');picker.innerHTML='';
   const symbols=TILE_SYMBOLS;
@@ -6885,28 +6943,21 @@ function buildPowerups(){
     var isActive=activePower===type;
     b.className='pu-btn'+(hasPow?'':' empty')+(isActive?' active':hasPow?' has-power':'');
     b.innerHTML={bomb:'💥 Bomb',scout:'👁 Scout',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?'<div style="font-size:7px;color:var(--c3);margin-top:1px">ACTIVE — pick color</div>':'');
-    b.onclick=()=>{if(!playerPowers[type])return;activePower=activePower===type?null:type;buildPowerups()};c.appendChild(b)})
+    b.onclick=()=>{
+      if(!playerPowers[type])return;
+      var wasActive=activePower===type;
+      activePower=wasActive?null:type;
+      bombTargetMode=!wasActive&&type==='bomb';
+      if(bombTargetMode)showToast('💥 Tap any tile to place your Bomb!',2000);
+      buildPowerups();
+    };c.appendChild(b)})
 }
 function usePower(type){
   if(type==='bomb'){
-    // Find the most recently claimed player tile as bomb center
-    var bcr=Math.floor(ROWS/2),bcc=Math.floor(COLS/2);
-    var maxR=-1;
-    for(let rr=0;rr<ROWS;rr++)for(let cc2=0;cc2<COLS;cc2++){
-      if(owner[rr][cc2]===1){
-        // Pick tile closest to enemy territory
-        var enemyAdj=[[0,1],[0,-1],[1,0],[-1,0]].some(function(d){
-          var nr=rr+d[0],nc=cc2+d[1];
-          return nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===2;
-        });
-        if(enemyAdj){bcr=rr;bcc=cc2;}
-      }
-    }
-    for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){
-      const nr=bcr+dr,nc=bcc+dc;
-      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){owner[nr][nc]=1;grid[nr][nc]=p1Color}
-    }
-    updateFog();draw();
+    // Bomb is now tap-to-target — handled by canvas click
+    // Just enter targeting mode, actual explosion in fireBomb()
+    showToast('💥 Tap any tile to place your Bomb!',2000);
+    return; // Don't deactivate — canvas click will handle it
   }
   else if(type==='scout'){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)fogRevealed[r][c]=true}
   else if(type==='double'){doubleActive=true}
@@ -7542,6 +7593,31 @@ document.getElementById('colorPicker').addEventListener('click',e=>{
 });
 
 canvas=document.getElementById('canvas');
+// Canvas click — handles Bomb targeting
+canvas.addEventListener('click',function(e){
+  if(!bombTargetMode||activePower!=='bomb')return;
+  var rect=canvas.getBoundingClientRect();
+  var x=e.clientX-rect.left;
+  var y=e.clientY-rect.top;
+  var col=Math.floor(x/cellW);
+  var row=Math.floor(y/cellH);
+  if(row>=0&&row<ROWS&&col>=0&&col<COLS){
+    fireBomb(row,col);
+  }
+});
+canvas.addEventListener('touchend',function(e){
+  if(!bombTargetMode||activePower!=='bomb')return;
+  e.preventDefault();
+  var rect=canvas.getBoundingClientRect();
+  var touch=e.changedTouches[0];
+  var x=touch.clientX-rect.left;
+  var y=touch.clientY-rect.top;
+  var col=Math.floor(x/cellW);
+  var row=Math.floor(y/cellH);
+  if(row>=0&&row<ROWS&&col>=0&&col<COLS){
+    fireBomb(row,col);
+  }
+},{passive:false});
 window.addEventListener('resize',()=>{if(document.getElementById('gameScreen').classList.contains('active')){resize();draw()}});
 updateAllUI();
 checkSeasonEnd();
