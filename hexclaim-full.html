@@ -4178,6 +4178,7 @@ let p1LastColor=-1, p2LastColor=-1; // Cooldown — can't repeat your last color
 let decayTimer=0; // Every N turns, unprotected border cells decay
 let bonusCells=[]; // High-value cells worth 2x territory
 let kingTile=null; // King of the Hill tile — worth 10% bonus at game end (Master+)
+  let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
 
 let canvas,ctx,W,H,cellW,cellH;
@@ -4339,21 +4340,22 @@ function genRoomCode(){return Math.random().toString(36).substring(2,8).toUpperC
 // Rank-scaled difficulty
 function getRankedMechanics(elo){
   var m=[];
-  m.push('⬡ Bonus Cells');
-  if(elo>=1300)m.push('🌫️ Fog of War');
-  if(elo>=1900)m.push('💥 Power Tiles');
-  if(elo>=2600)m.push('⚡ Territory Decay');
+  if(elo>=400)m.push('⬡ Bonus Cells');
+  if(elo>=1300)m.push('💥 Power Tiles');
+  if(elo>=1900)m.push('⚡ Territory Decay');
+  if(elo>=2600)m.push('👑 King of the Hill');
+  if(elo>=4700)m.push('🌑 Dark Zones');
   return m;
 }
 function getRankedConfig(elo){
-  if(elo<400)return{cols:10,rows:12,colors:4,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,label:'Unranked (Bonus Cells)'};
-  if(elo<800)return{cols:10,rows:12,colors:4,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,label:'Bronze (Bonus Cells)'};
-  if(elo<1300)return{cols:11,rows:13,colors:5,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,label:'Silver (Bonus Cells)'};
-  if(elo<1900)return{cols:11,rows:13,colors:5,fog:true,powerTiles:false,moveLimit:false,baseMoves:999,label:'Gold (Fog + Bonus Cells)'};
-  if(elo<2600)return{cols:12,rows:14,colors:6,fog:true,powerTiles:true,moveLimit:false,baseMoves:999,label:'Platinum (Fog + Powers + Bonus Cells)'};
-  if(elo<3500)return{cols:12,rows:14,colors:6,fog:true,powerTiles:true,moveLimit:false,baseMoves:999,label:'Diamond (Fog + Powers + Decay)'};
-  if(elo<4700)return{cols:13,rows:15,colors:6,fog:true,powerTiles:true,moveLimit:false,baseMoves:999,label:'Master (Fog + Powers + Decay)'};
-  return{cols:13,rows:15,colors:8,fog:true,powerTiles:true,moveLimit:false,baseMoves:999,label:'Chromancer (Fog + Powers + Decay)'};
+  if(elo<400)return{cols:10,rows:12,colors:4,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,darkZones:false,label:'Unranked'};
+  if(elo<800)return{cols:10,rows:12,colors:4,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,darkZones:false,label:'Bronze (Bonus Cells)'};
+  if(elo<1300)return{cols:11,rows:13,colors:5,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,darkZones:false,label:'Silver (5 Colors)'};
+  if(elo<1900)return{cols:11,rows:13,colors:5,fog:false,powerTiles:true,moveLimit:false,baseMoves:999,darkZones:false,label:'Gold (Power Tiles)'};
+  if(elo<2600)return{cols:12,rows:14,colors:6,fog:false,powerTiles:true,moveLimit:false,baseMoves:999,darkZones:false,label:'Platinum (6 Colors + Decay)'};
+  if(elo<3500)return{cols:12,rows:14,colors:6,fog:false,powerTiles:true,moveLimit:false,baseMoves:999,darkZones:false,label:'Diamond (King of the Hill)'};
+  if(elo<4700)return{cols:13,rows:15,colors:7,fog:false,powerTiles:true,moveLimit:false,baseMoves:999,darkZones:false,label:'Master (7 Colors)'};
+  return{cols:13,rows:15,colors:8,fog:false,powerTiles:true,moveLimit:false,baseMoves:999,darkZones:true,label:'Chromancer (Dark Zones)'};
 }
 
 // Generate a deterministic board from a seed
@@ -4554,11 +4556,28 @@ async function showMatchmaking(){
               while(tries<50&&sharedBonus.some(b=>b.r===br&&b.c===bc));
               if(tries<50)sharedBonus.push({r:br,c:bc});
             }
-            const sharedKingTile=avgElo>=2500?{r:Math.floor(rc.rows/2),c:Math.floor(rc.cols/2)}:null;
+            const sharedKingTile=avgElo>=2600?{r:Math.floor(rc.rows/2),c:Math.floor(rc.cols/2)}:null;
+            // Generate shared dark zones using seed
+            var sharedDarkZones=[];
+            if(rc.darkZones){
+              var rng3=seededRandom(seed+2);
+              var totalC=rc.cols*rc.rows;
+              var numZ=Math.max(3,Math.floor(totalC/30));
+              var zSz=totalC>160?3:2;
+              var att=0;
+              while(sharedDarkZones.length<numZ&&att<200){
+                att++;
+                var zr=Math.floor(rc.rows*0.2+rng3()*rc.rows*0.6);
+                var zc2=Math.floor(rc.cols*0.2+rng3()*rc.cols*0.6);
+                var ov=false;
+                for(var dz2 of sharedDarkZones){if(Math.abs(dz2.r-zr)<=zSz+1&&Math.abs(dz2.c-zc2)<=zSz+1){ov=true;break;}}
+                if(!ov)sharedDarkZones.push({r:zr,c:zc2,size:zSz,revealed:false});
+              }
+            }
             const roomData={
               code,host:{name:save.playerName||'Player',elo:save.elo},
               guest:{name:other.name,elo:other.elo},
-              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,moves:[],turn:1,created:Date.now()
+              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,darkZones:sharedDarkZones,moves:[],turn:1,created:Date.now()
             };
             await pvpDB.set('pvp-rooms/'+code,roomData);
             // Notify the other player
@@ -4651,6 +4670,8 @@ function startOnlineMatch(data){
   bonusCells=data.bonusCells?data.bonusCells.map(b=>({...b})):[];
   // King of the Hill — shared from room data
   kingTile=data.kingTile||null;
+  // Dark Zones — shared from room data
+  darkZones=data.darkZones?data.darkZones.map(d=>({...d})):[];
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
@@ -5660,7 +5681,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  myRoomCode=null;pvpRoomData=null;kingTile=null;
+  myRoomCode=null;pvpRoomData=null;kingTile=null;darkZones=[];
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -5739,9 +5760,33 @@ function initGame(){
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
 
-  // King of the Hill tile — center tile worth 10% bonus (Master+ ranked only)
+  // Dark Zones — hidden mystery patches (Chromancer only, scaled to board size)
+  darkZones=[];
+  if(curConfig.darkZones){
+    var totalCells2=COLS*ROWS;
+    // Scale: 3 zones on small board, up to 6 on large board
+    var numZones=Math.max(3,Math.floor(totalCells2/30));
+    // Scale: 2x2 on small, 3x3 on large boards
+    var zoneSize=totalCells2>160?3:2;
+    var attempts=0;
+    while(darkZones.length<numZones&&attempts<200){
+      attempts++;
+      // Place in middle 60% of board only, away from corners
+      var zr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);
+      var zc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);
+      // Make sure zone doesn't overlap existing zones or starting positions
+      var overlaps=false;
+      for(var dz of darkZones){
+        if(Math.abs(dz.r-zr)<=zoneSize+1&&Math.abs(dz.c-zc)<=zoneSize+1){overlaps=true;break;}
+      }
+      if(!overlaps&&owner[zr][zc]===0){
+        darkZones.push({r:zr,c:zc,size:zoneSize,revealed:false});
+      }
+    }
+  }
+  // King of the Hill tile — center tile worth 10% bonus (Diamond+ ranked only)
   kingTile=null;
-  if(curConfig.isRanked&&save.elo>=2500){
+  if(curConfig.isRanked&&save.elo>=2600){
     const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
     kingTile={r:kr,c:kc};
   }
@@ -5826,7 +5871,33 @@ let comboCount=0, comboTimer=null, bestCombo=0;
 let shakeAmount=0, shakeTimer=null;
 let stalemateTurns=0, lastP1Count=0, lastP2Count=0;
 
-function expandTerritory(player,newColor){
+// Dark Zones — hidden mystery patches (Chromancer only, scaled to board size)
+  darkZones=[];
+  if(curConfig.darkZones){
+    var totalCells2=COLS*ROWS;
+    // Scale: 3 zones on small board, up to 6 on large board
+    var numZones=Math.max(3,Math.floor(totalCells2/30));
+    // Scale: 2x2 on small, 3x3 on large boards
+    var zoneSize=totalCells2>160?3:2;
+    var attempts=0;
+    while(darkZones.length<numZones&&attempts<200){
+      attempts++;
+      // Place in middle 60% of board only, away from corners
+      var zr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);
+      var zc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);
+      // Make sure zone doesn't overlap existing zones or starting positions
+      var overlaps=false;
+      for(var dz of darkZones){
+        if(Math.abs(dz.r-zr)<=zoneSize+1&&Math.abs(dz.c-zc)<=zoneSize+1){overlaps=true;break;}
+      }
+      if(!overlaps&&owner[zr][zc]===0){
+        darkZones.push({r:zr,c:zc,size:zoneSize,revealed:false});
+      }
+    }
+  }
+  // King of the Hill tile — center tile worth 10% bonus (Diamond+ ranked only)
+  kingTile=null;
+  if(curConfig.isRanked&&save.elo>=2600){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
@@ -5911,6 +5982,8 @@ function expandTerritoryAnimated(player,newColor,callback){
       // Check power tiles
       const pi=powerTiles.findIndex(p=>p.r===w.r&&p.c===w.c);
       if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups()}
+      // Check dark zone reveals
+      checkDarkZoneReveal(w.r,w.c);
     });
     totalClaimed+=wave.length;
     updateUI();
@@ -6065,7 +6138,7 @@ function countOwned(p){
 function countOwnedRaw(p){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(owner[r][c]===p)n++;return n;}
 
 function updateFog(){
-  if(!curConfig.fog)return;
+  if(!curConfig.fog||curConfig.isRanked)return;
   // Deep fog (2 tiles) for Chapter 3+, ranked Diamond+, and ranked Master/Chromancer
   var isDeepFog=(curConfig.chapterIdx>=2)||(curConfig.isRanked&&save.elo>=1900);
   var radius=isDeepFog?2:1;
@@ -6622,6 +6695,33 @@ function draw(){
     ctx.fillStyle='rgba(255,209,102,0.7)';ctx.fill();
     ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
+  });
+  // Dark Zones — mystery patches only revealed when claimed adjacent
+  darkZones.forEach(function(dz){
+    if(dz.revealed)return;
+    var pulse=0.6+0.2*Math.sin(Date.now()*0.002);
+    for(var dr=0;dr<dz.size;dr++){
+      for(var dc=0;dc<dz.size;dc++){
+        var zr=dz.r+dr,zc=dz.c+dc;
+        if(zr>=ROWS||zc>=COLS)continue;
+        var zx=zc*cellW+cellW/2,zy=zr*cellH+cellH/2;
+        ctx.save();
+        // Deep black overlay
+        ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+        ctx.fillStyle='rgba(2,4,12,0.92)';ctx.fill();
+        // Pulsing purple border
+        ctx.strokeStyle='rgba(120,0,200,'+pulse+')';ctx.lineWidth=1.5;
+        ctx.shadowColor='rgba(120,0,200,0.8)';ctx.shadowBlur=8*pulse;ctx.stroke();ctx.shadowBlur=0;
+        // Question mark in center tile of zone only
+        if(dr===Math.floor(dz.size/2)&&dc===Math.floor(dz.size/2)){
+          ctx.font='bold '+Math.min(cellW*0.45,13)+'px Manrope';
+          ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillStyle='rgba(160,80,255,'+pulse+')';
+          ctx.fillText('?',zx,zy);
+        }
+        ctx.restore();
+      }
+    }
   });
   // King of the Hill tile — glowing crown at center
   if(kingTile&&fogRevealed[kingTile.r][kingTile.c]){
