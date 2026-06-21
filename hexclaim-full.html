@@ -1187,6 +1187,8 @@ function getQuestProgress(quest){
 function buildQuests(){
   var tabs=document.getElementById('questTabs');
   tabs.innerHTML='';
+  checkAdReset();
+  checkAdReset();
   checkQuestResets();
   ['Daily','Weekly','Monthly'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
@@ -7681,6 +7683,7 @@ checkSeasonEnd();
 checkSeasonRotation();
 checkDailyLogin();
 checkQuestResets();
+checkAdReset();
 initFirebase();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
