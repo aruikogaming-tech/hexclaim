@@ -4210,7 +4210,9 @@ let lastTickTime=0;
 let p1LastColor=-1, p2LastColor=-1; // Cooldown — can't repeat your last color
 let decayTimer=0; // Every N turns, unprotected border cells decay
 let bonusCells=[]; // High-value cells worth 2x territory
-let kingTile=null; // King of the Hill tile — worth 10% bonus at game end (Master+)
+let kingTile=null; // kept for online PVP compatibility
+let kingTiles=[]; // 3 bonus tiles that teleport every 10 turns
+let kingTileTimer=0; // counts turns until next teleport
 let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
 
@@ -5836,11 +5838,20 @@ function initGame(){
       }
     }
   }
-  // King of the Hill — Diamond+ ranked OR Chapter 4+ campaign
+  // King of the Hill — 3 roaming bonus tiles, teleport every 10 turns
   kingTile=null;
+  kingTiles=[];
+  kingTileTimer=0;
   if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
-    const kr=Math.floor(ROWS/2),kc=Math.floor(COLS/2);
-    kingTile={r:kr,c:kc};
+    var kAttempts=0;
+    while(kingTiles.length<3&&kAttempts<200){
+      kAttempts++;
+      var kr=Math.floor(Math.random()*ROWS);
+      var kc=Math.floor(Math.random()*COLS);
+      if(owner[kr][kc]===0&&!kingTiles.some(function(t){return t.r===kr&&t.c===kc})){
+        kingTiles.push({r:kr,c:kc});
+      }
+    }
   }
   // Bonus cells — worth 2x territory, placed in contested middle areas
   bonusCells=[];
@@ -6180,10 +6191,10 @@ function countOwned(p){
       if(bonusCells.some(b=>b.r===r&&b.c===c))n++;
     }
   }
-  // King of the Hill bonus — worth 10% of total cells extra
-  if(kingTile&&owner[kingTile.r][kingTile.c]===p){
-    n+=Math.floor(totalCells*0.10);
-  }
+  // King of the Hill bonus — each tile worth 2% of total cells
+  kingTiles.forEach(function(kt){
+    if(owner[kt.r][kt.c]===p)n+=Math.floor(totalCells*0.02);
+  });
   return n;
 }
 // Raw cell count without bonus (for totalCells percentage)
@@ -6826,29 +6837,27 @@ function draw(){
       }
     }
   });
-  // King of the Hill tile — glowing crown at center
-  if(kingTile&&fogRevealed[kingTile.r][kingTile.c]){
-    const kx=kingTile.c*cellW+cellW/2,ky=kingTile.r*cellH+cellH/2;
-    const pulse=0.7+0.3*Math.sin(Date.now()*0.003);
+  // King of the Hill tiles — 3 roaming bonus tiles
+  kingTiles.forEach(function(kt){
+    if(!fogRevealed[kt.r][kt.c])return;
+    var kx=kt.c*cellW+cellW/2,ky=kt.r*cellH+cellH/2;
+    var pulse=0.7+0.3*Math.sin(Date.now()*0.003);
     ctx.save();
-    // Outer glow ring
     ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
     ctx.strokeStyle='rgba(255,215,0,'+pulse+')';ctx.lineWidth=3;
     ctx.shadowColor='rgba(255,215,0,0.9)';ctx.shadowBlur=15*pulse;ctx.stroke();ctx.shadowBlur=0;
-    // Crown emoji
     ctx.font='bold '+Math.min(cellW*0.5,14)+'px sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('👑',kx,ky);
-    // Owner indicator
-    if(owner[kingTile.r][kingTile.c]===1){
+    if(owner[kt.r][kt.c]===1){
       ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
       ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=2;ctx.stroke();
-    } else if(owner[kingTile.r][kingTile.c]===2){
+    } else if(owner[kt.r][kt.c]===2){
       ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
       ctx.strokeStyle='rgba(239,71,111,0.8)';ctx.lineWidth=2;ctx.stroke();
     }
     ctx.restore();
-  }
+  });
 
   // Power tiles
   powerTiles.forEach(p=>{if(!fogRevealed[p.r][p.c])return;const x=p.c*cellW+cellW/2,y=p.r*cellH+cellH/2;
@@ -7235,10 +7244,12 @@ function updateObjBar(){
   bar.appendChild(p2pill);
 
   // Moves remaining (if applicable)
-  if(kingTile){
-    var kOwner=owner[kingTile.r][kingTile.c];
-    var kStatus=kOwner===1?'👑 YOU hold the Hill +10%':kOwner===2?'👑 ENEMY holds the Hill +10%':'👑 Hill is CONTESTED';
-    var kColor=kOwner===1?'var(--p1)':kOwner===2?'var(--p2)':'var(--gold)';
+  if(kingTiles.length>0){
+    var p1holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===1}).length;
+    var p2holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===2}).length;
+    var kBonus=p1holds>p2holds?'+':p2holds>p1holds?'-':'';
+    var kStatus='👑 '+p1holds+' vs '+p2holds+' (teleports in '+(10-kingTileTimer)+'t)';
+    var kColor=p1holds>p2holds?'var(--p1)':p2holds>p1holds?'var(--p2)':'var(--gold)';
     var kEl=document.getElementById('kingHillStatus');
     if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
     kEl.style.color=kColor;kEl.textContent=kStatus;
@@ -7300,6 +7311,20 @@ async function playerMove(colorIdx){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
+    }
+  }
+  // King tiles teleport every 10 turns
+  if(kingTiles.length>0){
+    kingTileTimer++;
+    if(kingTileTimer>=10){
+      kingTileTimer=0;
+      kingTiles=kingTiles.map(function(){
+        var attempts=0,nr,nc;
+        do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+        while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
+        return{r:nr,c:nc};
+      });
+      showToast('👑 Crown tiles teleported!',1500);
     }
   }
 
