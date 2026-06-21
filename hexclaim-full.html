@@ -689,7 +689,6 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
         adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,limitedShopRotation:null,limitedShopItems:null,
-  adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,
   friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[]
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
@@ -4113,6 +4112,7 @@ const CHAPTERS=[
   {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[48,51,55],powerTiles:true},
   {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[47,50,53],powerTiles:true},
   {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[46,49,52],powerTiles:true,darkZones:true},
+];
 const CHALLENGES=[
  {name:"Territory Lord",desc:"Win 25 games to prove your dominance.",reward:"Title: Territory Lord",rewardTitle:'Territory Lord',cols:9,rows:11,colors:5,aiSmart:0.5,reqChapter:0},
   {name:"Unstoppable",desc:"Win 15 games in a row without losing.",reward:"Title: Unstoppable",rewardTitle:'Combo King',cols:9,rows:11,colors:5,aiSmart:0.6,reqChapter:1},
@@ -6715,41 +6715,35 @@ function draw(){
     ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
   });
-  // Scout targeting — blue tint on fogged tiles
+  // Scout targeting — blue tint on unrevealed dark zones
   if(scoutTargetMode&&activePower==='scout'){
-    var pulse3=0.4+0.3*Math.sin(Date.now()*0.006);
-    darkZones.forEach(function(dz){
-      if(dz.revealed||dz.scoutedByP1)return;
-      for(var dr=0;dr<dz.size;dr++){
-        for(var dc=0;dc<dz.size;dc++){
-          var zr=dz.r+dr,zc=dz.c+dc;
-          if(zr>=ROWS||zc>=COLS)continue;
-          ctx.save();
-          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
-          ctx.fillStyle='rgba(17,138,178,'+pulse3*0.5+')';ctx.fill();
-          ctx.strokeStyle='rgba(17,138,178,'+pulse3+')';ctx.lineWidth=2;ctx.stroke();
-          ctx.restore();
-        }
-      }
-    });
     var hasUnscoutedZones=darkZones.some(function(dz){return !dz.revealed&&!dz.scoutedByP1});
-    if(!hasUnscoutedZones){showToast('👁 No dark zones to scout!',1500);scoutTargetMode=false;activePower=null;buildPowerups();}
-    canvas.style.cursor=hasUnscoutedZones?'crosshair':'default';
-  }
-          ctx.restore();
+    if(!hasUnscoutedZones){
+      showToast('👁 No dark zones to scout!',1500);
+      scoutTargetMode=false;activePower=null;buildPowerups();
+      canvas.style.cursor='default';
+    } else {
+      var pulse3=0.4+0.3*Math.sin(Date.now()*0.006);
+      darkZones.forEach(function(dz){
+        if(dz.revealed||dz.scoutedByP1)return;
+        for(var dr=0;dr<dz.size;dr++){
+          for(var dc=0;dc<dz.size;dc++){
+            var zr=dz.r+dr,zc=dz.c+dc;
+            if(zr>=ROWS||zc>=COLS)continue;
+            ctx.save();
+            ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
+            ctx.fillStyle='rgba(17,138,178,'+pulse3*0.5+')';ctx.fill();
+            ctx.strokeStyle='rgba(17,138,178,'+pulse3+')';ctx.lineWidth=2;ctx.stroke();
+            ctx.restore();
+          }
         }
-      {
-    };
-    {
-    // If no dark zones show message
-    var hasUnscoutedZones=darkZones.some(function(dz){return !dz.revealed&&!dz.scoutedByP1});
-    if(!hasUnscoutedZones){showToast('👁 No dark zones to scout!',1500);scoutTargetMode=false;activePower=null;buildPowerups();}
-    canvas.style.cursor=hasUnscoutedZones?'crosshair':'default';
+      });
+      canvas.style.cursor='crosshair';
+    }
   }
   // Bomb targeting crosshair — show where bomb will land
   if(bombTargetMode&&activePower==='bomb'){
     var pulse2=0.5+0.3*Math.sin(Date.now()*0.008);
-    // Highlight all non-player tiles with red tint to show they're targetable
     for(var br=0;br<ROWS;br++)for(var bc=0;bc<COLS;bc++){
       if(owner[br][bc]!==1){
         ctx.save();
@@ -6758,90 +6752,14 @@ function draw(){
         ctx.restore();
       }
     }
-    // Show crosshair cursor hint
-    var ch2=document.getElementById('canvas');
-    ch2.style.cursor='crosshair';
-  } else {
-    var ch3=document.getElementById('canvas');
-    ch3.style.cursor='default';
+    canvas.style.cursor='crosshair';
+  } else if(!scoutTargetMode){
+    canvas.style.cursor='default';
   }
   // Dark Zones — mystery patches only revealed when claimed adjacent
   darkZones.forEach(function(dz){
-    if(dz.revealed)return; // Fully revealed by claiming adjacent
+    if(dz.revealed)return;
     if(dz.scoutedByP1){
-      // Show contents with blue tint (only this player can see)
-      for(var dr=0;dr<dz.size;dr++){
-        for(var dc=0;dc<dz.size;dc++){
-          var zr=dz.r+dr,zc=dz.c+dc;
-          if(zr>=ROWS||zc>=COLS)continue;
-          ctx.save();
-          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
-          ctx.fillStyle='rgba(17,138,178,0.25)';ctx.fill();
-          ctx.strokeStyle='rgba(17,138,178,0.6)';ctx.lineWidth=1.5;ctx.stroke();
-          ctx.restore();
-        }
-      }
-      return;
-    }
-    var pulse=0.6+0.2*Math.sin(Date.now()*0.002);
-    for(var dr=0;dr<dz.size;dr++){
-      for(var dc=0;dc<dz.size;dc++){
-        var zr=dz.r+dr,zc=dz.c+dc;
-        if(zr>=ROWS||zc>=COLS)continue;
-        var zx=zc*cellW+cellW/2,zy=zr*cellH+cellH/2;
-        ctx.save();
-        // Deep black overlay
-        
-      }
-    }
-  });
-  // Scout targeting — blue tint on fogged tiles
-  if(scoutTargetMode&&activePower==='scout'){
-    var pulse3=0.4+0.3*Math.sin(Date.now()*0.006);
-    // Only highlight unrevealed dark zones as targets
-    darkZones.forEach(function(dz){
-      if(dz.revealed||dz.scoutedByP1)return;
-      for(var dr=0;dr<dz.size;dr++){
-        for(var dc=0;dc<dz.size;dc++){
-          var zr=dz.r+dr,zc=dz.c+dc;
-          if(zr>=ROWS||zc>=COLS)continue;
-          ctx.save();
-          ctx.beginPath();ctx.roundRect(zc*cellW+1.5,zr*cellH+1.5,cellW-3,cellH-3,4);
-          ctx.fillStyle='rgba(17,138,178,'+pulse3*0.5+')';ctx.fill();
-          ctx.strokeStyle='rgba(17,138,178,'+pulse3+')';ctx.lineWidth=2;ctx.stroke();
-          ctx.restore();
-        }
-      }
-    });
-    // If no dark zones show message
-    var hasUnscoutedZones=darkZones.some(function(dz){return !dz.revealed&&!dz.scoutedByP1});
-    if(!hasUnscoutedZones){showToast('👁 No dark zones to scout!',1500);scoutTargetMode=false;activePower=null;buildPowerups();}
-    canvas.style.cursor=hasUnscoutedZones?'crosshair':'default';
-  }
-  // Bomb targeting crosshair — show where bomb will land
-  if(bombTargetMode&&activePower==='bomb'){
-    var pulse2=0.5+0.3*Math.sin(Date.now()*0.008);
-    // Highlight all non-player tiles with red tint to show they're targetable
-    for(var br=0;br<ROWS;br++)for(var bc=0;bc<COLS;bc++){
-      if(owner[br][bc]!==1){
-        ctx.save();
-        ctx.beginPath();ctx.roundRect(bc*cellW+1.5,br*cellH+1.5,cellW-3,cellH-3,4);
-        ctx.fillStyle='rgba(239,71,111,'+pulse2*0.25+')';ctx.fill();
-        ctx.restore();
-      }
-    }
-    // Show crosshair cursor hint
-    var ch2=document.getElementById('canvas');
-    ch2.style.cursor='crosshair';
-  } else {
-    var ch3=document.getElementById('canvas');
-    ch3.style.cursor='default';
-  }
-  // Dark Zones — mystery patches only revealed when claimed adjacent
-  darkZones.forEach(function(dz){
-    if(dz.revealed)return; // Fully revealed by claiming adjacent
-    if(dz.scoutedByP1){
-      // Show contents with blue tint (only this player can see)
       for(var dr=0;dr<dz.size;dr++){
         for(var dc=0;dc<dz.size;dc++){
           var zr=dz.r+dr,zc=dz.c+dc;
