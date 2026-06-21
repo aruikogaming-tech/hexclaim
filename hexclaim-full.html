@@ -7578,6 +7578,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
 
   // XP/Coins earned display
   const xpEarned=won?65:15;const coinsEarned=(won?40:15)+(extraCoinsEarned||0);extraCoinsEarned=0;
+  const chromasEarned=won?5:1;
   const xpBonus=curConfig.isRanked?15:0;
 
   if(curConfig.isRanked){
@@ -7592,7 +7593,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     const diffIdx=AI_DIFFICULTIES.findIndex(d=>d.id===curConfig.vsAiDiff);
     const nextDiff=AI_DIFFICULTIES[diffIdx+1];
     eloEl.textContent='';
-    reward.innerHTML=`${curConfig.vsAiIcon} vs ${curConfig.vsAiName}<br><span style="font-size:9px;color:var(--gold)">+${xpEarned} XP  ·  +${coinsEarned} 🟡</span>`;
+    reward.innerHTML=`${curConfig.vsAiIcon} vs ${curConfig.vsAiName}<br><span style="font-size:9px;color:var(--gold)">+${xpEarned} XP · +${coinsEarned} 🟡 · +${chromasEarned} 💎</span>`;
     nextBtn.textContent='Rematch';nextBtn.style.display='block';
     nextBtn.onclick=()=>{document.getElementById('overlay').classList.remove('active');startVsAi(curConfig.vsAiDiff)};
     // If won and there's a harder difficulty, show upgrade option
@@ -7601,25 +7602,38 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     }
   } else {
     eloEl.textContent='';
-    if(won&&curChapter>=0){reward.textContent=stars===3?'🟡 Perfect!':stars===2?'Great!':'Passed!';nextBtn.style.display=(curLevel<CHAPTERS[curChapter].levels-1||curChapter<CHAPTERS.length-1)?'block':'none';nextBtn.textContent='Next';nextBtn.onclick=nextLevel}
+    if(won&&curChapter>=0){reward.innerHTML=(stars===3?'⭐ Perfect!':stars===2?'Great!':'Passed!')+'<br><span style="font-size:9px;color:var(--gold)">+'+coinsEarned+' 🟡 · +'+chromasEarned+' 💎 · +'+xpEarned+' XP</span>';nextBtn.style.display=(curLevel<CHAPTERS[curChapter].levels-1||curChapter<CHAPTERS.length-1)?'block':'none';nextBtn.textContent='Next';nextBtn.onclick=nextLevel}
     else if(won&&curConfig.challengeIdx!==undefined){reward.textContent='🏆 Challenge Complete!';nextBtn.style.display='none'}
     else{reward.textContent=won?'':'Try again!';nextBtn.textContent=won?'Continue':'Retry';nextBtn.style.display='block';nextBtn.onclick=won?nextLevel:function(){startCampaignLevel(curChapter,curLevel)}}
   }
   playSfx(won?'win':'lose');
+  // Lucky Spin — only show if free spins available, show once
   if(won&&save.freeSpinsToday<2){
-    const spinDiv=document.createElement('div');
-    spinDiv.style.cssText='margin-top:8px;cursor:pointer;font-size:12px;color:var(--gold);font-weight:800;text-align:center';
-    spinDiv.textContent='🎰 Lucky Spin! (Free)';
+    var spinsLeft=2-save.freeSpinsToday;
+    var spinDiv=document.createElement('div');
+    spinDiv.style.cssText='margin-top:8px;cursor:pointer;font-size:12px;color:var(--gold);font-weight:800;text-align:center;padding:6px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:8px';
+    spinDiv.textContent='🎰 Lucky Spin! ('+spinsLeft+' free remaining)';
     spinDiv.onclick=function(){showLuckySpin()};
     reward.parentElement.appendChild(spinDiv);
   }
-  // Rewarded ad — double coins
+  // Watch Ad — show once with remaining count, hide after limit
   if(won){
-    const adDiv=document.createElement('div');
-    adDiv.style.cssText='margin-top:4px;cursor:pointer;font-size:10px;color:var(--p1);font-weight:700;text-align:center';
-    adDiv.textContent='🎬 Watch Ad → Double Coins';
-    adDiv.onclick=function(){showRewardedAd('Double your coin reward!',function(){save.coins+=coinsEarned;saveProg();updateShopCurrency();adDiv.textContent='✓ Coins doubled!';adDiv.onclick=null},'adCoinsToday',3)};
-    reward.parentElement.appendChild(adDiv);
+    checkAdReset();
+    var adsUsed=save.adCoinsToday||0;
+    var adLimit=3;
+    if(adsUsed<adLimit){
+      var adDiv=document.createElement('div');
+      adDiv.style.cssText='margin-top:6px;cursor:pointer;font-size:10px;color:var(--p1);font-weight:700;text-align:center;padding:5px;background:rgba(6,214,160,0.06);border:1px solid rgba(6,214,160,0.15);border-radius:8px';
+      adDiv.textContent='🎬 Watch Ad → Double Coins ('+(adLimit-adsUsed)+' left today)';
+      adDiv.onclick=function(){
+        if((save.adCoinsToday||0)>=adLimit){adDiv.textContent='✓ Daily limit reached';adDiv.onclick=null;return;}
+        showRewardedAd('Double your coin reward!',function(){
+          save.coins+=coinsEarned;saveProg();updateShopCurrency();
+          adDiv.textContent='✓ Coins doubled!';adDiv.style.color='var(--gold)';adDiv.onclick=null;
+        },'adCoinsToday',adLimit);
+      };
+      reward.parentElement.appendChild(adDiv);
+    }
   }
   // Track mode stats
   trackModeGame(won);
