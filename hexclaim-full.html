@@ -5778,6 +5778,7 @@ function initGame(){
   if(curConfig.powerTiles){const cnt=3+Math.floor(Math.random()*3);for(let i=0;i<cnt;i++){let pr,pc;do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS)}while(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc));powerTiles.push({r:pr,c:pc,type:['bomb','scout','double'][Math.floor(Math.random()*3)]})}}
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
+  stalemateTurns=0;lastP1Count=0;lastP2Count=0;comboCount=0;bestCombo=0;
 
   // Dark Zones — hidden mystery patches (Chromancer only, scaled to board size)
   darkZones=[];
@@ -7121,11 +7122,13 @@ function forceGameEnd(won,reason){
     }
     const oldElo1=save.elo;
     save.elo=Math.min(9999,Math.max(0,save.elo+eloChange));
+    if(save.elo>save.seasonHighElo)save.seasonHighElo=save.elo;
     checkRankUp(oldElo1,save.elo);
     if(won){save.pvpWins++;save.pvpStreak++;save.pvpLossStreak=0;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak);}
     else{save.pvpLosses++;save.pvpStreak=0;save.pvpLossStreak=(save.pvpLossStreak||0)+1;}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
+    checkSeasonEnd();
     saveToCloud();pushPublicProfile();
   } else if(!isPVP){save.totalGames++;if(won)save.totalWins++}
   if(curConfig.vsAiDiff){
@@ -7141,6 +7144,19 @@ function forceGameEnd(won,reason){
   else{save.winStreak=0;save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
   if(curConfig.vsAiDiff&&['hard','expert','master','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
   checkIconUnlocks();checkTitleUnlocks();
+  // Grant achievement rewards on timeout wins too
+  if(won){
+    var totalWins2=(save.totalWins||0)+(save.pvpWins||0);
+    if(totalWins2===1)grantAchievementReward('win_1');
+    if(totalWins2===10)grantAchievementReward('win_10');
+    if(totalWins2===25)grantAchievementReward('win_25');
+    if(totalWins2===50)grantAchievementReward('win_50');
+    if(totalWins2===100)grantAchievementReward('win_100');
+    if(totalWins2===200)grantAchievementReward('win_200');
+  }
+  trackModeGame(won);
+  checkRatePrompt();
+  if(!won)showStarterPack();
   saveProg();updateShopCurrency();
 
   const title=document.getElementById('olTitle'),starsEl=document.getElementById('olStars'),
@@ -7399,7 +7415,7 @@ function checkEnd(){
     stalemateTurns=0;
   }
   lastP1Count=p1raw;lastP2Count=p2raw;
-  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?20:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 5 turns'}
+  if(stalemateTurns>=(curConfig&&curConfig.isTutorial?20:14)){ended=true;won=p1n>p2n;reason='Stalemate — no captures in 7 turns'}
 
   if(unclaimed>0&&!ended){if(p1n>p2n+unclaimed){ended=true;won=true;reason='Result decided'}else if(p2n>p1n+unclaimed){ended=true;won=false;reason='Result decided'}}
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
@@ -7431,11 +7447,13 @@ function checkEnd(){
     }
     const oldElo2=save.elo;
     save.elo=Math.max(0,save.elo+eloChange);
+    if(save.elo>save.seasonHighElo)save.seasonHighElo=save.elo;
     checkRankUp(oldElo2,save.elo);
     if(won){save.pvpWins++;save.pvpStreak++;save.pvpLossStreak=0;save.bestStreak=Math.max(save.bestStreak,save.pvpStreak)}
     else{save.pvpLosses++;save.pvpStreak=0;save.pvpLossStreak=(save.pvpLossStreak||0)+1;}
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
+    checkSeasonEnd();
     // Push ELO + public profile to Firebase after ranked match
     saveToCloud();
     pushPublicProfile();
