@@ -3017,7 +3017,7 @@ function checkIconUnlocks(){
     if(icon.id==='💀'&&hardWins>=10)earned=true;
     if(icon.id==='🌟'&&totalStars>=30)earned=true;
     if(icon.id==='🎭'&&totalWins>=100)earned=true;
-    var allChapters=true;for(var ac=1;ac<=4;ac++){for(var cl=1;cl<=5;cl++){if(!save.cleared['ch'+ac+'_'+cl])allChapters=false;}}
+    var allChapters=true;for(var ac=1;ac<=6;ac++){for(var cl=1;cl<=5;cl++){if(!save.cleared['ch'+ac+'_'+cl])allChapters=false;}}
     if(icon.id==='🔱'&&allChapters)earned=true;
     if(icon.id==='👑'&&allChallenges)earned=true;
     if(icon.id==='🧊'&&maxStreak>=5)earned=true;
