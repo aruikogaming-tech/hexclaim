@@ -7493,9 +7493,9 @@ function checkEnd(){
     if(p1p>=95){if(!save.masteryStars)save.masteryStars={};save.masteryStars[key]=true}
     // First clear bonus coins per chapter
     if(isFirstClear){
-      var chapterBonus=[50,100,150,250];
-      var starBonus=[0,25,75,150];
-var diamondBonus=[0,15,40,75];
+      var chapterBonus=[50,100,150,250,350,500];
+      var starBonus=[0,25,75,150,175,200];
+var diamondBonus=[0,15,40,75,100,150];
 var dBonus=Math.max(0,(diamondBonus[stars]||0)-(diamondBonus[oldStars]||0));
 save.chromas=(save.chromas||0)+dBonus;
 if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?'s':'')+' earned for 3 stars!',3000);},1500);
@@ -7504,7 +7504,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
       var totalBonus=lvBonus+sBonus;
       save.coins=(save.coins||0)+totalBonus;
       // Check if entire chapter cleared
-      var chLevels=[5,5,5,5];
+      var chLevels=[5,5,5,5,5,5];
       var allCleared=true;
       for(var cl=1;cl<=chLevels[curChapter];cl++){if(!save.cleared['ch'+(curChapter+1)+'_'+cl]){allCleared=false;break;}}
       if(allCleared){
