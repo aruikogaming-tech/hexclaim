@@ -1509,12 +1509,12 @@ function authSkip(){
 function authSignOut(){
   if(firebaseReady&&firebaseAuth.currentUser){
     firebaseAuth.signOut().then(function(){
-      save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;
+      save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
       saveProg();updateAuthUI();
       showScreen('settingsScreen');
     });
   } else {
-    save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;
+    save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
     saveProg();updateAuthUI();
   }
 }
@@ -1946,22 +1946,26 @@ function addFriendByCode(){
   firebaseDB.ref('friendCodes/'+code).once('value').then(function(snap){
     var uid=snap.val();
     if(!uid){status.textContent='Friend code not found';status.style.color='var(--c4)';return}
-    firebaseDB.ref('users/'+uid+'/save').once('value').then(function(userSnap){
+    firebaseDB.ref('users/'+uid+'/public').once('value').then(function(userSnap){
       var userData=userSnap.val();
       if(!userData){status.textContent='Player not found';status.style.color='var(--c4)';return}
       var newFriend={
-        name:userData.playerName||'Player',
+        name:userData.name||'Player',
         code:code,uid:uid,
         elo:userData.elo||0,
-        level:userData.profileLevel||1,
-        icon:userData.equipped?userData.equipped.icon:'⬡',
+        level:userData.level||1,
+        icon:'⬡',
         lastOnline:Date.now()
       };
       save.friends.push(newFriend);
       saveProg();
       status.textContent='Friend added: '+newFriend.name+'!';status.style.color='var(--p1)';
       input.value='';playSfx('claimBig');
+    }).catch(function(e){
+      status.textContent='Error finding player. Try again.';status.style.color='var(--c4)';
     });
+  }).catch(function(e){
+    status.textContent='Connection error. Check your internet.';status.style.color='var(--c4)';
   });
 }
 
@@ -1978,17 +1982,20 @@ function searchFriendByName(){
     if(!found){results.textContent='No players found with that name';return}
     results.innerHTML='';
     Object.keys(found).forEach(function(uid){
-      var u=found[uid].save;
+      var u=found[uid];
       var el=document.createElement('div');el.className='shop-item';
-      el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">'+(u.equipped?u.equipped.icon:'⬡')+'</div>'
-        +'<div class="si-info"><div class="si-name">'+u.playerName+'</div><div style="font-size:9px;color:var(--muted)">Level '+(u.profileLevel||1)+'</div></div>'
+      el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:16px">⬡</div>'
+        +'<div class="si-info"><div class="si-name">'+(u.name||'Player')+'</div><div style="font-size:9px;color:var(--muted)">'+getRank(u.elo||0).name+' · '+(u.elo||0)+' ELO</div></div>'
         +'<button style="padding:4px 10px;background:var(--p1);border:none;border-radius:6px;color:#fff;font-weight:800;cursor:pointer;font-size:9px">Add</button>';
       el.querySelector('button').onclick=function(){
-        save.friends.push({name:u.playerName,uid:uid,elo:u.elo||0,level:u.profileLevel||1,icon:u.equipped?u.equipped.icon:'⬡'});
-        saveProg();showToast('Added '+u.playerName+'!');playSfx('claimBig');renderFriendsTab('add');
+        if(save.friends.some(function(f){return f.uid===uid})){showToast('Already friends!');return;}
+        save.friends.push({name:u.name||'Player',uid:uid,elo:u.elo||0,level:u.level||1,icon:'⬡',code:u.friendCode||''});
+        saveProg();showToast('Added '+(u.name||'Player')+'!');playSfx('claimBig');renderFriendsTab('add');
       };
       results.appendChild(el);
     });
+  }).catch(function(e){
+    results.textContent='Search failed. Check your connection.';
   });
 }
 
