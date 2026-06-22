@@ -4707,6 +4707,25 @@ function startOnlineMatch(data){
   kingTile=data.kingTile||null;
   // Dark Zones — shared from room data
   darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
+  // Power tiles generated AFTER dark zones so they can spawn inside them
+  if(curConfig.powerTiles){
+    const cnt=2+Math.floor(Math.random()*4);
+    const types=['bomb','scout','double'];
+    for(let i=0;i<cnt;i++){
+      let pr,pc,attempts=0;
+      // 40% chance to place inside a dark zone if available
+      var unrevealedZones=darkZones.filter(function(dz){return !dz.revealed});
+      if(unrevealedZones.length>0&&Math.random()<0.4){
+        var dz=unrevealedZones[Math.floor(Math.random()*unrevealedZones.length)];
+        pr=dz.r+Math.floor(Math.random()*dz.size);
+        pc=dz.c+Math.floor(Math.random()*dz.size);
+      } else {
+        do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS);attempts++;}
+        while(attempts<100&&(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc)));
+      }
+      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*3)]});
+    }
+  }
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
@@ -5809,25 +5828,6 @@ function initGame(){
     });
   });
 
-  if(curConfig.powerTiles){
-    // Random count between 2-5 power tiles
-    const cnt=2+Math.floor(Math.random()*4);
-    const types=['bomb','scout','double'];
-    for(let i=0;i<cnt;i++){
-      let pr,pc,attempts=0;
-      // 40% chance to place inside a dark zone if available
-      var unrevealedZones=darkZones.filter(function(dz){return !dz.revealed});
-      if(unrevealedZones.length>0&&Math.random()<0.4){
-        var dz=unrevealedZones[Math.floor(Math.random()*unrevealedZones.length)];
-        pr=dz.r+Math.floor(Math.random()*dz.size);
-        pc=dz.c+Math.floor(Math.random()*dz.size);
-      } else {
-        do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS);attempts++;}
-        while(attempts<100&&(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc)));
-      }
-      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*3)]});
-    }
-  }
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;comboCount=0;bestCombo=0;
@@ -5881,6 +5881,25 @@ function initGame(){
     if(tries<50)bonusCells.push({r:br,c:bc});
   }
 
+  // Power tiles generated AFTER dark zones so they can spawn inside them
+  if(curConfig.powerTiles){
+    const cnt=2+Math.floor(Math.random()*4);
+    const types=['bomb','scout','double'];
+    for(let i=0;i<cnt;i++){
+      let pr,pc,attempts=0;
+      // 40% chance to place inside a dark zone if available
+      var unrevealedZones=darkZones.filter(function(dz){return !dz.revealed});
+      if(unrevealedZones.length>0&&Math.random()<0.4){
+        var dz=unrevealedZones[Math.floor(Math.random()*unrevealedZones.length)];
+        pr=dz.r+Math.floor(Math.random()*dz.size);
+        pc=dz.c+Math.floor(Math.random()*dz.size);
+      } else {
+        do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS);attempts++;}
+        while(attempts<100&&(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc)));
+      }
+      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*3)]});
+    }
+  }
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
 
   // AI head start — give AI extra starting territory based on difficulty
@@ -6804,11 +6823,17 @@ function draw(){
       canvas.style.cursor='crosshair';
     }
   }
-  // Bomb targeting crosshair — show where bomb will land
+  // Bomb targeting crosshair — only highlight tiles within 2 of player territory
   if(bombTargetMode&&activePower==='bomb'){
     var pulse2=0.5+0.3*Math.sin(Date.now()*0.008);
     for(var br=0;br<ROWS;br++)for(var bc=0;bc<COLS;bc++){
-      if(owner[br][bc]!==1){
+      if(owner[br][bc]===1)continue;
+      var nearPlayer=false;
+      for(var bdr=-2;bdr<=2;bdr++)for(var bdc=-2;bdc<=2;bdc++){
+        var bnr=br+bdr,bnc=bc+bdc;
+        if(bnr>=0&&bnr<ROWS&&bnc>=0&&bnc<COLS&&owner[bnr][bnc]===1){nearPlayer=true;break;}
+      }
+      if(nearPlayer){
         ctx.save();
         ctx.beginPath();ctx.roundRect(bc*cellW+1.5,br*cellH+1.5,cellW-3,cellH-3,4);
         ctx.fillStyle='rgba(239,71,111,'+pulse2*0.25+')';ctx.fill();
@@ -6987,7 +7012,14 @@ function fireScout(row,col){
 }
 function fireBomb(row,col){
   bombTargetMode=false;
-  // Claim 3x3 area around tapped tile
+  // Only allow bomb on tiles adjacent to your territory
+  var isAdjacentToPlayer=false;
+  for(var dr=-2;dr<=2;dr++)for(var dc=-2;dc<=2;dc++){
+    var nr2=row+dr,nc2=col+dc;
+    if(nr2>=0&&nr2<ROWS&&nc2>=0&&nc2<COLS&&owner[nr2][nc2]===1){isAdjacentToPlayer=true;break;}
+  }
+  if(!isAdjacentToPlayer){showToast('💥 Bomb must be placed near your territory!',2000);bombTargetMode=true;return;}
+  // Claim 3x3 area around tapped tile (enemy and neutral only)
   for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
     const nr=row+dr,nc=col+dc;
     if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){
