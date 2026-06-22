@@ -718,7 +718,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
         adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,limitedShopRotation:null,limitedShopItems:null,
-  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[]
+  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
@@ -1519,11 +1519,18 @@ function authLinkProvider(provider){
   else if(provider==='facebook')authProvider=new firebase.auth.FacebookAuthProvider();
   else if(provider==='apple')authProvider=new firebase.auth.OAuthProvider('apple.com');
   else return;
-  firebaseAuth.currentUser.linkWithPopup(authProvider).then(function(){
-    buildAccountScreen();playSfx('claimBig');
-  }).catch(function(e){
-    showToast('Link failed: '+e.message);
-  });
+  var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
+  if(isCapacitor){
+    firebaseAuth.currentUser.linkWithRedirect(authProvider).catch(function(e){
+      showToast('Link failed: '+e.message);
+    });
+  } else {
+    firebaseAuth.currentUser.linkWithPopup(authProvider).then(function(){
+      buildAccountScreen();playSfx('claimBig');
+    }).catch(function(e){
+      showToast('Link failed: '+e.message);
+    });
+  }
 }
 
 // ===== CLOUD SAVE =====
@@ -1571,17 +1578,20 @@ function loadCloudSave(uid){
   firebaseDB.ref('users/'+uid+'/save').once('value').then(function(snapshot){
     var cloudData=snapshot.val();
     if(cloudData){
-      // Cloud save exists — check if it's newer
       var cloudLevel=cloudData.profileLevel||1;
       var localLevel=save.profileLevel||1;
       if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)){
-        // Cloud is ahead — ask to restore
         showCloudRestorePrompt(cloudData);
+      } else {
+        // Local is same or ahead — push to cloud to keep it updated
+        saveToCloud();
       }
     } else {
-      // No cloud save — upload current local save
       saveToCloud();
     }
+  }).catch(function(e){
+    console.log('Cloud load failed:',e.message);
+    showToast('⚠️ Could not load cloud save — using local data',3000);
   });
 }
 
@@ -1919,22 +1929,9 @@ function addFriendByCode(){
   if(code===save.friendCode){status.textContent='You cannot add yourself!';status.style.color='var(--c4)';return}
   // Check if already friends
   if(save.friends.some(function(f){return f.code===code})){status.textContent='Already friends!';status.style.color='var(--c4)';return}
-  // In offline mode, simulate adding a friend with random stats
   if(!firebaseReady){
-    var names=['Alex','Sam','Jordan','Riley','Morgan','Casey','Quinn','Avery','Blake','Drew'];
-    var newFriend={
-      name:names[Math.floor(Math.random()*names.length)],
-      code:code,
-      elo:800+Math.floor(Math.random()*800),
-      level:Math.floor(Math.random()*30)+1,
-      icon:['⬡','⚔️','🔮','🐉','🌟','🎭'][Math.floor(Math.random()*6)],
-      lastOnline:Date.now()
-    };
-    save.friends.push(newFriend);
-    saveProg();
-    status.textContent='Friend added: '+newFriend.name+'!';status.style.color='var(--p1)';
-    input.value='';
-    playSfx('claimBig');
+    status.textContent='Sign in to add friends online.';
+    status.style.color='var(--c4)';
     return;
   }
   // Firebase: look up code in database
@@ -1969,7 +1966,7 @@ function searchFriendByName(){
   if(!firebaseReady){results.textContent='Online search requires sign-in';return}
   results.textContent='Searching...';
   // Firebase search by name
-  firebaseDB.ref('users').orderByChild('save/playerName').equalTo(name).limitToFirst(5).once('value').then(function(snap){
+  firebaseDB.ref('leaderboard').orderByChild('name').equalTo(name).limitToFirst(5).once('value').then(function(snap){
     var found=snap.val();
     if(!found){results.textContent='No players found with that name';return}
     results.innerHTML='';
