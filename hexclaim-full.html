@@ -5809,7 +5809,25 @@ function initGame(){
     });
   });
 
-  if(curConfig.powerTiles){const cnt=3+Math.floor(Math.random()*3);for(let i=0;i<cnt;i++){let pr,pc;do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS)}while(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc));powerTiles.push({r:pr,c:pc,type:['bomb','scout','double'][Math.floor(Math.random()*3)]})}}
+  if(curConfig.powerTiles){
+    // Random count between 2-5 power tiles
+    const cnt=2+Math.floor(Math.random()*4);
+    const types=['bomb','scout','double'];
+    for(let i=0;i<cnt;i++){
+      let pr,pc,attempts=0;
+      // 40% chance to place inside a dark zone if available
+      var unrevealedZones=darkZones.filter(function(dz){return !dz.revealed});
+      if(unrevealedZones.length>0&&Math.random()<0.4){
+        var dz=unrevealedZones[Math.floor(Math.random()*unrevealedZones.length)];
+        pr=dz.r+Math.floor(Math.random()*dz.size);
+        pc=dz.c+Math.floor(Math.random()*dz.size);
+      } else {
+        do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS);attempts++;}
+        while(attempts<100&&(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc)));
+      }
+      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*3)]});
+    }
+  }
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;comboCount=0;bestCombo=0;
@@ -5953,8 +5971,9 @@ function checkDarkZoneReveal(r,c){
       }
       return;
     }
-    for(var dr=-(dz.size);dr<=dz.size;dr++){
-      for(var dc=-(dz.size);dc<=dz.size;dc++){
+    // Only reveal when a tile is captured INSIDE the zone itself
+    for(var dr=0;dr<dz.size;dr++){
+      for(var dc=0;dc<dz.size;dc++){
         if(dz.r+dr===r&&dz.c+dc===c){dz.revealed=true;showToast('🌑 Dark Zone revealed!',2000);return;}
       }
     }
@@ -6860,9 +6879,29 @@ function draw(){
   });
 
   // Power tiles
-  powerTiles.forEach(p=>{if(!fogRevealed[p.r][p.c])return;const x=p.c*cellW+cellW/2,y=p.r*cellH+cellH/2;
-    ctx.save();ctx.shadowColor='rgba(255,209,102,0.6)';ctx.shadowBlur=10;ctx.font='bold '+Math.min(cellW*0.45,13)+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#ffd166';
-    ctx.fillText({bomb:'💥',scout:'👁',double:'⚡'}[p.type],x,y);ctx.restore()});
+  powerTiles.forEach(function(p){
+    if(!fogRevealed[p.r][p.c])return;
+    var px=p.c*cellW,py=p.r*cellH;
+    var cx2=px+cellW/2,cy2=py+cellH/2;
+    var colors={bomb:'rgba(239,71,111,0.85)',scout:'rgba(17,138,178,0.85)',double:'rgba(131,56,236,0.85)'};
+    var emojis={bomb:'💥',scout:'👁',double:'2x'};
+    ctx.save();
+    // Colored background circle
+    ctx.beginPath();ctx.arc(cx2,cy2,Math.min(cellW,cellH)*0.32,0,Math.PI*2);
+    ctx.fillStyle=colors[p.type];ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+    // Icon/text
+    if(p.type==='double'){
+      ctx.font='bold '+Math.min(cellW*0.38,11)+'px Manrope';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillStyle='#fff';ctx.fillText('2x',cx2,cy2);
+    } else {
+      ctx.font='bold '+Math.min(cellW*0.4,12)+'px Manrope';
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(emojis[p.type],cx2,cy2);
+    }
+    ctx.shadowColor=colors[p.type];ctx.shadowBlur=8;ctx.restore();
+  });
   ctx.save();ctx.font='bold '+Math.min(cellW*0.35,10)+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='rgba(6,214,160,0.9)';ctx.fillText('⬡',cellW/2,(ROWS-1)*cellH+cellH/2);
   ctx.fillStyle='rgba(239,71,111,0.9)';ctx.fillText('⬡',(COLS-1)*cellW+cellW/2,cellH/2);ctx.restore();
