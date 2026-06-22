@@ -4834,13 +4834,6 @@ function isMyTurn(){
   return turn===2;
 }
 
-function startLocalPVP(){
-  isPVP=true;isLocalPVP=true;pvpOpponent={name:'Player 2',elo:0};
-  curChapter=-1;curLevel=-1;isFreeplay=false;
-  curConfig={cols:11,rows:13,colors:5,aiSmart:0,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[65,75,85],winPct:65};
-  launchLevel();
-}
-
 function buildLocalPvp(){buildCustomGame()}
 
 function buildCustomGame(){
@@ -5799,7 +5792,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  myRoomCode=null;pvpRoomData=null;kingTile=null;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
+  myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -7257,7 +7250,9 @@ function formatClock(seconds){
 }
 
 function forceGameEnd(won,reason){
-  kingTile=null;
+  gameOver=true;
+  stopGameTimer();
+  kingTile=null;kingTiles=[];
   // Trigger checkEnd-like logic
   const p1n=countOwned(1),p2n=countOwned(2);
   const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
@@ -7444,20 +7439,6 @@ async function playerMove(colorIdx){
       showToast('👑 Crown tiles teleported!',1500);
     }
   }
-  // King tiles teleport every 10 turns
-  if(kingTiles.length>0){
-    kingTileTimer++;
-    if(kingTileTimer>=10){
-      kingTileTimer=0;
-      kingTiles=kingTiles.map(function(){
-        var attempts=0,nr,nc;
-        do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
-        while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
-        return{r:nr,c:nc};
-      });
-      showToast('👑 Crown tiles teleported!',1500);
-    }
-  }
 
   expandTerritoryAnimated(1,p1Color,(gained,chainBonus)=>{
     if(gained>0)showCellsGained(gained,1);
@@ -7499,6 +7480,25 @@ function p2Move(colorIdx){
   resetTurnTimer();
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
+    // Territory decay
+    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
+      decayTimer++;
+      if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
+    }
+    // King tiles teleport
+    if(kingTiles.length>0){
+      kingTileTimer++;
+      if(kingTileTimer>=10){
+        kingTileTimer=0;
+        kingTiles=kingTiles.map(function(){
+          var attempts=0,nr,nc;
+          do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+          while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
+          return{r:nr,c:nc};
+        });
+        showToast('👑 Crown tiles teleported!',1500);
+      }
+    }
     turn=1;updateFog();updateUI();buildColorPicker();draw();
     animatingMove=false;
     checkEnd();
@@ -7573,7 +7573,25 @@ function aiMove(){
   // Animate AI's expansion
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
-    // Decrement color lock for AI
+    // Territory decay
+    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
+      decayTimer++;
+      if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
+    }
+    // King tiles teleport
+    if(kingTiles.length>0){
+      kingTileTimer++;
+      if(kingTileTimer>=10){
+        kingTileTimer=0;
+        kingTiles=kingTiles.map(function(){
+          var attempts=0,nr,nc;
+          do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+          while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
+          return{r:nr,c:nc};
+        });
+        showToast('👑 Crown tiles teleported!',1500);
+      }
+    }
     turn=1;
     resetTurnTimer();
     updateFog();updateUI();buildColorPicker();draw();
