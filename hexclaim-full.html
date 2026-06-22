@@ -1399,9 +1399,20 @@ function initFirebase(){
 let _authSkipTimer=null;
 function authLogin(provider){
   if(!firebaseReady){
-    document.getElementById('authStatus').textContent='⚠️ Sign-in not available yet — Firebase not configured. Playing as guest.';
-    _authSkipTimer=setTimeout(function(){if(document.getElementById('loginScreen').classList.contains('active'))authSkip()},2000);
-    return;
+    // Try re-initializing Firebase before giving up
+    initFirebase();
+    var statusEl=document.getElementById('authStatus');
+    if(!firebaseReady){
+      if(statusEl)statusEl.textContent='⚠️ Connecting to server... please wait.';
+      setTimeout(function(){
+        if(!firebaseReady){
+          if(statusEl)statusEl.textContent='⚠️ Could not connect. Check your internet and try again.';
+        } else {
+          authLogin(provider);
+        }
+      },3000);
+      return;
+    }
   }
   document.getElementById('authStatus').textContent='Connecting...';
   var authProvider;
@@ -1426,8 +1437,9 @@ function showEmailLogin(){
 
 function authEmailSignIn(){
   if(!firebaseReady){
-    document.getElementById('authError').textContent='Firebase not configured — playing as guest';
-    _authSkipTimer=setTimeout(function(){if(document.getElementById('loginScreen').classList.contains('active'))authSkip()},1500);return;
+    initFirebase();
+    document.getElementById('authError').textContent='Connecting... please try again in a moment.';
+    return;
   }
   var email=document.getElementById('authEmail').value.trim();
   var pass=document.getElementById('authPassword').value;
@@ -1444,8 +1456,9 @@ function authEmailSignIn(){
 
 function authEmailSignUp(){
   if(!firebaseReady){
-    document.getElementById('authError').textContent='Firebase not configured — playing as guest';
-    _authSkipTimer=setTimeout(function(){if(document.getElementById('loginScreen').classList.contains('active'))authSkip()},1500);return;
+    initFirebase();
+    document.getElementById('authError').textContent='Connecting... please try again in a moment.';
+    return;
   }
   var email=document.getElementById('authEmail').value.trim();
   var pass=document.getElementById('authPassword').value;
@@ -7838,12 +7851,12 @@ canvas.addEventListener('touchend',function(e){
 },{passive:false});
 window.addEventListener('resize',()=>{if(document.getElementById('gameScreen').classList.contains('active')){resize();draw()}});
 updateAllUI();
+initFirebase();
 checkSeasonEnd();
 checkSeasonRotation();
 checkDailyLogin();
 checkQuestResets();
 checkAdReset();
-initFirebase();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
 if(save.playerName==='Player'&&save.totalGames===0){
