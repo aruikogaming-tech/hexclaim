@@ -1373,6 +1373,17 @@ function initFirebase(){
     firebaseReady=true;
     console.log('Firebase initialized');
 
+    // Handle redirect result (for Capacitor/WebView sign-in)
+    firebaseAuth.getRedirectResult().then(function(result){
+      if(result&&result.user){
+        document.getElementById('authStatus')&&(document.getElementById('authStatus').textContent='✓ Signed in!');
+        save.isGuest=false;saveProg();
+        setTimeout(function(){showScreen('menuScreen')},500);
+      }
+    }).catch(function(e){
+      console.log('Redirect result error:',e.message);
+    });
+
     // Listen for auth state changes
     firebaseAuth.onAuthStateChanged(function(user){
       if(user){
@@ -1421,13 +1432,21 @@ function authLogin(provider){
   else if(provider==='apple')authProvider=new firebase.auth.OAuthProvider('apple.com');
   else return;
 
-  firebaseAuth.signInWithPopup(authProvider).then(function(result){
-    document.getElementById('authStatus').textContent='✓ Signed in!';
-    save.isGuest=false;saveProg();
-    setTimeout(function(){showScreen('menuScreen')},500);
-  }).catch(function(error){
-    document.getElementById('authStatus').textContent='Error: '+error.message;
-  });
+  // Use redirect for Capacitor/WebView, popup for web browser
+  var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
+  if(isCapacitor){
+    firebaseAuth.signInWithRedirect(authProvider).catch(function(error){
+      document.getElementById('authStatus').textContent='Error: '+error.message;
+    });
+  } else {
+    firebaseAuth.signInWithPopup(authProvider).then(function(result){
+      document.getElementById('authStatus').textContent='✓ Signed in!';
+      save.isGuest=false;saveProg();
+      setTimeout(function(){showScreen('menuScreen')},500);
+    }).catch(function(error){
+      document.getElementById('authStatus').textContent='Error: '+error.message;
+    });
+  }
 }
 
 function showEmailLogin(){
@@ -1536,11 +1555,14 @@ function pushPublicProfile(){
 function saveToCloud(){
   if(!firebaseReady||!save.authUid)return;
   var cloudData=JSON.parse(JSON.stringify(save));
-  delete cloudData.authUid; // Don't save auth recursively
-  firebaseDB.ref('users/'+save.authUid+'/save').set(cloudData).then(function(){
+  var uid=save.authUid;
+  delete cloudData.authUid;
+  cloudData.authUid=uid; // Keep UID in cloud data for restore
+  firebaseDB.ref('users/'+uid+'/save').set(cloudData).then(function(){
     console.log('Cloud save successful');
   }).catch(function(e){
     console.log('Cloud save failed:',e.message);
+    showToast('⚠️ Cloud save failed — check your connection',3000);
   });
 }
 
@@ -7861,6 +7883,21 @@ updateAuthUI();
 // Show name entry on very first launch, then login screen
 if(save.playerName==='Player'&&save.totalGames===0){
   showNameEntryPopup();
+} else if(save.isGuest&&!save.authUid&&save.totalGames>0&&!save.loginPromptShown){
+  // Returning guest — offer sign-in but don't force it
+  save.loginPromptShown=true;saveProg();
+  setTimeout(function(){
+    var popup=document.createElement('div');
+    popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+    popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:20px;padding:24px;text-align:center;max-width:300px;width:90%;animation:popIn 0.3s ease">'
+      +'<div style="font-size:28px;margin-bottom:8px">☁️</div>'
+      +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:16px;color:var(--p1);margin-bottom:8px">Save Your Progress!</div>'
+      +'<div style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.5">Create a free account to save your progress across devices and never lose your data.</div>'
+      +'<button onclick="this.closest(\'[style*=fixed]\').remove();showScreen(\'loginScreen\')" style="width:100%;padding:12px;background:var(--p1);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px;margin-bottom:8px">Sign In / Create Account</button>'
+      +'<button onclick="this.closest(\'[style*=fixed]\').remove()" style="width:100%;padding:10px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Manrope,sans-serif">Continue as Guest</button>'
+      +'</div>';
+    document.body.appendChild(popup);
+  },2000);
 }
 updateMenuStats();
 
