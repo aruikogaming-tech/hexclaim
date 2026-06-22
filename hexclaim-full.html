@@ -7327,6 +7327,20 @@ async function playerMove(colorIdx){
       showToast('👑 Crown tiles teleported!',1500);
     }
   }
+  // King tiles teleport every 10 turns
+  if(kingTiles.length>0){
+    kingTileTimer++;
+    if(kingTileTimer>=10){
+      kingTileTimer=0;
+      kingTiles=kingTiles.map(function(){
+        var attempts=0,nr,nc;
+        do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+        while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
+        return{r:nr,c:nc};
+      });
+      showToast('👑 Crown tiles teleported!',1500);
+    }
+  }
 
   expandTerritoryAnimated(1,p1Color,(gained,chainBonus)=>{
     if(gained>0)showCellsGained(gained,1);
