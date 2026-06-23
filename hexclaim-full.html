@@ -4256,7 +4256,7 @@ let p1LastColor=-1, p2LastColor=-1; // Cooldown — can't repeat your last color
 let decayTimer=0; // Every N turns, unprotected border cells decay
 let bonusCells=[]; // High-value cells worth 2x territory
 let kingTile=null; // kept for online PVP compatibility
-let kingTiles=[]; // 3 bonus tiles that teleport every 10 turns
+let kingTiles=[]; // 3 bonus tiles that teleport every 7 turns
 let kingTileTimer=0; // counts turns until next teleport
 let p1KingScore=0,p2KingScore=0; // accumulated king tile points
 let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
@@ -7491,11 +7491,11 @@ function p2Move(colorIdx){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles — award 3 points per tile held this turn, teleport every 7 turns
+    // King tiles — award 1 point per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
       kingTiles.forEach(function(kt){
-        if(owner[kt.r][kt.c]===1)p1KingScore+=3;
-        else if(owner[kt.r][kt.c]===2)p2KingScore+=3;
+        if(owner[kt.r][kt.c]===1)p1KingScore+=1;
+        else if(owner[kt.r][kt.c]===2)p2KingScore+=1;
       });
       kingTileTimer++;
       if(kingTileTimer>=7){
@@ -7590,11 +7590,11 @@ function aiMove(){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles — award 3 points per tile held this turn, teleport every 7 turns
+    // King tiles — award 1 point per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
       kingTiles.forEach(function(kt){
-        if(owner[kt.r][kt.c]===1)p1KingScore+=3;
-        else if(owner[kt.r][kt.c]===2)p2KingScore+=3;
+        if(owner[kt.r][kt.c]===1)p1KingScore+=1;
+        else if(owner[kt.r][kt.c]===2)p2KingScore+=1;
       });
       kingTileTimer++;
       if(kingTileTimer>=7){
