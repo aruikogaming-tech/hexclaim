@@ -7261,7 +7261,7 @@ function forceGameEnd(won,reason){
   const p1n=countOwned(1),p2n=countOwned(2);
   // Reset scores after final tally
   p1KingScore=0;p2KingScore=0;
-  const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
+  const p1p=Math.round(countOwnedRaw(1)/totalCells*100),p2p=Math.round(countOwnedRaw(2)/totalCells*100);
 
   let eloChange=0;
   if(curConfig.isRanked&&pvpOpponent){
