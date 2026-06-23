@@ -4658,7 +4658,7 @@ async function showMatchmaking(){
             const roomData={
               code,host:{name:save.playerName||'Player',elo:save.elo},
               guest:{name:other.name,elo:other.elo},
-              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,darkZones:sharedDarkZones,moves:[],turn:1,created:Date.now()
+              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,kingTiles:kingTiles,kingTileTimer:0,p1KingScore:0,p2KingScore:0,darkZones:sharedDarkZones,moves:[],turn:1,created:Date.now()
             };
             await pvpDB.set('pvp-rooms/'+code,roomData);
             // Notify the other player
@@ -4751,6 +4751,10 @@ function startOnlineMatch(data){
   bonusCells=data.bonusCells?data.bonusCells.map(b=>({...b})):[];
   // King of the Hill — shared from room data
   kingTile=data.kingTile||null;
+  kingTiles=data.kingTiles?data.kingTiles.map(function(t){return{r:t.r,c:t.c}}):[];
+  kingTileTimer=data.kingTileTimer||0;
+  p1KingScore=data.p1KingScore||0;
+  p2KingScore=data.p2KingScore||0;
   // Dark Zones — shared from room data
   darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
   // Power tiles generated AFTER dark zones so they can spawn inside them
@@ -7152,7 +7156,7 @@ function usePower(type){
   // bomb and scout are handled by fireBomb()/fireScout() on canvas tap
 }
 function updateUI(){
-  const p1n=countOwned(1),p2n=countOwned(2),p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
+  const p1n=countOwned(1),p2n=countOwned(2),p1p=Math.round(countOwnedRaw(1)/totalCells*100),p2p=Math.round(countOwnedRaw(2)/totalCells*100);
   document.getElementById('p1cells').textContent=p1n;document.getElementById('p2cells').textContent=p2n;
   document.getElementById('p1pct').textContent=p1p+'%';document.getElementById('p2pct').textContent=p2p+'%';
   const ind=document.getElementById('turnInd');
@@ -7394,6 +7398,8 @@ async function playerMove(colorIdx){
         const data=JSON.parse(res.value);
         data.moves.push({player:myPlayer,color:colorIdx,time:Date.now()});
         data.turn=myPlayer===1?2:1;
+        data.kingTiles=kingTiles;data.kingTileTimer=kingTileTimer;
+        data.p1KingScore=p1KingScore;data.p2KingScore=p2KingScore;
         await pvpDB.set('pvp-rooms/'+myRoomCode,data);
         pvpRoomData=data;
       }
