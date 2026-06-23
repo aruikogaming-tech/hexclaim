@@ -1649,8 +1649,11 @@ function updateAuthUI(){
     offlineBar.textContent='⚠️ No internet connection — progress saves locally only';
     document.body.prepend(offlineBar);
   }
-  window.addEventListener('online',function(){offlineBar.style.display='none'});
-  window.addEventListener('offline',function(){offlineBar.style.display='block'});
+  if(!window._offlineListenersAdded){
+    window._offlineListenersAdded=true;
+    window.addEventListener('online',function(){var b=document.getElementById('offlineBar');if(b)b.style.display='none'});
+    window.addEventListener('offline',function(){var b=document.getElementById('offlineBar');if(b)b.style.display='block'});
+  }
   if(!navigator.onLine)offlineBar.style.display='block';
   var statusEl=document.getElementById('settingsAccountStatus');
   if(!statusEl)return;
@@ -5773,13 +5776,15 @@ function showMechanicIntro(ch){
   document.body.appendChild(popup);
 }
 function showStory(ch,ci){
-  showMechanicIntro(ch);
   document.getElementById('storyBox').innerHTML=`<div class="ch">Chapter ${ci+1}</div><h2>${ch.name}</h2><p>${ch.story}</p><div class="mechanic">⚡ ${ch.mechanicDesc}</div>`;
   showScreen('storyScreen');
+  // Show mechanic intro AFTER story screen is visible, so Begin button can't be tapped behind it
+  setTimeout(function(){showMechanicIntro(ch);},400);
 }
 
 function launchLevel(){
   gameLocked=true;
+  var rb=document.getElementById('olReplay');if(rb)rb.style.display='none';
   showScreen('gameScreen');
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
