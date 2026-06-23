@@ -650,6 +650,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
       <div class="reward-text" id="olReward"></div>
       <div class="btn-row">
         <button class="btn secondary" onclick="exitLevel()">Menu</button>
+        <button class="btn secondary" id="olReplay" onclick="launchLevel()" style="display:none">↺ Replay</button>
         <button class="btn primary" id="olNext" onclick="nextLevel()">Next</button>
       </div>
     </div>
@@ -1639,6 +1640,18 @@ saveProg=function(){
 
 // ===== AUTH UI =====
 function updateAuthUI(){
+  // Offline indicator
+  var offlineBar=document.getElementById('offlineBar');
+  if(!offlineBar){
+    offlineBar=document.createElement('div');
+    offlineBar.id='offlineBar';
+    offlineBar.style.cssText='display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#ef476f;color:#fff;text-align:center;font-size:10px;font-weight:800;padding:4px;font-family:Manrope,sans-serif';
+    offlineBar.textContent='⚠️ No internet connection — progress saves locally only';
+    document.body.prepend(offlineBar);
+  }
+  window.addEventListener('online',function(){offlineBar.style.display='none'});
+  window.addEventListener('offline',function(){offlineBar.style.display='block'});
+  if(!navigator.onLine)offlineBar.style.display='block';
   var statusEl=document.getElementById('settingsAccountStatus');
   if(!statusEl)return;
   if(save.isGuest||!save.authUid){
@@ -5744,7 +5757,23 @@ function startBlitzMode(){
 
 // Legacy freeplay redirects to medium AI
 function startFreeplay(){startVsAi('medium')}
+function showMechanicIntro(ch){
+  if(!ch.mechanicDesc)return;
+  var key='mechanic_seen_ch'+ch.name.replace(/\s/g,'');
+  if(save[key])return;
+  save[key]=true;saveProg();
+  var popup=document.createElement('div');
+  popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:24px;text-align:center;max-width:300px;width:90%;animation:popIn 0.3s ease">'
+    +'<div style="font-size:11px;font-weight:800;color:var(--p1);letter-spacing:2px;margin-bottom:8px">NEW MECHANIC</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:18px;color:var(--gold);margin-bottom:12px">'+ch.mechanic+'</div>'
+    +'<div style="font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px">'+ch.mechanicDesc+'</div>'
+    +'<button onclick="this.closest(\'[style*=fixed]\').remove();playSfx(\'menuNav\')" style="width:100%;padding:12px;background:var(--p1);border:none;border-radius:10px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">Got it!</button>'
+    +'</div>';
+  document.body.appendChild(popup);
+}
 function showStory(ch,ci){
+  showMechanicIntro(ch);
   document.getElementById('storyBox').innerHTML=`<div class="ch">Chapter ${ci+1}</div><h2>${ch.name}</h2><p>${ch.story}</p><div class="mechanic">⚡ ${ch.mechanicDesc}</div>`;
   showScreen('storyScreen');
 }
@@ -7321,6 +7350,8 @@ function forceGameEnd(won,reason){
   const title=document.getElementById('olTitle'),starsEl=document.getElementById('olStars'),
     detail=document.getElementById('olDetail'),eloEl=document.getElementById('olElo'),
     reward=document.getElementById('olReward'),nextBtn=document.getElementById('olNext');
+  var replayBtn=document.getElementById('olReplay');
+  if(replayBtn)replayBtn.style.display='inline-block';
   title.textContent=won?'Victory! 🏆':'Time\'s Up!';title.className=won?'win':'lose';
   starsEl.textContent='';
   detail.textContent=`${p1p}% vs ${p2p}% — ${reason}`;
@@ -7329,6 +7360,8 @@ function forceGameEnd(won,reason){
   reward.textContent=won?'⏱ Won by timeout':'⏱ Try to move faster!';
   nextBtn.textContent='Play Again';nextBtn.style.display='block';
   nextBtn.onclick=nextLevel;
+  var replayBtn2=document.getElementById('olReplay');
+  if(replayBtn2)replayBtn2.style.display='inline-block';
   playSfx(won?'win':'lose');
   document.getElementById('overlay').classList.add('active');
 }
@@ -7366,7 +7399,7 @@ function updateObjBar(){
     var p1holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===1}).length;
     var p2holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===2}).length;
     var kBonus=p1holds>p2holds?'+':p2holds>p1holds?'-':'';
-    var kStatus='👑 '+p1holds+' vs '+p2holds+' | +'+p1KingScore+' vs +'+p2KingScore+' pts | teleports in '+(7-kingTileTimer)+'t';
+    var kStatus='👑 '+p1holds+'-'+p2holds+' | '+p1KingScore+'/'+p2KingScore+'pts | '+(7-kingTileTimer)+'t';
     var kColor=p1holds>p2holds?'var(--p1)':p2holds>p1holds?'var(--p2)':'var(--gold)';
     var kEl=document.getElementById('kingHillStatus');
     if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
