@@ -1224,7 +1224,6 @@ function buildQuests(){
   var tabs=document.getElementById('questTabs');
   tabs.innerHTML='';
   checkAdReset();
-  checkAdReset();
   checkQuestResets();
   ['Daily','Weekly','Monthly'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
@@ -7605,6 +7604,7 @@ function aiMove(){
 }
 
 function checkEnd(){
+  if(gameOver)return false;
   if(window._checkEndRunning)return false;
   window._checkEndRunning=true;
   setTimeout(function(){window._checkEndRunning=false;},3000);
