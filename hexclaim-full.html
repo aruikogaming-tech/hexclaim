@@ -4258,6 +4258,7 @@ let bonusCells=[]; // High-value cells worth 2x territory
 let kingTile=null; // kept for online PVP compatibility
 let kingTiles=[]; // 3 bonus tiles that teleport every 10 turns
 let kingTileTimer=0; // counts turns until next teleport
+let p1KingScore=0,p2KingScore=0; // accumulated king tile points
 let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
 
@@ -5791,7 +5792,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
+  myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -6267,10 +6268,9 @@ function countOwned(p){
       if(bonusCells.some(b=>b.r===r&&b.c===c))n++;
     }
   }
-  // King of the Hill bonus — each tile worth 2% of total cells
-  kingTiles.forEach(function(kt){
-    if(owner[kt.r][kt.c]===p)n+=Math.floor(totalCells*0.02);
-  });
+  // King of the Hill — add accumulated per-turn score
+  if(p===1)n+=p1KingScore;
+  else if(p===2)n+=p2KingScore;
   return n;
 }
 // Raw cell count without bonus (for totalCells percentage)
@@ -7359,7 +7359,7 @@ function updateObjBar(){
     var p1holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===1}).length;
     var p2holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===2}).length;
     var kBonus=p1holds>p2holds?'+':p2holds>p1holds?'-':'';
-    var kStatus='👑 '+p1holds+' vs '+p2holds+' (teleports in '+(10-kingTileTimer)+'t)';
+    var kStatus='👑 '+p1holds+' vs '+p2holds+' | +'+p1KingScore+' vs +'+p2KingScore+' pts | teleports in '+(7-kingTileTimer)+'t';
     var kColor=p1holds>p2holds?'var(--p1)':p2holds>p1holds?'var(--p2)':'var(--gold)';
     var kEl=document.getElementById('kingHillStatus');
     if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
@@ -7424,8 +7424,12 @@ async function playerMove(colorIdx){
       applyDecay(1);applyDecay(2);
     }
   }
-  // King tiles teleport every 7 turns — center-biased
+  // King tiles — award 3 points per tile held this turn, teleport every 7 turns
   if(kingTiles.length>0){
+    kingTiles.forEach(function(kt){
+      if(owner[kt.r][kt.c]===1)p1KingScore+=3;
+      else if(owner[kt.r][kt.c]===2)p2KingScore+=3;
+    });
     kingTileTimer++;
     if(kingTileTimer>=7){
       kingTileTimer=0;
@@ -7486,8 +7490,12 @@ function p2Move(colorIdx){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles teleport every 7 turns — center-biased
+    // King tiles — award 3 points per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
+      kingTiles.forEach(function(kt){
+        if(owner[kt.r][kt.c]===1)p1KingScore+=3;
+        else if(owner[kt.r][kt.c]===2)p2KingScore+=3;
+      });
       kingTileTimer++;
       if(kingTileTimer>=7){
         kingTileTimer=0;
@@ -7581,8 +7589,12 @@ function aiMove(){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles teleport every 7 turns — center-biased
+    // King tiles — award 3 points per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
+      kingTiles.forEach(function(kt){
+        if(owner[kt.r][kt.c]===1)p1KingScore+=3;
+        else if(owner[kt.r][kt.c]===2)p2KingScore+=3;
+      });
       kingTileTimer++;
       if(kingTileTimer>=7){
         kingTileTimer=0;
