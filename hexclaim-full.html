@@ -725,7 +725,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
         adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,limitedShopRotation:null,limitedShopItems:null,
-  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false
+  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false,testerGiftGiven:false
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
