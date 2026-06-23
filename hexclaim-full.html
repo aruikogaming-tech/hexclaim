@@ -5753,7 +5753,7 @@ function launchLevel(){
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
-  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
+  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;
 
   // Labels
   if(isPVP&&pvpOpponent){
@@ -5895,7 +5895,7 @@ function initGame(){
       }
     }
   }
-  // King of the Hill — 3 roaming bonus tiles, teleport every 10 turns
+  // King of the Hill — 3 roaming bonus tiles, teleport every 7 turns
   kingTile=null;
   kingTiles=[];
   kingTileTimer=0;
@@ -7253,8 +7253,10 @@ function forceGameEnd(won,reason){
   gameOver=true;
   stopGameTimer();
   kingTile=null;kingTiles=[];
-  // Trigger checkEnd-like logic
+  // Trigger checkEnd-like logic — use accumulated kingScore for final tally
   const p1n=countOwned(1),p2n=countOwned(2);
+  // Reset scores after final tally
+  p1KingScore=0;p2KingScore=0;
   const p1p=Math.round(p1n/totalCells*100),p2p=Math.round(p2n/totalCells*100);
 
   let eloChange=0;
@@ -7425,7 +7427,7 @@ async function playerMove(colorIdx){
       applyDecay(1);applyDecay(2);
     }
   }
-  // King tiles — award 3 points per tile held this turn, teleport every 7 turns
+  // King tiles — award 1 point per tile held this turn, teleport every 7 turns
   if(kingTiles.length>0){
     kingTiles.forEach(function(kt){
       if(owner[kt.r][kt.c]===1)p1KingScore+=1;
