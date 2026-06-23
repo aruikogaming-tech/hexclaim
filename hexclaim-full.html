@@ -7424,14 +7424,16 @@ async function playerMove(colorIdx){
       applyDecay(1);applyDecay(2);
     }
   }
-  // King tiles teleport every 10 turns
+  // King tiles teleport every 7 turns — center-biased
   if(kingTiles.length>0){
     kingTileTimer++;
-    if(kingTileTimer>=10){
+    if(kingTileTimer>=7){
       kingTileTimer=0;
+      var rMin=Math.floor(ROWS*0.2),rMax=Math.floor(ROWS*0.8);
+      var cMin=Math.floor(COLS*0.2),cMax=Math.floor(COLS*0.8);
       kingTiles=kingTiles.map(function(){
         var attempts=0,nr,nc;
-        do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+        do{nr=rMin+Math.floor(Math.random()*(rMax-rMin));nc=cMin+Math.floor(Math.random()*(cMax-cMin));attempts++;}
         while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
         return{r:nr,c:nc};
       });
@@ -7484,14 +7486,16 @@ function p2Move(colorIdx){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles teleport
+    // King tiles teleport every 7 turns — center-biased
     if(kingTiles.length>0){
       kingTileTimer++;
-      if(kingTileTimer>=10){
+      if(kingTileTimer>=7){
         kingTileTimer=0;
+        var rMin=Math.floor(ROWS*0.2),rMax=Math.floor(ROWS*0.8);
+        var cMin=Math.floor(COLS*0.2),cMax=Math.floor(COLS*0.8);
         kingTiles=kingTiles.map(function(){
           var attempts=0,nr,nc;
-          do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+          do{nr=rMin+Math.floor(Math.random()*(rMax-rMin));nc=cMin+Math.floor(Math.random()*(cMax-cMin));attempts++;}
           while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
           return{r:nr,c:nc};
         });
@@ -7577,14 +7581,16 @@ function aiMove(){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
-    // King tiles teleport
+    // King tiles teleport every 7 turns — center-biased
     if(kingTiles.length>0){
       kingTileTimer++;
-      if(kingTileTimer>=10){
+      if(kingTileTimer>=7){
         kingTileTimer=0;
+        var rMin=Math.floor(ROWS*0.2),rMax=Math.floor(ROWS*0.8);
+        var cMin=Math.floor(COLS*0.2),cMax=Math.floor(COLS*0.8);
         kingTiles=kingTiles.map(function(){
           var attempts=0,nr,nc;
-          do{nr=Math.floor(Math.random()*ROWS);nc=Math.floor(Math.random()*COLS);attempts++;}
+          do{nr=rMin+Math.floor(Math.random()*(rMax-rMin));nc=cMin+Math.floor(Math.random()*(cMax-cMin));attempts++;}
           while(attempts<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc})));
           return{r:nr,c:nc};
         });
