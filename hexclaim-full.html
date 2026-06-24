@@ -1495,6 +1495,7 @@ function authEmailSignIn(){
   if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
   document.getElementById('authError').textContent='Signing in...';
   firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(){
+    document.getElementById('authError').style.color='var(--p1)';
     document.getElementById('authError').textContent='✓ Signed in!';
     save.isGuest=false;saveProg();
     setTimeout(function(){showScreen('menuScreen')},500);
@@ -1516,6 +1517,7 @@ function authEmailSignUp(){
   if(pass.length<6){document.getElementById('authError').textContent='Password must be 6+ characters';return}
   document.getElementById('authError').textContent='Creating account...';
   firebaseAuth.createUserWithEmailAndPassword(email,pass).then(function(){
+    document.getElementById('authError').style.color='var(--p1)';
     document.getElementById('authError').textContent='✓ Account created!';
     save.isGuest=false;saveProg();
     setTimeout(function(){showScreen('menuScreen')},500);
