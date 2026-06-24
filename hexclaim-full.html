@@ -1466,6 +1466,7 @@ function authForgotPassword(){
   if(!firebaseReady){initFirebase();document.getElementById('authError').textContent='Connecting... please try again.';return;}
   var email=document.getElementById('authEmail').value.trim();
   if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
+  document.getElementById('authError').style.color='var(--muted)';
   document.getElementById('authError').textContent='Sending reset email...';
   firebaseAuth.sendPasswordResetEmail(email).then(function(){
     document.getElementById('authError').style.color='var(--p1)';
@@ -1483,6 +1484,7 @@ function authEmailSignIn(){
   }
   var email=document.getElementById('authEmail').value.trim();
   var pass=document.getElementById('authPassword').value;
+  document.getElementById('authError').style.color='var(--c4)';
   if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
   document.getElementById('authError').textContent='Signing in...';
   firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(){
