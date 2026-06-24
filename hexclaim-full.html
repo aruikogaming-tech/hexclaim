@@ -1464,8 +1464,15 @@ function showEmailLogin(){
 
 function authForgotPassword(){
   if(!firebaseReady){initFirebase();document.getElementById('authError').textContent='Connecting... please try again.';return;}
+  var now=Date.now();
+  if(window._fpLastSent&&now-window._fpLastSent<60000){
+    document.getElementById('authError').style.color='var(--c4)';
+    document.getElementById('authError').textContent='Please wait 60 seconds before requesting another reset email.';
+    return;
+  }
   var email=document.getElementById('authEmail').value.trim();
   if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
+  window._fpLastSent=now;
   document.getElementById('authError').style.color='var(--muted)';
   document.getElementById('authError').textContent='Sending reset email...';
   firebaseAuth.sendPasswordResetEmail(email).then(function(){
@@ -1504,6 +1511,7 @@ function authEmailSignUp(){
   }
   var email=document.getElementById('authEmail').value.trim();
   var pass=document.getElementById('authPassword').value;
+  document.getElementById('authError').style.color='var(--c4)';
   if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
   if(pass.length<6){document.getElementById('authError').textContent='Password must be 6+ characters';return}
   document.getElementById('authError').textContent='Creating account...';
