@@ -1395,11 +1395,16 @@ function initFirebase(){
     // Listen for auth state changes
     firebaseAuth.onAuthStateChanged(function(user){
       if(user){
+        var previousUid=save.authUid;
         save.authUid=user.uid;
         save.authEmail=user.email||null;
         save.authDisplayName=user.displayName||null;
         save.authProvider=user.providerData[0]?user.providerData[0].providerId:'email';
         save.isGuest=false;
+        // If switching to a different account, load their cloud data
+        if(previousUid&&previousUid!==user.uid){
+          save._switchingAccounts=true;
+        }
         saveProg();
         updateAuthUI();
         // Load cloud save + register public profile
@@ -1532,16 +1537,49 @@ function authSkip(){
   showScreen('menuScreen');
 }
 
+function getDefaultSave(){
+  return {
+    cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:[],
+    elo:800,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,
+    matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:800,seasonClaimed:[],
+    playerName:'Player',profileLevel:1,profileXP:0,portrait:'⬡',
+    tutorialDone:false,isAdmin:false,adminCode:'',nameChangesFree:2,activeSkin:'default',
+    chromas:0,coins:500,owned:{themes:['default'],borders:['default'],effects:['none'],titles:['Newcomer']},
+    equipped:{theme:'default',border:'default',effect:'none',title:'Newcomer',icon:'⬡'},
+    bpPremium:false,bpLevel:1,bpXP:0,bpClaimed:[],
+    powerStock:{bomb:0,scout:0,double:0},
+    dailyReward:0,loginStreak:0,lastLoginDate:null,streakClaimed:false,
+    lastSpinTime:0,freeSpinsToday:0,masteryStars:{},totalSpins:0,
+    questProgress:{},questClaimed:{},questResetDaily:null,questResetWeekly:null,questResetMonthly:null,
+    dailyGamesPlayed:0,dailyWins:0,dailyBPTasks:{},
+    authProvider:null,authUid:null,authEmail:null,authDisplayName:null,isGuest:true,
+    bestComboEver:0,mostTilesSingleMove:0,totalTilesCaptured:0,totalTimePlayed:0,
+    consistentWins:0,consistentFailed:false,lossInRow:0,
+    gamesPerMode:{},winsPerMode:{},hasRated:false,ratePromptCount:0,
+    starterPackBought:false,adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:0,
+    foreverPass:false,lastPassGrantDate:null,
+    adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,
+    limitedShopRotation:null,limitedShopItems:null,
+    friends:[],friendRequests:[],sentRequests:[],friendCode:null,
+    localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],
+    loginPromptShown:false,testerGiftGiven:false
+  };
+}
 function authSignOut(){
+  function doSignOut(){
+    // Reset ALL save data so next account starts fresh
+    var defaultSave=getDefaultSave();
+    defaultSave.isGuest=true;
+    defaultSave.loginPromptShown=false;
+    Object.assign(save,defaultSave);
+    saveProg();updateAuthUI();buildAccountScreen();updateAllUI();
+    showScreen('menuScreen');
+    showToast('Signed out successfully',2000);
+  }
   if(firebaseReady&&firebaseAuth.currentUser){
-    firebaseAuth.signOut().then(function(){
-      save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
-      saveProg();updateAuthUI();buildAccountScreen();
-      showScreen('settingsScreen');
-    });
+    firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
   } else {
-    save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
-    saveProg();updateAuthUI();buildAccountScreen();
+    doSignOut();
   }
 }
 
@@ -1613,14 +1651,18 @@ function loadCloudSave(uid){
     if(cloudData){
       var cloudLevel=cloudData.profileLevel||1;
       var localLevel=save.profileLevel||1;
-      if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)){
+      // Only compare if the local save belongs to THIS account
+      var localBelongsToThisAccount=!save._switchingAccounts;
+      save._switchingAccounts=false;
+      if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)||!localBelongsToThisAccount){
         showCloudRestorePrompt(cloudData);
       } else {
-        // Local is same or ahead — push to cloud to keep it updated
+        // Local is same account and ahead — push to cloud
         saveToCloud();
       }
     } else {
-      saveToCloud();
+      // No cloud data for this account — only push local if it belongs to this account
+      if(save.authUid===uid)saveToCloud();
     }
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
