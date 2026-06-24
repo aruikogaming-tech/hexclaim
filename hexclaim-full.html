@@ -464,6 +464,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
         <button onclick="authEmailSignIn()" style="flex:1;padding:10px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign In</button>
         <button onclick="authEmailSignUp()" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign Up</button>
       </div>
+      <button onclick="authForgotPassword()" style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline;margin-top:4px;width:100%;text-align:center">Forgot Password?</button>
       <div id="authError" style="font-size:10px;color:var(--c4);margin-top:6px;text-align:center"></div>
     </div>
     <button onclick="authSkip()" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline">Play as Guest</button>
@@ -1461,6 +1462,19 @@ function showEmailLogin(){
   form.style.display=form.style.display==='none'?'block':'none';
 }
 
+function authForgotPassword(){
+  if(!firebaseReady){initFirebase();document.getElementById('authError').textContent='Connecting... please try again.';return;}
+  var email=document.getElementById('authEmail').value.trim();
+  if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
+  document.getElementById('authError').textContent='Sending reset email...';
+  firebaseAuth.sendPasswordResetEmail(email).then(function(){
+    document.getElementById('authError').style.color='var(--p1)';
+    document.getElementById('authError').textContent='✓ Reset email sent! Check your inbox.';
+  }).catch(function(e){
+    document.getElementById('authError').style.color='var(--c4)';
+    document.getElementById('authError').textContent=e.message;
+  });
+}
 function authEmailSignIn(){
   if(!firebaseReady){
     initFirebase();
