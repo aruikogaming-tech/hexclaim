@@ -1536,12 +1536,12 @@ function authSignOut(){
   if(firebaseReady&&firebaseAuth.currentUser){
     firebaseAuth.signOut().then(function(){
       save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
-      saveProg();updateAuthUI();
+      saveProg();updateAuthUI();buildAccountScreen();
       showScreen('settingsScreen');
     });
   } else {
     save.authUid=null;save.authEmail=null;save.authProvider=null;save.isGuest=true;save.loginPromptShown=false;
-    saveProg();updateAuthUI();
+    saveProg();updateAuthUI();buildAccountScreen();
   }
 }
 
