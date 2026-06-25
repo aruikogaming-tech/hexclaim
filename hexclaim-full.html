@@ -4222,7 +4222,7 @@ function generateLeaderboard(){
     const elo=baseElos[i]+Math.floor(Math.random()*80-40);
     lb.push({name:OPP_NAMES[i],elo,rank:getRank(elo)});
   }
-  lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true});
+  if(!save.isGuest&&save.elo>0)if(!save.isGuest&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true});
   lb.sort((a,b)=>b.elo-a.elo);
   return lb;
 }
@@ -4235,16 +4235,17 @@ function loadRealLeaderboard(container){
   container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Loading leaderboard...</div>';
   firebaseDB.ref('leaderboard').orderByChild('elo').limitToLast(100).once('value').then(function(snap){
     var lb=[];
-    snap.forEach(function(child){
+    \snap.forEach(function(child){
       var d=child.val();
-      var isYou=d.uid===save.authUid;
+      if(save.isGuest&&!save.authUid)return; // Skip all entries when guest — no UID to match
+      var isYou=!save.isGuest&&save.authUid&&d.uid===save.authUid;
       lb.push({name:d.name,elo:d.elo,rank:getRank(d.elo),isYou:isYou});
     });
     lb.sort(function(a,b){return b.elo-a.elo});
     // Always show player even if not in top 20
     var inList=lb.some(function(x){return x.isYou});
     // Only add player to leaderboard if they have a UID (signed in) and ELO > 0
-    if(!inList&&save.authUid&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
+    if(!inList&&!save.isGuest&&save.authUid&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
     renderLeaderboardList(container,lb);
   }).catch(function(){
     renderLeaderboardList(container,generateLeaderboard());
@@ -5037,7 +5038,7 @@ function launchCustomGame(){
 // ===== RANK SCREEN =====
 function buildRankScreen(){
   const c=document.getElementById('rankContent');
-  const r=getRank(save.elo),prog=getRankProgress(save.elo);
+  const r=save.isGuest?getRank(0):getRank(save.elo),prog=save.isGuest?0:getRankProgress(save.elo);
   const nextR=RANKS[RANKS.indexOf(r)+1];
   const pvpTotal=save.pvpWins+save.pvpLosses;
   const xpPct=save.profileLevel>=999?100:Math.floor(save.profileXP/xpForLevel(save.profileLevel)*100);
