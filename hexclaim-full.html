@@ -1573,6 +1573,10 @@ function authSignOut(){
     defaultSave.isGuest=true;
     defaultSave.loginPromptShown=false;
     Object.assign(save,defaultSave);
+    // Always unlock game before navigating away
+    gameLocked=false;
+    animatingMove=false;
+    gameOver=true;
     saveProg();updateAuthUI();buildAccountScreen();updateAllUI();
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
