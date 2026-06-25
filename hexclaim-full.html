@@ -1540,8 +1540,8 @@ function authSkip(){
 function getDefaultSave(){
   return {
     cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:[],
-    elo:800,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,
-    matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:800,seasonClaimed:[],
+    elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,
+    matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:[],
     playerName:'Player',profileLevel:1,profileXP:0,portrait:'⬡',
     tutorialDone:false,isAdmin:false,adminCode:'',nameChangesFree:2,activeSkin:'default',
     chromas:0,coins:500,owned:{themes:['default'],borders:['default'],effects:['none'],titles:['Newcomer']},
@@ -1567,6 +1567,7 @@ function getDefaultSave(){
 }
 function authSignOut(){
   function doSignOut(){
+    var oldUid=save.authUid;
     // Reset ALL save data so next account starts fresh
     var defaultSave=getDefaultSave();
     defaultSave.isGuest=true;
@@ -1606,7 +1607,7 @@ function authLinkProvider(provider){
 
 // ===== CLOUD SAVE =====
 function pushPublicProfile(){
-  if(!firebaseReady||!save.authUid)return;
+  if(!firebaseReady||!save.authUid||save.isGuest)return;
   var uid=save.authUid;
   var code=save.friendCode||('HX'+Math.random().toString(36).substring(2,8).toUpperCase());
   if(!save.friendCode){save.friendCode=code;saveProg();}
@@ -4242,7 +4243,8 @@ function loadRealLeaderboard(container){
     lb.sort(function(a,b){return b.elo-a.elo});
     // Always show player even if not in top 20
     var inList=lb.some(function(x){return x.isYou});
-    if(!inList)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
+    // Only add player to leaderboard if they have a UID (signed in) and ELO > 0
+    if(!inList&&save.authUid&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
     renderLeaderboardList(container,lb);
   }).catch(function(){
     renderLeaderboardList(container,generateLeaderboard());
