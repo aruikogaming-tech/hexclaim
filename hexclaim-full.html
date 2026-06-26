@@ -1661,7 +1661,15 @@ function loadCloudSave(uid){
       // Only compare if the local save belongs to THIS account
       var localBelongsToThisAccount=!save._switchingAccounts;
       save._switchingAccounts=false;
-      if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)||!localBelongsToThisAccount){
+      var localIsEmpty=(save.totalGames||0)===0&&(save.profileLevel||1)<=1;
+      if(localIsEmpty){
+        // Fresh local save — auto restore cloud without asking
+        var uid=save.authUid;
+        Object.assign(save,cloudData);
+        save.authUid=uid;save.isGuest=false;
+        saveProg();updateAllUI();updateTopBar();buildAccountScreen();
+        showToast('✓ Progress restored from cloud',2000);
+      } else if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)||!localBelongsToThisAccount){
         showCloudRestorePrompt(cloudData);
       } else {
         // Local is same account and ahead — push to cloud
@@ -1692,10 +1700,11 @@ function showCloudRestorePrompt(cloudData){
   document.body.appendChild(popup);
   document.getElementById('cloudRestore').onclick=function(){
     var uid=save.authUid;
-    save={...save,...cloudData};
+    Object.assign(save,cloudData);
     save.authUid=uid;save.isGuest=false;
-    saveProg();updateAllUI();updateTopBar();
+    saveProg();updateAllUI();updateTopBar();buildAccountScreen();
     popup.remove();playSfx('claimBig');
+    showToast('✓ Progress restored from cloud',2000);
   };
   document.getElementById('cloudKeepLocal').onclick=function(){
     saveToCloud();popup.remove();
