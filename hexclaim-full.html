@@ -1656,32 +1656,22 @@ function loadCloudSave(uid){
   firebaseDB.ref('users/'+uid+'/save').once('value').then(function(snapshot){
     var cloudData=snapshot.val();
     if(cloudData){
-      var cloudLevel=cloudData.profileLevel||1;
-      var localLevel=save.profileLevel||1;
-      // Only compare if the local save belongs to THIS account
-      var localBelongsToThisAccount=!save._switchingAccounts;
+      // Always auto-restore cloud data when signing in — cloud is the source of truth
+      var currentUid=save.authUid||uid;
+      Object.assign(save,cloudData);
+      save.authUid=currentUid;
+      save.isGuest=false;
       save._switchingAccounts=false;
-      var localIsEmpty=(save.totalGames||0)===0&&(save.profileLevel||1)<=1;
-      if(localIsEmpty){
-        // Fresh local save — auto restore cloud without asking
-        var uid=save.authUid;
-        Object.assign(save,cloudData);
-        save.authUid=uid;save.isGuest=false;
-        saveProg();updateAllUI();updateTopBar();buildAccountScreen();
-        showToast('✓ Progress restored from cloud',2000);
-      } else if(cloudLevel>localLevel||(cloudData.totalGames||0)>(save.totalGames||0)||!localBelongsToThisAccount){
-        showCloudRestorePrompt(cloudData);
-      } else {
-        // Local is same account and ahead — push to cloud
-        saveToCloud();
-      }
+      saveProg();updateAllUI();updateTopBar();buildAccountScreen();
+      showToast('✓ Account loaded',1500);
     } else {
-      // No cloud data for this account — only push local if it belongs to this account
-      if(save.authUid===uid)saveToCloud();
+      // No cloud save yet — upload current local save to this account
+      save._switchingAccounts=false;
+      saveToCloud();
     }
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
-    showToast('⚠️ Could not load cloud save — using local data',3000);
+    showToast('⚠️ Could not load cloud save — check your connection',3000);
   });
 }
 
