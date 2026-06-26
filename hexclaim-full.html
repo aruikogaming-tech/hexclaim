@@ -1577,9 +1577,11 @@ function authSignOut(){
     gameLocked=false;
     animatingMove=false;
     gameOver=true;
-    saveProg();updateAuthUI();buildAccountScreen();updateAllUI();
+    saveProg();
+    gameLocked=false;animatingMove=false;gameOver=true;
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
+    setTimeout(function(){updateAuthUI();buildAccountScreen();updateAllUI();},100);
   }
   if(firebaseReady&&firebaseAuth.currentUser){
     firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
@@ -4379,8 +4381,8 @@ function showScreen(id){
 function updateMenuStats(){
   var sd=document.getElementById('sideStreakDay');if(sd)sd.textContent='Day '+(save.loginStreak||1);
   // Rank badge
-  const r=getRank(save.elo);
-  const prog=getRankProgress(save.elo);
+  const r=getRank(save.elo||0);
+  const prog=getRankProgress(save.elo||0);
   const badge=document.getElementById('menuRankBadge');
   if(badge)badge.innerHTML=`
     <div class="rank-icon">${r.icon}</div>
