@@ -1407,9 +1407,8 @@ function initFirebase(){
         if(previousUid&&previousUid!==user.uid){
           save._switchingAccounts=true;
         }
-        saveProg();
         updateAuthUI();
-        // Load cloud save + register public profile
+        // Load cloud save FIRST before saving anything locally
         loadCloudSave(user.uid);
         setTimeout(pushPublicProfile,2000);
       } else {
@@ -1667,8 +1666,9 @@ function loadCloudSave(uid){
       saveProg();updateAllUI();updateTopBar();buildAccountScreen();
       showToast('✓ Account loaded',1500);
     } else {
-      // No cloud save yet — upload current local save to this account
+      // No cloud save yet — save current local data under this account
       save._switchingAccounts=false;
+      saveProg();
       saveToCloud();
     }
   }).catch(function(e){
