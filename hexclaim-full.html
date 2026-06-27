@@ -1502,10 +1502,10 @@ function authEmailSignIn(){
   document.getElementById('authError').textContent='Signing in...';
   firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(){
     document.getElementById('authError').style.color='var(--p1)';
-    document.getElementById('authError').textContent='✓ Signed in!';
-    save.isGuest=false;saveProg();
-    setTimeout(function(){showScreen('menuScreen')},500);
+    document.getElementById('authError').textContent='✓ Signed in! Loading your account...';
+    // onAuthStateChanged will fire and handle loadCloudSave + navigation
   }).catch(function(e){
+    document.getElementById('authError').style.color='var(--c4)';
     document.getElementById('authError').textContent=e.message;
   });
 }
@@ -1664,12 +1664,15 @@ function loadCloudSave(uid){
       save.isGuest=false;
       save._switchingAccounts=false;
       saveProg();updateAllUI();updateTopBar();buildAccountScreen();
-      showToast('✓ Account loaded',1500);
+      showScreen('menuScreen');
+      showToast('✓ Welcome back, '+save.playerName+'!',2000);
     } else {
       // No cloud save yet — save current local data under this account
       save._switchingAccounts=false;
-      saveProg();
-      saveToCloud();
+      saveProg();saveToCloud();
+      updateAllUI();updateTopBar();buildAccountScreen();
+      showScreen('menuScreen');
+      showToast('✓ Signed in!',2000);
     }
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
