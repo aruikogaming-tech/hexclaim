@@ -823,8 +823,10 @@ function resetAllProgress(){
       saveProg();
       updateAllUI();
       updateTopBar();
+      gameLocked=false;animatingMove=false;gameOver=true;
       showScreen('menuScreen');
       playSfx('click');
+      setTimeout(function(){showNameEntryPopup();},300);
     };
   };
 }
