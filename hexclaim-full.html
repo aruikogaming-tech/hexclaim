@@ -1351,58 +1351,130 @@ let firebaseAuth=null;
 let firebaseDB=null;
 
 function initFirebase(){
-  // Check if Firebase SDK is loaded (add scripts to <head> when deploying)
-  if(typeof firebase==='undefined'){
-    console.log('Firebase SDK not loaded — running in offline/guest mode');
-    return;
-  }
+  if(typeof firebase==='undefined'){console.log('Firebase SDK not loaded');return;}
   try{
     if(!firebase.apps.length)firebase.initializeApp(FIREBASE_CONFIG);
     firebaseAuth=firebase.auth();
     firebaseDB=firebase.database();
     firebaseReady=true;
-    console.log('Firebase initialized');
-
-    // Handle redirect result (for Capacitor/WebView sign-in)
+    // Handle Google redirect result (Capacitor)
     firebaseAuth.getRedirectResult().then(function(result){
-      if(result&&result.user){
-        document.getElementById('authStatus')&&(document.getElementById('authStatus').textContent='✓ Signed in!');
-        save.isGuest=false;saveProg();
-        setTimeout(function(){showScreen('menuScreen')},500);
-      }
-    }).catch(function(e){
-      console.log('Redirect result error:',e.message);
-    });
-
-    // Listen for auth state changes
+      if(result&&result.user)loadCloudSave(result.user.uid);
+    }).catch(function(e){console.log('Redirect error:',e.message);});
+    // Auth state listener
     firebaseAuth.onAuthStateChanged(function(user){
       if(user){
-        var previousUid=save.authUid;
-        save.authUid=user.uid;
-        save.authEmail=user.email||null;
-        save.authDisplayName=user.displayName||null;
-        save.authProvider=user.providerData[0]?user.providerData[0].providerId:'email';
-        save.isGuest=false;
-        // If switching to a different account, load their cloud data
-        if(previousUid&&previousUid!==user.uid){
-          save._switchingAccounts=true;
-        }
-        updateAuthUI();
-        // Load cloud save FIRST before saving anything locally
         loadCloudSave(user.uid);
         setTimeout(pushPublicProfile,2000);
       } else {
         updateAuthUI();
       }
     });
-  } catch(e){
-    console.log('Firebase init failed:',e.message);
-  }
+  } catch(e){console.log('Firebase init failed:',e.message);}
 }
 
 // ===== AUTH METHODS =====
-let _authSkipTimer=null;
 function authLogin(provider){
+  if(!firebaseReady){showToast('⚠️ No connection. Check your internet.',2500);return;}
+  document.getElementById('authStatus').textContent='Connecting...';
+  var authProvider;
+  if(provider==='google')authProvider=new firebase.auth.GoogleAuthProvider();
+  else if(provider==='facebook')authProvider=new firebase.auth.FacebookAuthProvider();
+  else if(provider==='apple')authProvider=new firebase.auth.OAuthProvider('apple.com');
+  else return;
+  var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
+  if(isCapacitor){
+    firebaseAuth.signInWithRedirect(authProvider).catch(function(e){
+      document.getElementById('authStatus').textContent='Error: '+e.message;
+    });
+  } else {
+    firebaseAuth.signInWithPopup(authProvider).then(function(result){
+      loadCloudSave(result.user.uid);
+    }).catch(function(e){
+      document.getElementById('authStatus').textContent='Error: '+e.message;
+    });
+  }
+}
+function showEmailLogin(){
+  var f=document.getElementById('emailLoginForm');
+  f.style.display=f.style.display==='none'?'block':'none';
+}
+function authEmailSignIn(){
+  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
+  var email=document.getElementById('authEmail').value.trim();
+  var pass=document.getElementById('authPassword').value;
+  var err=document.getElementById('authError');
+  err.style.color='var(--c4)';
+  if(!email||!pass){err.textContent='Enter email and password';return;}
+  err.textContent='Signing in...';
+  firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(result){
+    err.style.color='var(--p1)';
+    err.textContent='✓ Loading your account...';
+    loadCloudSave(result.user.uid);
+  }).catch(function(e){err.textContent=e.message;});
+}
+function authEmailSignUp(){
+  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
+  var email=document.getElementById('authEmail').value.trim();
+  var pass=document.getElementById('authPassword').value;
+  var err=document.getElementById('authError');
+  err.style.color='var(--c4)';
+  if(!email||!pass){err.textContent='Enter email and password';return;}
+  if(pass.length<6){err.textContent='Password must be 6+ characters';return;}
+  err.textContent='Creating account...';
+  firebaseAuth.createUserWithEmailAndPassword(email,pass).then(function(result){
+    err.style.color='var(--p1)';
+    err.textContent='✓ Account created!';
+    // New account — save fresh progress under this UID
+    save.authUid=result.user.uid;
+    save.authEmail=email;
+    save.isGuest=false;
+    saveProg();saveToCloud();
+    updateAuthUI();buildAccountScreen();
+    showScreen('menuScreen');
+    setTimeout(function(){showNameEntryPopup();},300);
+  }).catch(function(e){err.textContent=e.message;});
+}
+function authForgotPassword(){
+  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
+  var now=Date.now();
+  if(window._fpLastSent&&now-window._fpLastSent<60000){
+    document.getElementById('authError').textContent='Wait 60 seconds before requesting another reset.';return;
+  }
+  var email=document.getElementById('authEmail').value.trim();
+  if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
+  window._fpLastSent=now;
+  document.getElementById('authError').style.color='var(--muted)';
+  document.getElementById('authError').textContent='Sending reset email...';
+  firebaseAuth.sendPasswordResetEmail(email).then(function(){
+    document.getElementById('authError').style.color='var(--p1)';
+    document.getElementById('authError').textContent='✓ Reset email sent! Check your inbox.';
+  }).catch(function(e){
+    document.getElementById('authError').style.color='var(--c4)';
+    document.getElementById('authError').textContent=e.message;
+  });
+}
+function authSkip(){
+  save.isGuest=true;saveProg();
+  showScreen('menuScreen');
+  if(save.playerName==='Player'&&save.totalGames===0)setTimeout(showNameEntryPopup,300);
+}
+function authSignOut(){
+  function doSignOut(){
+    // Sign out — keep local save intact, just clear auth fields
+    save.authUid=null;save.authEmail=null;save.authProvider=null;
+    save.authDisplayName=null;save.isGuest=true;
+    gameLocked=false;animatingMove=false;gameOver=true;
+    // Don't call saveProg() — don't overwrite local data with cleared auth
+    localStorage.setItem('hexclaim_v4',JSON.stringify(save));
+    updateAuthUI();buildAccountScreen();updateAllUI();
+    showScreen('menuScreen');
+    showToast('Signed out',1500);
+  }
+  if(firebaseReady&&firebaseAuth.currentUser){
+    firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
+  } else {doSignOut();}
+}
   if(!firebaseReady){
     // Try re-initializing Firebase before giving up
     initFirebase();
@@ -1597,79 +1669,46 @@ function authLinkProvider(provider){
   }
 }
 
-// ===== CLOUD SAVE =====
-function pushPublicProfile(){
-  if(!firebaseReady||!save.authUid||save.isGuest)return;
-  var uid=save.authUid;
-  var code=save.friendCode||('HX'+Math.random().toString(36).substring(2,8).toUpperCase());
-  if(!save.friendCode){save.friendCode=code;saveProg();}
-  var pub={
-    name:save.playerName||'Player',
-    elo:save.elo||0,
-    level:save.profileLevel||1,
-    wins:save.pvpWins||0,
-    losses:save.pvpLosses||0,
-    streak:save.pvpStreak||0,
-    rank:getRank(save.elo||0).name,
-    friendCode:code,
-    uid:uid,
-    updatedAt:Date.now()
-  };
-  // Write public profile (for leaderboard + friend search)
-  firebaseDB.ref('users/'+uid+'/public').set(pub).catch(function(e){console.log('Public profile save failed:',e.message)});
-  // Register friend code for lookup
-  firebaseDB.ref('friendCodes/'+code).set(uid).catch(function(e){console.log('Friend code register failed:',e.message)});
-  // Write to leaderboard index
-  firebaseDB.ref('leaderboard/'+uid).set({name:pub.name,elo:pub.elo,rank:pub.rank,uid:uid}).catch(function(e){console.log('Leaderboard write failed:',e.message)});
-}
+// Auto cloud save
+var _origSaveProg=saveProg;
+saveProg=function(){
+  _origSaveProg();
+  if(save.authUid&&!save.isGuest){
+    if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>15000){
+      saveProg._lastCloud=Date.now();
+      saveToCloud();
+    }
+  }
+};
 
-function saveToCloud(){
-  if(!firebaseReady||!save.authUid)return;
-  var cloudData=JSON.parse(JSON.stringify(save));
-  var uid=save.authUid;
-  delete cloudData.authUid;
-  cloudData.authUid=uid; // Keep UID in cloud data for restore
-  firebaseDB.ref('users/'+uid+'/save').set(cloudData).then(function(){
-    console.log('Cloud save successful');
-  }).catch(function(e){
-    console.log('Cloud save failed:',e.message);
-    showToast('⚠️ Cloud save failed — check your connection',3000);
-  });
-}
 
 function loadCloudSave(uid){
-  if(!firebaseReady)return;
+  if(!firebaseReady||!uid)return;
   firebaseDB.ref('users/'+uid+'/save').once('value').then(function(snapshot){
     var cloudData=snapshot.val();
     if(cloudData){
-      // Always auto-restore cloud data when signing in — cloud is the source of truth
+      // Cloud data exists — restore it
       Object.assign(save,cloudData);
       save.authUid=uid;
       save.isGuest=false;
-      save._switchingAccounts=false;
-      saveProg._lastCloud=0;
-      saveProg();updateAllUI();updateTopBar();buildAccountScreen();
+      localStorage.setItem('hexclaim_v4',JSON.stringify(save));
+      updateAllUI();updateTopBar();buildAccountScreen();updateAuthUI();
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
     } else {
-      // No cloud save yet for this account — start fresh
-      var freshSave=getDefaultSave();
-      freshSave.authUid=uid;
-      freshSave.isGuest=false;
-      freshSave.authEmail=save.authEmail||null;
-      freshSave.authDisplayName=save.authDisplayName||null;
-      freshSave.authProvider=save.authProvider||null;
-      Object.assign(save,freshSave);
-      saveProg._lastCloud=0;
-      saveProg();saveToCloud();
-      updateAllUI();updateTopBar();buildAccountScreen();
+      // New account — save current local progress to cloud
+      save.authUid=uid;
+      save.isGuest=false;
+      saveToCloud();
+      localStorage.setItem('hexclaim_v4',JSON.stringify(save));
+      updateAllUI();updateTopBar();buildAccountScreen();updateAuthUI();
       showScreen('menuScreen');
-      showToast('✓ Account created! Welcome to HexClaim!',2000);
-      setTimeout(function(){showNameEntryPopup();},500);
+      showToast('✓ Signed in!',2000);
     }
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
-    showToast('⚠️ Could not load cloud save — check your connection',3000);
+    showToast('⚠️ Could not connect. Playing with local data.',3000);
+    showScreen('menuScreen');
   });
 }
 
