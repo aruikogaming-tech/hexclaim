@@ -1390,86 +1390,6 @@ function authLogin(provider){
     });
   }
 }
-function showEmailLogin(){
-  var f=document.getElementById('emailLoginForm');
-  f.style.display=f.style.display==='none'?'block':'none';
-}
-function authEmailSignIn(){
-  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
-  var email=document.getElementById('authEmail').value.trim();
-  var pass=document.getElementById('authPassword').value;
-  var err=document.getElementById('authError');
-  err.style.color='var(--c4)';
-  if(!email||!pass){err.textContent='Enter email and password';return;}
-  err.textContent='Signing in...';
-  firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(result){
-    err.style.color='var(--p1)';
-    err.textContent='✓ Loading your account...';
-    loadCloudSave(result.user.uid);
-  }).catch(function(e){err.textContent=e.message;});
-}
-function authEmailSignUp(){
-  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
-  var email=document.getElementById('authEmail').value.trim();
-  var pass=document.getElementById('authPassword').value;
-  var err=document.getElementById('authError');
-  err.style.color='var(--c4)';
-  if(!email||!pass){err.textContent='Enter email and password';return;}
-  if(pass.length<6){err.textContent='Password must be 6+ characters';return;}
-  err.textContent='Creating account...';
-  firebaseAuth.createUserWithEmailAndPassword(email,pass).then(function(result){
-    err.style.color='var(--p1)';
-    err.textContent='✓ Account created!';
-    // New account — save fresh progress under this UID
-    save.authUid=result.user.uid;
-    save.authEmail=email;
-    save.isGuest=false;
-    saveProg();saveToCloud();
-    updateAuthUI();buildAccountScreen();
-    showScreen('menuScreen');
-    setTimeout(function(){showNameEntryPopup();},300);
-  }).catch(function(e){err.textContent=e.message;});
-}
-function authForgotPassword(){
-  if(!firebaseReady){showToast('⚠️ No connection.',2000);return;}
-  var now=Date.now();
-  if(window._fpLastSent&&now-window._fpLastSent<60000){
-    document.getElementById('authError').textContent='Wait 60 seconds before requesting another reset.';return;
-  }
-  var email=document.getElementById('authEmail').value.trim();
-  if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
-  window._fpLastSent=now;
-  document.getElementById('authError').style.color='var(--muted)';
-  document.getElementById('authError').textContent='Sending reset email...';
-  firebaseAuth.sendPasswordResetEmail(email).then(function(){
-    document.getElementById('authError').style.color='var(--p1)';
-    document.getElementById('authError').textContent='✓ Reset email sent! Check your inbox.';
-  }).catch(function(e){
-    document.getElementById('authError').style.color='var(--c4)';
-    document.getElementById('authError').textContent=e.message;
-  });
-}
-function authSkip(){
-  save.isGuest=true;saveProg();
-  showScreen('menuScreen');
-  if(save.playerName==='Player'&&save.totalGames===0)setTimeout(showNameEntryPopup,300);
-}
-function authSignOut(){
-  function doSignOut(){
-    // Sign out — keep local save intact, just clear auth fields
-    save.authUid=null;save.authEmail=null;save.authProvider=null;
-    save.authDisplayName=null;save.isGuest=true;
-    gameLocked=false;animatingMove=false;gameOver=true;
-    // Don't call saveProg() — don't overwrite local data with cleared auth
-    localStorage.setItem('hexclaim_v4',JSON.stringify(save));
-    updateAuthUI();buildAccountScreen();updateAllUI();
-    showScreen('menuScreen');
-    showToast('Signed out',1500);
-  }
-  if(firebaseReady&&firebaseAuth.currentUser){
-    firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
-  } else {doSignOut();}
-}
   
 
 function authForgotPassword(){
@@ -1632,6 +1552,17 @@ function saveToCloud(){
     console.log('Cloud save failed:',e.message);
   });
 }
+// Auto cloud save after every saveProg
+var _origSaveProg=saveProg;
+saveProg=function(){
+  _origSaveProg();
+  if(save.authUid&&!save.isGuest){
+    if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>15000){
+      saveProg._lastCloud=Date.now();
+      saveToCloud();
+    }
+  }
+};
 function pushPublicProfile(){
   if(!firebaseReady||!save.authUid||save.isGuest)return;
   var uid=save.authUid;
