@@ -4912,6 +4912,10 @@ function startOnlineMatch(data){
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
   resize();updateUI();buildColorPicker();buildPowerups();updateObjBar();draw();
   document.getElementById('overlay').classList.remove('active');
+  // Show chapter tutorial on first level of each chapter
+  if(curChapter>=0&&curLevel===0){
+    setTimeout(function(){showChapterTutorial(curChapter);},2000);
+  }
 
   // Start polling for opponent moves
   startOnlinePoll();
@@ -5880,6 +5884,34 @@ function startBlitzMode(){
 
 // Legacy freeplay redirects to medium AI
 function startFreeplay(){startVsAi('medium')}
+var CHAPTER_TIPS=[
+  {icon:'⭐',title:'BONUS CELLS',tip:'Capture the gold ⭐ cells on the board for extra territory! They count as bonus tiles in your final score.'},
+  {icon:'⚡',title:'POWER TILES',tip:'Grab 💥 Bomb, 👁 Scout, or 2x Double Turn tiles before SHADE does! Tap a power-up at the bottom to activate it.'},
+  {icon:'💀',title:'TERRITORY DECAY',tip:'Your border tiles crumble every 6 turns! Keep expanding or you\'ll shrink. Watch the turn counter in the top bar.'},
+  {icon:'👑',title:'KING OF THE HILL',tip:'Capture 👑 crown tiles to earn bonus points every turn you hold them! They teleport every 7 turns — stay alert!'},
+  {icon:'🌑',title:'DARK ZONES',tip:'Black 🌑 patches hide secrets! Expand into them to reveal what\'s inside. Use the Scout power-up to peek first.'},
+  {icon:'🔥',title:'FINAL TRIAL',tip:'All mechanics active! Manage power-ups, decay, crown tiles, and dark zones — and watch your move limit carefully!'},
+];
+function showChapterTutorial(ci){
+  if(ci<0||ci>=CHAPTER_TIPS.length)return;
+  var key='ch_tutorial_seen_'+ci;
+  if(save[key])return;
+  save[key]=true;saveProg();
+  var tip=CHAPTER_TIPS[ci];
+  var popup=document.createElement('div');
+  popup.id='chTutorialPopup';
+  popup.style.cssText='position:fixed;bottom:120px;left:50%;transform:translateX(-50%);z-index:8000;width:90%;max-width:320px;animation:popIn 0.3s ease';
+  popup.innerHTML='<div style="background:rgba(2,4,12,0.97);border:2px solid var(--gold);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">'
+    +'<div style="font-size:24px;flex-shrink:0">'+tip.icon+'</div>'
+    +'<div style="flex:1">'
+    +'<div style="font-size:9px;font-weight:800;color:var(--gold);letter-spacing:2px;margin-bottom:4px">'+tip.title+'</div>'
+    +'<div style="font-size:11px;color:var(--text);line-height:1.5;margin-bottom:8px">'+tip.tip+'</div>'
+    +'<button onclick="document.getElementById(\'chTutorialPopup\').remove();playSfx(\'menuNav\')" style="padding:6px 16px;background:var(--gold);border:none;border-radius:8px;color:#000;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:11px">Got it! ✓</button>'
+    +'</div></div>';
+  document.getElementById('gameScreen').appendChild(popup);
+  // Auto-dismiss after 12 seconds
+  setTimeout(function(){var p=document.getElementById('chTutorialPopup');if(p)p.remove();},12000);
+}
 function showMechanicIntro(ch){
   if(!ch.mechanicDesc)return;
   var key='mechanic_seen_ch'+ch.name.replace(/\s/g,'');
@@ -5955,6 +5987,7 @@ function exitLevel(){
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
   myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
+  var ctp=document.getElementById('chTutorialPopup');if(ctp)ctp.remove();
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
