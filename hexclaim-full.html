@@ -1691,17 +1691,6 @@ function showCloudRestorePrompt(cloudData){
   };
 }
 
-// Auto cloud save after every game
-var _origSaveProg=saveProg;
-saveProg=function(){
-  _origSaveProg();
-  // Throttled cloud save — max once per 30 seconds
-  if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>10000){
-    saveProg._lastCloud=Date.now();
-    saveToCloud();
-  }
-};
-
 // ===== AUTH UI =====
 function updateAuthUI(){
   // Offline indicator
@@ -8105,7 +8094,7 @@ function showNameEntryPopup(){
 }
 
 // ===== AUDIO SYSTEM =====
-let audioCtx=null, masterGain=null, musicGain=null, sfxGain=null;
+var audioCtx=null, masterGain=null, musicGain=null, sfxGain=null;
 let isMuted=false, musicPlaying=false;
 let musicOscs=[], musicInterval=null;
 
