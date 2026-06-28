@@ -1475,50 +1475,7 @@ function authSignOut(){
     firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
   } else {doSignOut();}
 }
-  if(!firebaseReady){
-    // Try re-initializing Firebase before giving up
-    initFirebase();
-    var statusEl=document.getElementById('authStatus');
-    if(!firebaseReady){
-      if(statusEl)statusEl.textContent='⚠️ Connecting to server... please wait.';
-      setTimeout(function(){
-        if(!firebaseReady){
-          if(statusEl)statusEl.textContent='⚠️ Could not connect. Check your internet and try again.';
-        } else {
-          authLogin(provider);
-        }
-      },3000);
-      return;
-    }
-  }
-  document.getElementById('authStatus').textContent='Connecting...';
-  var authProvider;
-  if(provider==='google')authProvider=new firebase.auth.GoogleAuthProvider();
-  else if(provider==='facebook')authProvider=new firebase.auth.FacebookAuthProvider();
-  else if(provider==='apple')authProvider=new firebase.auth.OAuthProvider('apple.com');
-  else return;
-
-  // Use redirect for Capacitor/WebView, popup for web browser
-  var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
-  if(isCapacitor){
-    firebaseAuth.signInWithRedirect(authProvider).catch(function(error){
-      document.getElementById('authStatus').textContent='Error: '+error.message;
-    });
-  } else {
-    firebaseAuth.signInWithPopup(authProvider).then(function(result){
-      document.getElementById('authStatus').textContent='✓ Signed in!';
-      save.isGuest=false;saveProg();
-      setTimeout(function(){showScreen('menuScreen')},500);
-    }).catch(function(error){
-      document.getElementById('authStatus').textContent='Error: '+error.message;
-    });
-  }
-}
-
-function showEmailLogin(){
-  var form=document.getElementById('emailLoginForm');
-  form.style.display=form.style.display==='none'?'block':'none';
-}
+  
 
 function authForgotPassword(){
   if(!firebaseReady){initFirebase();document.getElementById('authError').textContent='Connecting... please try again.';return;}
