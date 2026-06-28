@@ -1500,10 +1500,15 @@ function authEmailSignIn(){
   document.getElementById('authError').style.color='var(--c4)';
   if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
   document.getElementById('authError').textContent='Signing in...';
-  firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(){
+  firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(result){
     document.getElementById('authError').style.color='var(--p1)';
     document.getElementById('authError').textContent='✓ Signed in! Loading your account...';
-    // onAuthStateChanged will fire and handle loadCloudSave + navigation
+    // Fallback — if onAuthStateChanged doesn't fire, load manually after 3s
+    setTimeout(function(){
+      if(document.getElementById('loginScreen').classList.contains('active')){
+        loadCloudSave(result.user.uid);
+      }
+    },3000);
   }).catch(function(e){
     document.getElementById('authError').style.color='var(--c4)';
     document.getElementById('authError').textContent=e.message;
