@@ -1743,24 +1743,11 @@ function buildAccountScreen(){
     var signInHead=document.createElement('div');signInHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:8px 0 6px;text-transform:uppercase;letter-spacing:1px';
     signInHead.textContent='Sign In';cont.appendChild(signInHead);
 
-    var providers=[
-      {id:'google',label:'Continue with Google',icon:'🟢',bg:'var(--surface)',color:'var(--text)'},
-      {id:'facebook',label:'Continue with Facebook',icon:'🔵',bg:'#1877f2',color:'#fff'},
-      {id:'apple',label:'Continue with Apple',icon:'🍎',bg:'#000',color:'#fff'},
-    ];
-    providers.forEach(function(p){
-      var btn=document.createElement('button');
-      btn.style.cssText='width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:'+p.bg+';color:'+p.color+';font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px';
-      btn.innerHTML='<span style="font-size:16px">'+p.icon+'</span> '+p.label;
-      btn.onclick=function(){authLogin(p.id)};
-      cont.appendChild(btn);
-    });
-
-    var emailBtn=document.createElement('button');
-    emailBtn.style.cssText='width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center';
-    emailBtn.innerHTML='<span style="font-size:16px">✉️</span> Sign in with Email';
-    emailBtn.onclick=function(){showScreen('loginScreen')};
-    cont.appendChild(emailBtn);
+    var googleBtn=document.createElement('button');
+    googleBtn.style.cssText='width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:6px';
+    googleBtn.innerHTML='<span style="font-size:16px">🟢</span> Continue with Google';
+    googleBtn.onclick=function(){authLogin('google')};
+    cont.appendChild(googleBtn);
   } else {
     // Linked accounts section
     var linkHead=document.createElement('div');linkHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:8px 0 6px;text-transform:uppercase;letter-spacing:1px';
