@@ -1668,12 +1668,14 @@ function loadCloudSave(uid){
       save.authUid=currentUid;
       save.isGuest=false;
       save._switchingAccounts=false;
+      saveProg._lastCloud=0;
       saveProg();updateAllUI();updateTopBar();buildAccountScreen();
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
     } else {
       // No cloud save yet — save current local data under this account
       save._switchingAccounts=false;
+      saveProg._lastCloud=0;
       saveProg();saveToCloud();
       updateAllUI();updateTopBar();buildAccountScreen();
       showScreen('menuScreen');
@@ -7408,7 +7410,7 @@ function forceGameEnd(won,reason){
     save.matchHistory.push({opponent:pvpOpponent.name,won,p1pct:p1p,p2pct:p2p,eloChange,elo:save.elo,time:Date.now()});
     if(save.matchHistory.length>50)save.matchHistory=save.matchHistory.slice(-50);
     checkSeasonEnd();
-    saveToCloud();pushPublicProfile();
+    saveProg._lastCloud=0;saveToCloud();pushPublicProfile();
   } else if(!isPVP){save.totalGames++;if(won)save.totalWins++}
   if(curConfig.vsAiDiff){
     if(!save.aiStats)save.aiStats={};
