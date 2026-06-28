@@ -962,6 +962,7 @@ function getWeightedPrize(){
 }
 
 function showLuckySpin(){
+  if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
   const popup=document.createElement('div');
   popup.id='spinPopup';
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
@@ -2167,6 +2168,9 @@ function startLocalPVPWithName(opponentName,config){
   COLS=config.cols;ROWS=config.rows;NUM_COLORS=config.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
+  var sp=document.getElementById('spinPopup');if(sp)sp.remove();
+  var extras=document.querySelectorAll('.overlay-extra');extras.forEach(function(el){el.remove()});
+  var ol=document.getElementById('overlay');if(ol)ol.classList.remove('active');
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
@@ -5372,6 +5376,9 @@ function startTutorial(){
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
+  var sp=document.getElementById('spinPopup');if(sp)sp.remove();
+  var extras=document.querySelectorAll('.overlay-extra');extras.forEach(function(el){el.remove()});
+  var ol=document.getElementById('overlay');if(ol)ol.classList.remove('active');
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
@@ -5872,7 +5879,11 @@ function showStory(ch,ci){
 function launchLevel(){
   gameLocked=true;
   var rb=document.getElementById('olReplay');if(rb)rb.style.display='none';
+  var sp=document.getElementById('spinPopup');if(sp)sp.remove();
   showScreen('gameScreen');
+  var sp=document.getElementById('spinPopup');if(sp)sp.remove();
+  var extras=document.querySelectorAll('.overlay-extra');extras.forEach(function(el){el.remove()});
+  var ol=document.getElementById('overlay');if(ol)ol.classList.remove('active');
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
