@@ -1584,7 +1584,6 @@ function authSignOut(){
     animatingMove=false;
     gameOver=true;
     saveProg();
-    gameLocked=false;animatingMove=false;gameOver=true;
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
     setTimeout(function(){updateAuthUI();buildAccountScreen();updateAllUI();},100);
