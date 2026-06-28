@@ -1717,7 +1717,7 @@ var _origSaveProg=saveProg;
 saveProg=function(){
   _origSaveProg();
   // Throttled cloud save — max once per 30 seconds
-  if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>30000){
+  if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>10000){
     saveProg._lastCloud=Date.now();
     saveToCloud();
   }
@@ -7869,7 +7869,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
         setTimeout(function(){showToast('🏆 Chapter Complete! +'+compBonus+'🟡 bonus!',4000);},2000);
         grantAchievementReward('chapter_'+(curChapter+1));
       }
-      saveProg();updateShopCurrency();
+      saveProg._lastCloud=0;saveProg();updateShopCurrency();
       extraCoinsEarned=(extraCoinsEarned||0)+totalBonus;
     }
   }
@@ -7922,7 +7922,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   else{save.winStreak=0;save.lossInRow=(save.lossInRow||0)+1;if(save.lossInRow>=3){save.consistentFailed=true;save.consistentWins=0;save.lossInRow=0;}}
   if(curConfig.vsAiDiff&&['hard','expert','impossible'].includes(curConfig.vsAiDiff)&&won){save.aiHardWins=(save.aiHardWins||0)+1}
   checkIconUnlocks();checkTitleUnlocks();
-  saveProg();updateShopCurrency();
+  saveProg._lastCloud=0;saveProg();updateShopCurrency();
 
   // Overlay
   const title=document.getElementById('olTitle'),starsEl=document.getElementById('olStars'),detail=document.getElementById('olDetail'),eloEl=document.getElementById('olElo'),reward=document.getElementById('olReward'),nextBtn=document.getElementById('olNext');
