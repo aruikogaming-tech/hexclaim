@@ -1762,9 +1762,7 @@ function buildAccountScreen(){
       firebaseAuth.currentUser.providerData.forEach(function(p){linkedProviders.push(p.providerId)});
     }
 
-    [{id:'google',name:'Google',icon:'🟢',pid:'google.com'},
-     {id:'facebook',name:'Facebook',icon:'🔵',pid:'facebook.com'},
-     {id:'apple',name:'Apple',icon:'🍎',pid:'apple.com'}].forEach(function(p){
+    [{id:'google',name:'Google',icon:'🟢',pid:'google.com'}].forEach(function(p){
       var isLinked=linkedProviders.indexOf(p.pid)>=0;
       var el=document.createElement('div');el.className='shop-item';
       el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+p.icon+'</div>'
