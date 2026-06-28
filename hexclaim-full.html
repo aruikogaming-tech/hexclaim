@@ -1361,7 +1361,6 @@ function initFirebase(){
     firebaseAuth.onAuthStateChanged(function(user){
       if(user){
         loadCloudSave(user.uid);
-        setTimeout(pushPublicProfile,2000);
       } else {
         updateAuthUI();
       }
@@ -1622,19 +1621,39 @@ function authLinkProvider(provider){
   }
 }
 
-// Auto cloud save
-var _origSaveProg=saveProg;
-saveProg=function(){
-  _origSaveProg();
-  if(save.authUid&&!save.isGuest){
-    if(!saveProg._lastCloud||Date.now()-saveProg._lastCloud>15000){
-      saveProg._lastCloud=Date.now();
-      saveToCloud();
-    }
+
+
+
+function saveToCloud(){
+  if(!firebaseReady||!save.authUid||save.isGuest)return;
+  var uid=save.authUid;
+  var data=JSON.parse(JSON.stringify(save));
+  firebaseDB.ref('users/'+uid+'/save').set(data).catch(function(e){
+    console.log('Cloud save failed:',e.message);
+  });
+}
+function pushPublicProfile(){
+  if(!firebaseReady||!save.authUid||save.isGuest)return;
+  var uid=save.authUid;
+  var rank=getRank(save.elo||0);
+  firebaseDB.ref('users/'+uid+'/public').set({
+    name:save.playerName||'Player',
+    elo:save.elo||0,
+    level:save.profileLevel||1,
+    rank:rank.name,
+    uid:uid
+  });
+  firebaseDB.ref('leaderboard/'+uid).set({
+    name:save.playerName||'Player',
+    elo:save.elo||0,
+    level:save.profileLevel||1,
+    rank:rank.name,
+    uid:uid
+  });
+  if(save.friendCode){
+    firebaseDB.ref('friendCodes/'+save.friendCode).set(uid);
   }
-};
-
-
+}
 function loadCloudSave(uid){
   if(!firebaseReady||!uid)return;
   firebaseDB.ref('users/'+uid+'/save').once('value').then(function(snapshot){
