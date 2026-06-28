@@ -1563,7 +1563,8 @@ function authSignOut(){
     gameLocked=false;
     animatingMove=false;
     gameOver=true;
-    saveProg();
+    // Do NOT call saveProg() here — it would save the reset guest data to localStorage
+    // and cause name entry popup on next launch
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
     setTimeout(function(){updateAuthUI();buildAccountScreen();updateAllUI();},100);
@@ -1642,9 +1643,8 @@ function loadCloudSave(uid){
     var cloudData=snapshot.val();
     if(cloudData){
       // Always auto-restore cloud data when signing in — cloud is the source of truth
-      var currentUid=save.authUid||uid;
       Object.assign(save,cloudData);
-      save.authUid=currentUid;
+      save.authUid=uid;
       save.isGuest=false;
       save._switchingAccounts=false;
       saveProg._lastCloud=0;
@@ -1652,13 +1652,20 @@ function loadCloudSave(uid){
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
     } else {
-      // No cloud save yet — save current local data under this account
-      save._switchingAccounts=false;
+      // No cloud save yet for this account — start fresh
+      var freshSave=getDefaultSave();
+      freshSave.authUid=uid;
+      freshSave.isGuest=false;
+      freshSave.authEmail=save.authEmail||null;
+      freshSave.authDisplayName=save.authDisplayName||null;
+      freshSave.authProvider=save.authProvider||null;
+      Object.assign(save,freshSave);
       saveProg._lastCloud=0;
       saveProg();saveToCloud();
       updateAllUI();updateTopBar();buildAccountScreen();
       showScreen('menuScreen');
-      showToast('✓ Signed in!',2000);
+      showToast('✓ Account created! Welcome to HexClaim!',2000);
+      setTimeout(function(){showNameEntryPopup();},500);
     }
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
@@ -8033,7 +8040,7 @@ checkQuestResets();
 checkAdReset();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
-if(save.playerName==='Player'&&save.totalGames===0){
+if(save.playerName==='Player'&&save.totalGames===0&&!save.authUid){
   showNameEntryPopup();
 } else if(save.isGuest&&!save.authUid&&save.totalGames>0&&!save.loginPromptShown){
   // Returning guest — offer sign-in but don't force it
