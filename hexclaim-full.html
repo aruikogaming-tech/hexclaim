@@ -445,30 +445,11 @@ body{display:flex;align-items:flex-start;justify-content:center;
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:12px;padding:20px">
     <div class="menu-logo"><h1>HEXCLAIM</h1><p>Chromatic Conquest</p></div>
     <div style="font-size:12px;color:var(--muted);margin:8px 0">Sign in to save your progress across devices</div>
-    <button onclick="authLogin('google')" style="width:100%;max-width:280px;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
-      <span style="font-size:18px">🟢</span> Continue with Google
+    <button onclick="authLogin('google')" style="width:100%;max-width:280px;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
+      <span style="font-size:20px">🟢</span> Continue with Google
     </button>
-    <button onclick="authLogin('facebook')" style="width:100%;max-width:280px;padding:12px;border-radius:10px;border:1px solid var(--border);background:#1877f2;color:#fff;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
-      <span style="font-size:18px">🔵</span> Continue with Facebook
-    </button>
-    <button onclick="authLogin('apple')" style="width:100%;max-width:280px;padding:12px;border-radius:10px;border:1px solid var(--border);background:#000;color:#fff;font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
-      <span style="font-size:18px">🍎</span> Continue with Apple
-    </button>
-    <button onclick="showEmailLogin()" style="width:100%;max-width:280px;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
-      <span style="font-size:18px">✉️</span> Continue with Email
-    </button>
-    <div id="emailLoginForm" style="display:none;width:100%;max-width:280px">
-      <input id="authEmail" type="email" placeholder="Email address" style="width:100%;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Manrope,sans-serif;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
-      <input id="authPassword" type="password" placeholder="Password" style="width:100%;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Manrope,sans-serif;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
-      <div style="display:flex;gap:6px">
-        <button onclick="authEmailSignIn()" style="flex:1;padding:10px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign In</button>
-        <button onclick="authEmailSignUp()" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign Up</button>
-      </div>
-      <button onclick="authForgotPassword()" style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline;margin-top:4px;width:100%;text-align:center">Forgot Password?</button>
-      <div id="authError" style="font-size:10px;color:var(--c4);margin-top:6px;text-align:center"></div>
-    </div>
-    <button onclick="authSkip()" style="margin-top:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline">Play as Guest</button>
     <div id="authStatus" style="font-size:10px;color:var(--p1);margin-top:4px;text-align:center"></div>
+    <button onclick="authSkip()" style="margin-top:4px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline">Play as Guest</button>
   </div>
 </div>
 
