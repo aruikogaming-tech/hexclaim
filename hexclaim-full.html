@@ -448,6 +448,21 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <button onclick="authLogin('google')" style="width:100%;max-width:280px;padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:10px;justify-content:center">
       <span style="font-size:20px">🟢</span> Continue with Google
     </button>
+    <div style="width:100%;max-width:280px;display:flex;align-items:center;gap:8px;margin:4px 0">
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="font-size:10px;color:var(--muted)">or</div>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+    </div>
+    <div style="width:100%;max-width:280px">
+      <input id="authEmail" type="email" placeholder="Email address" style="width:100%;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Manrope,sans-serif;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
+      <input id="authPassword" type="password" placeholder="Password (6+ characters)" style="width:100%;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Manrope,sans-serif;font-size:13px;outline:none;margin-bottom:6px;box-sizing:border-box">
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <button onclick="authEmailSignIn()" style="flex:1;padding:10px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign In</button>
+        <button onclick="authEmailSignUp()" style="flex:1;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Sign Up</button>
+      </div>
+      <button onclick="authForgotPassword()" style="background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline;width:100%;text-align:center">Forgot Password?</button>
+      <div id="authError" style="font-size:10px;color:var(--c4);margin-top:6px;text-align:center"></div>
+    </div>
     <div id="authStatus" style="font-size:10px;color:var(--p1);margin-top:4px;text-align:center"></div>
     <button onclick="authSkip()" style="margin-top:4px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Manrope,sans-serif;text-decoration:underline">Play as Guest</button>
   </div>
