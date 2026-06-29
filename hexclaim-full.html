@@ -935,29 +935,9 @@ function showStreakPopup(){
   }
 }
 
-// ===== LUCKY SPIN =====
-const SPIN_PRIZES=[
-  {label:'5 Coins',type:'coins',amount:5,weight:25,color:'#4a4a6a'},
-  {label:'10 Coins',type:'coins',amount:10,weight:20,color:'#3a6a5a'},
-  {label:'25 Coins',type:'coins',amount:25,weight:15,color:'#118ab2'},
-  {label:'5 Chromas',type:'chromas',amount:5,weight:15,color:'#6a3a7a'},
-  {label:'15 Chromas',type:'chromas',amount:15,weight:10,color:'#8338ec'},
-  {label:'50 Chromas',type:'chromas',amount:50,weight:5,color:'#ffd166'},
-  {label:'100 Chromas',type:'chromas',amount:100,weight:2,color:'#ef476f'},
-  {label:'Jackpot 500',type:'chromas',amount:500,weight:1,color:'#06d6a0'},
-];
-
-function getWeightedPrize(){
-  const totalWeight=SPIN_PRIZES.reduce(function(s,p){return s+p.weight},0);
-  let rand=Math.random()*totalWeight;
-  for(let i=0;i<SPIN_PRIZES.length;i++){
-    rand-=SPIN_PRIZES[i].weight;
-    if(rand<=0)return i;
-  }
-  return 0;
-}
-
-function showLuckySpin(){
+function showLuckySpin(){}
+function _spinRemoved(){
+  if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
   if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
   const popup=document.createElement('div');
   popup.id='spinPopup';
@@ -971,7 +951,7 @@ function showLuckySpin(){
     +'<div id="spinWheel" style="margin:16px auto;width:200px;height:200px;border-radius:50%;border:4px solid var(--gold);position:relative;overflow:hidden;transition:transform 3s cubic-bezier(0.17,0.67,0.12,0.99)"></div>'
     +'<div id="spinResult" style="font-size:14px;font-weight:800;color:var(--gold);min-height:24px;margin-bottom:8px"></div>'
     +'<div style="display:flex;gap:8px;justify-content:center">'
-    +(canSpin?'<button id="spinBtn" style="padding:10px 24px;background:var(--gold);border:none;border-radius:8px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">🎰 Spin!</button>':'<button id="spinAdBtn" style="padding:10px 20px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">🎬 Watch Ad for Spin</button>')
+    +(canSpin?'<button id="spinBtn" style="padding:10px 24px;background:var(--gold);border:none;border-radius:8px;color:#1a1a24;font-weight:800;cursor:pointer;font-family:Manrope,sans-serif;font-size:13px">🎰 Spin!</button>':'<div style="font-size:11px;color:var(--muted);padding:8px">No free spins remaining today. Come back tomorrow!</div>')
     +'<button onclick="document.getElementById(\'spinPopup\').remove();playSfx(\'menuBack\')" style="padding:10px 20px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Close</button>'
     +'</div></div>';
   document.body.appendChild(popup);
@@ -1224,7 +1204,6 @@ function getQuestProgress(quest){
 function buildQuests(){
   var tabs=document.getElementById('questTabs');
   tabs.innerHTML='';
-  checkAdReset();
   checkQuestResets();
   ['Daily','Weekly','Monthly'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
@@ -2376,19 +2355,10 @@ function showRatePrompt(){
 }
 
 // ===== REWARDED ADS (Placeholder — activate with AdMob in Capacitor) =====
-function checkAdReset(){
-  var today=getGameDay();
-  if(save.lastAdDate!==today){
-    save.adWatchedToday=0;
-    save.adBpToday=0;save.adCoinsToday=0;save.adSpinToday=0;
-    save.adPowerToday=0;save.adDiamondsToday=0;save.adShopToday=0;
-    save.freeSpinsToday=0;
-    save.lastAdDate=today;saveProg();
-  }
-}
+function checkAdReset(){}
 
-function showRewardedAd(rewardType,callback,placementKey,placementMax){
-  // placementKey = save field e.g. 'adBpToday', placementMax = daily limit for this slot
+function showRewardedAd(){}
+function _adRemoved(rewardType,callback,placementKey,placementMax){
   checkAdReset();
   if(placementKey&&placementMax&&(save[placementKey]||0)>=placementMax){
     showToast('You\'ve used all '+placementMax+' ad rewards for this today!');return;
@@ -7914,16 +7884,6 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   // Clear any leftover spin/ad divs from previous game
   var oldExtras=reward.parentElement.querySelectorAll('.overlay-extra');
   oldExtras.forEach(function(el){el.remove()});
-  // Lucky Spin — only show if free spins available
-  if(won&&save.freeSpinsToday<2){
-    var spinsLeft=2-save.freeSpinsToday;
-    var spinDiv=document.createElement('div');
-    spinDiv.className='overlay-extra';
-    spinDiv.style.cssText='margin-top:8px;cursor:pointer;font-size:12px;color:var(--gold);font-weight:800;text-align:center;padding:6px;background:rgba(255,209,102,0.08);border:1px solid rgba(255,209,102,0.2);border-radius:8px';
-    spinDiv.textContent='🎰 Lucky Spin! ('+spinsLeft+' free remaining)';
-    spinDiv.onclick=function(){showLuckySpin()};
-    reward.parentElement.appendChild(spinDiv);
-  }
   // Track mode stats
   trackModeGame(won);
   document.getElementById('overlay').classList.add('active');
@@ -7988,7 +7948,6 @@ checkSeasonEnd();
 checkSeasonRotation();
 checkDailyLogin();
 checkQuestResets();
-checkAdReset();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
 if(save.playerName==='Player'&&save.totalGames===0&&!save.authUid){
