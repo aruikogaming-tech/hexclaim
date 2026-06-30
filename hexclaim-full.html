@@ -5788,6 +5788,7 @@ function exitLevel(){
   stopGameTimer();
   setMusicMode('menu');
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
+  if(myRoomCode){pvpDB.remove('pvp-rooms/'+myRoomCode).catch(function(){});}
   myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
   var ctp=document.getElementById('chTutorialPopup');if(ctp)ctp.remove();
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
