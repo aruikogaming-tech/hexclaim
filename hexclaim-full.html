@@ -1684,22 +1684,6 @@ function buildAccountScreen(){
       cont.appendChild(el);
     });
 
-    // Cloud save section
-    var cloudHead=document.createElement('div');cloudHead.style.cssText='font-size:11px;font-weight:800;color:var(--p1);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px';
-    cloudHead.textContent='☁️ Cloud Save';cont.appendChild(cloudHead);
-
-    var saveBtn=document.createElement('button');
-    saveBtn.style.cssText='width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:6px';
-    saveBtn.textContent='☁️ Save to Cloud Now';
-    saveBtn.onclick=function(){saveToCloud();saveBtn.textContent='✓ Saved!';setTimeout(function(){saveBtn.textContent='☁️ Save to Cloud Now'},2000);playSfx('click')};
-    cont.appendChild(saveBtn);
-
-    var loadBtn=document.createElement('button');
-    loadBtn.style.cssText='width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:6px';
-    loadBtn.textContent='📥 Load from Cloud';
-    loadBtn.onclick=function(){if(save.authUid)loadCloudSave(save.authUid);playSfx('click')};
-    cont.appendChild(loadBtn);
-
     // Sign out
     var signOutBtn=document.createElement('button');
     signOutBtn.style.cssText='width:100%;padding:10px;border-radius:8px;border:none;background:rgba(239,71,111,0.1);color:var(--c4);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px';
