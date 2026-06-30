@@ -4074,7 +4074,7 @@ function generateLeaderboard(){
     const elo=baseElos[i]+Math.floor(Math.random()*80-40);
     lb.push({name:OPP_NAMES[i],elo,rank:getRank(elo)});
   }
-  if(!save.isGuest&&save.elo>0)if(!save.isGuest&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true});
+  if(!save.isGuest&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true});
   lb.sort((a,b)=>b.elo-a.elo);
   return lb;
 }
@@ -4087,10 +4087,15 @@ function loadRealLeaderboard(container){
   container.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:12px">Loading leaderboard...</div>';
   firebaseDB.ref('leaderboard').orderByChild('elo').limitToLast(100).once('value').then(function(snap){
     var lb=[];
+    var seenNames={};
     snap.forEach(function(child){
       var d=child.val();
       if(save.isGuest&&!save.authUid)return; // Skip all entries when guest — no UID to match
       var isYou=!save.isGuest&&save.authUid&&d.uid===save.authUid;
+      // Dedupe by name+elo combo to filter out stale duplicate entries from old UIDs
+      var dedupeKey=d.name+'_'+d.elo;
+      if(seenNames[dedupeKey])return;
+      seenNames[dedupeKey]=true;
       lb.push({name:d.name,elo:d.elo,rank:getRank(d.elo),isYou:isYou});
     });
     lb.sort(function(a,b){return b.elo-a.elo});
