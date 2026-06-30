@@ -1325,7 +1325,7 @@ function initFirebase(){
 // ===== AUTH METHODS =====
 function authLogin(provider){
   if(!firebaseReady){showToast('⚠️ No connection. Check your internet.',2500);return;}
-  document.getElementById('authStatus').textContent='Connecting...';
+  showToast('Connecting...',1500);
   var authProvider;
   if(provider==='google')authProvider=new firebase.auth.GoogleAuthProvider();
   else if(provider==='facebook')authProvider=new firebase.auth.FacebookAuthProvider();
@@ -1334,84 +1334,77 @@ function authLogin(provider){
   var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
   if(isCapacitor){
     firebaseAuth.signInWithRedirect(authProvider).catch(function(e){
-      document.getElementById('authStatus').textContent='Error: '+e.message;
+      showToast('Error: '+e.message,3000);
     });
   } else {
     firebaseAuth.signInWithPopup(authProvider).then(function(result){
       loadCloudSave(result.user.uid);
     }).catch(function(e){
-      document.getElementById('authStatus').textContent='Error: '+e.message;
+      showToast('Error: '+e.message,3000);
     });
   }
 }
   
 
 function authForgotPassword(){
-  if(!firebaseReady){initFirebase();document.getElementById('authError').textContent='Connecting... please try again.';return;}
+  if(!firebaseReady){initFirebase();showToast('Connecting... please try again.',2000);return;}
   var now=Date.now();
   if(window._fpLastSent&&now-window._fpLastSent<60000){
-    document.getElementById('authError').style.color='var(--c4)';
-    document.getElementById('authError').textContent='Please wait 60 seconds before requesting another reset email.';
+    showToast('Please wait 60 seconds before requesting another reset email.',2500);
     return;
   }
-  var email=document.getElementById('authEmail').value.trim();
-  if(!email){document.getElementById('authError').textContent='Enter your email address first';return;}
+  var emailEl=document.getElementById('authEmail');
+  var email=emailEl?emailEl.value.trim():'';
+  if(!email){showToast('Enter your email address first',2000);return;}
   window._fpLastSent=now;
-  document.getElementById('authError').style.color='var(--muted)';
-  document.getElementById('authError').textContent='Sending reset email...';
+  showToast('Sending reset email...',1500);
   firebaseAuth.sendPasswordResetEmail(email).then(function(){
-    document.getElementById('authError').style.color='var(--p1)';
-    document.getElementById('authError').textContent='✓ Reset email sent! Check your inbox.';
+    showToast('✓ Reset email sent! Check your inbox.',2500);
   }).catch(function(e){
-    document.getElementById('authError').style.color='var(--c4)';
-    document.getElementById('authError').textContent=e.message;
+    showToast(e.message,3000);
   });
 }
 function authEmailSignIn(){
   if(!firebaseReady){
     initFirebase();
-    document.getElementById('authError').textContent='Connecting... please try again in a moment.';
+    showToast('Connecting... please try again in a moment.',2000);
     return;
   }
-  var email=document.getElementById('authEmail').value.trim();
-  var pass=document.getElementById('authPassword').value;
-  document.getElementById('authError').style.color='var(--c4)';
-  if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
-  document.getElementById('authError').textContent='Signing in...';
+  var emailEl=document.getElementById('authEmail');
+  var passEl=document.getElementById('authPassword');
+  var email=emailEl?emailEl.value.trim():'';
+  var pass=passEl?passEl.value:'';
+  if(!email||!pass){showToast('Enter email and password',2000);return}
+  showToast('Signing in...',1500);
   firebaseAuth.signInWithEmailAndPassword(email,pass).then(function(result){
-    document.getElementById('authError').style.color='var(--p1)';
-    document.getElementById('authError').textContent='✓ Signed in! Loading your account...';
-    // Fallback — if onAuthStateChanged doesn't fire, load manually after 3s
-    setTimeout(function(){
-      if(document.getElementById('loginScreen').classList.contains('active')){
-        loadCloudSave(result.user.uid);
-      }
-    },3000);
+    loadCloudSave(result.user.uid);
   }).catch(function(e){
-    document.getElementById('authError').style.color='var(--c4)';
-    document.getElementById('authError').textContent=e.message;
+    showToast(e.message,3000);
   });
 }
 
 function authEmailSignUp(){
   if(!firebaseReady){
     initFirebase();
-    document.getElementById('authError').textContent='Connecting... please try again in a moment.';
+    showToast('Connecting... please try again in a moment.',2000);
     return;
   }
-  var email=document.getElementById('authEmail').value.trim();
-  var pass=document.getElementById('authPassword').value;
-  document.getElementById('authError').style.color='var(--c4)';
-  if(!email||!pass){document.getElementById('authError').textContent='Enter email and password';return}
-  if(pass.length<6){document.getElementById('authError').textContent='Password must be 6+ characters';return}
-  document.getElementById('authError').textContent='Creating account...';
-  firebaseAuth.createUserWithEmailAndPassword(email,pass).then(function(){
-    document.getElementById('authError').style.color='var(--p1)';
-    document.getElementById('authError').textContent='✓ Account created!';
-    save.isGuest=false;saveProg();
-    setTimeout(function(){showScreen('menuScreen')},500);
+  var emailEl=document.getElementById('authEmail');
+  var passEl=document.getElementById('authPassword');
+  var email=emailEl?emailEl.value.trim():'';
+  var pass=passEl?passEl.value:'';
+  if(!email||!pass){showToast('Enter email and password',2000);return}
+  if(pass.length<6){showToast('Password must be 6+ characters',2000);return}
+  showToast('Creating account...',1500);
+  firebaseAuth.createUserWithEmailAndPassword(email,pass).then(function(result){
+    save.authUid=result.user.uid;
+    save.authEmail=email;
+    save.isGuest=false;
+    saveProg();saveToCloud();
+    showScreen('menuScreen');
+    showToast('✓ Account created!',2000);
   }).catch(function(e){
-    document.getElementById('authError').textContent=e.message;
+    showToast(e.message,3000);
   });
 }
 
