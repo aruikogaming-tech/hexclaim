@@ -899,10 +899,14 @@ function showStreakPopup(){
   var claimBtn=document.getElementById('streakClaimBtn');
   if(!alreadyClaimed){
     claimBtn.onclick=function(){
-      if(save.streakClaimed&&save.streakClaimed[day])return;
+      if(typeof save.streakClaimed!=='object'||save.streakClaimed===null)save.streakClaimed={};
+      if(save.streakClaimed[day])return;
       if(reward.coins)save.coins+=reward.coins;
       if(reward.chromas)save.chromas+=reward.chromas;
       save.streakClaimed[day]=true;
+      claimBtn.disabled=true;
+      claimBtn.style.opacity='0.5';
+      claimBtn.style.pointerEvents='none';
       saveProg();updateShopCurrency();
       popup.remove();
       playSfx('claimBig');
@@ -1425,7 +1429,7 @@ function getDefaultSave(){
     equipped:{theme:'default',border:'default',effect:'none',title:'Newcomer',icon:'⬡'},
     bpPremium:false,bpLevel:1,bpXP:0,bpClaimed:[],
     powerStock:{bomb:0,scout:0,double:0},
-    dailyReward:0,loginStreak:0,lastLoginDate:null,streakClaimed:false,
+    dailyReward:0,loginStreak:0,lastLoginDate:null,streakClaimed:{},
     lastSpinTime:0,freeSpinsToday:0,masteryStars:{},totalSpins:0,
     questProgress:{},questClaimed:{},questResetDaily:null,questResetWeekly:null,questResetMonthly:null,
     dailyGamesPlayed:0,dailyWins:0,dailyBPTasks:{},
