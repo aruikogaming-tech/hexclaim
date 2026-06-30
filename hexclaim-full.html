@@ -1630,6 +1630,7 @@ function updateAuthUI(){
 
 function buildAccountScreen(){
   var cont=document.getElementById('accountContent');
+  if(!cont)return;
   cont.innerHTML='';
 
   // Current account status
