@@ -2169,6 +2169,24 @@ function renderProfileTab(tab,externalCont){
     var daysLeft=Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))));
     var highElo=save.seasonHighElo||save.elo;
     var highRank=getRank(highElo);
+    // Season mechanics panel
+    var sm=getSeasonMechanics();
+    var mechDiv=document.createElement('div');
+    mechDiv.style.cssText='margin-bottom:10px;padding:10px;background:var(--dim);border-radius:10px;border:1px solid var(--border)';
+    var mechHtml='<div style="font-size:9px;font-weight:800;color:var(--gold);letter-spacing:2px;margin-bottom:8px">⚡ SEASON '+( save.season||1)+' MECHANICS</div>';
+    [{slot:0,rank:'Diamond+',elo:2600},{slot:1,rank:'Master+',elo:3500},{slot:2,rank:'Chromancer',elo:4700}].forEach(function(tier){
+      var mech=SEASON_MECHANICS[sm[tier.slot]];
+      var active=(save.elo||0)>=tier.elo;
+      mechHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;opacity:'+(active?1:0.4)+'">'
+        +'<div style="font-size:18px">'+mech.icon+'</div>'
+        +'<div style="flex:1"><div style="font-size:10px;font-weight:800;color:var(--text)">'+mech.name+'</div>'
+        +'<div style="font-size:9px;color:var(--muted)">'+tier.rank+' · '+mech.desc+'</div></div>'
+        +(active?'<div style="font-size:9px;color:var(--p1);font-weight:800">ACTIVE</div>':'<div style="font-size:9px;color:var(--muted)">'+tier.elo+' ELO</div>')
+        +'</div>';
+    });
+    mechHtml+='<div style="font-size:9px;color:var(--muted);margin-top:2px">Rotates in '+daysLeft+' days</div>';
+    mechDiv.innerHTML=mechHtml;
+    wrap.appendChild(mechDiv);
     var highRankIdx=RANKS.indexOf(highRank);
 
     var header=document.createElement('div');header.className='card';header.style.cssText='text-align:center;margin-bottom:6px';
@@ -4249,6 +4267,14 @@ let kingTile=null; // kept for online PVP compatibility
 let kingTiles=[]; // 3 bonus tiles that teleport every 7 turns
 let kingTileTimer=0; // counts turns until next teleport
 let p1KingScore=0,p2KingScore=0; // accumulated king tile points
+// Seasonal mechanics
+var fogOfWarActive=false;
+var timeBombs=[];
+var colorLockTiles=[];
+var infectionTiles=[];
+var gravityWells=[];
+var shieldTiles=[];
+var infectionTimer=0;
 let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
 
@@ -6384,6 +6410,7 @@ function countOwned(p){
     if(owner[r][c]===p){
       n++;
       if(bonusCells.some(b=>b.r===r&&b.c===c))n++;
+      if(gravityWells.length>0&&gravityWells.some(function(w){return Math.abs(w.r-r)<=2&&Math.abs(w.c-c)<=2}))n++;
     }
   }
   // King of the Hill — add accumulated per-turn score
@@ -6395,6 +6422,19 @@ function countOwned(p){
 function countOwnedRaw(p){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(owner[r][c]===p)n++;return n;}
 
 function updateFog(){
+  // Fog of War seasonal mechanic — always active when enabled
+  if(fogOfWarActive){
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)fogRevealed[r][c]=false;
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+      if(owner[r][c]===1){
+        for(let dr=-2;dr<=2;dr++)for(let dc=-2;dc<=2;dc++){
+          const nr=r+dr,nc=c+dc;
+          if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS)fogRevealed[nr][nc]=true;
+        }
+      }
+    }
+    return;
+  }
   if(!curConfig.fog||curConfig.isRanked)return;
   // Deep fog (2 tiles) for Chapter 3+, ranked Diamond+, and ranked Master/Chromancer
   var isDeepFog=(curConfig.chapterIdx>=2)||(curConfig.isRanked&&save.elo>=1900);
