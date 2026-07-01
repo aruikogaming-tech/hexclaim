@@ -6191,6 +6191,9 @@ function expandTerritory(player,newColor){
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]!==player)continue;
       [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr=r+dr,nc=c+dc;
         if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===0&&grid[nr][nc]===newColor){
+          // Color Lock — skip if tile is locked to a different color
+          var lockIdx=colorLockTiles.findIndex(function(cl){return cl.r===nr&&cl.c===nc});
+          if(lockIdx>=0&&colorLockTiles[lockIdx].color!==newColor)return;
           if(!candidates.some(x=>x.r===nr&&x.c===nc))candidates.push({r:nr,c:nc});}});}
     for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
     for(let i=0;i<candidates.length&&capturedThisTurn<MAX_CAPTURE;i++){
@@ -6222,6 +6225,8 @@ function expandTerritoryAnimated(player,newColor,callback){
         if(totalCollected+wave.length>=MAX_CAP)return;
         const nr=r+dr,nc=c+dc;
         if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&tempOwner[nr][nc]===0&&tempGrid[nr][nc]===newColor){
+          var clIdx=colorLockTiles.findIndex(function(cl){return cl.r===nr&&cl.c===nc});
+          if(clIdx>=0&&colorLockTiles[clIdx].color!==newColor)return;
           if(!wave.some(w=>w.r===nr&&w.c===nc)){
             wave.push({r:nr,c:nc});changed=true;
           }
@@ -7767,6 +7772,41 @@ function p2Move(colorIdx){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
+    // Time Bombs — countdown each turn
+    if(timeBombs.length>0){
+      var exploded3=[];
+      timeBombs.forEach(function(bomb,idx){
+        bomb.timer--;
+        if(bomb.timer<=0){
+          exploded3.push(idx);
+          for(var er=bomb.r-1;er<=bomb.r+1;er++)for(var ec=bomb.c-1;ec<=bomb.c+1;ec++){
+            if(er>=0&&er<ROWS&&ec>=0&&ec<COLS){owner[er][ec]=0;}
+          }
+          showToast('💣 Bomb exploded!',1500);
+        }
+      });
+      for(var ei3=exploded3.length-1;ei3>=0;ei3--)timeBombs.splice(exploded3[ei3],1);
+    }
+    // Infection — spreads every 3 turns
+    if(infectionTiles.length>0){
+      infectionTimer++;
+      if(infectionTimer%3===0){
+        var newInfected3=[];
+        var dirs3=[[-1,0],[1,0],[0,-1],[0,1]];
+        infectionTiles.forEach(function(inf){
+          dirs3.forEach(function(d){
+            var nr=inf.r+d[0],nc=inf.c+d[1];
+            if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==0){
+              owner[nr][nc]=0;
+              if(!newInfected3.some(function(i){return i.r===nr&&i.c===nc}))
+                newInfected3.push({r:nr,c:nc});
+            }
+          });
+        });
+        infectionTiles=infectionTiles.concat(newInfected3);
+        if(newInfected3.length>0)showToast('🦠 Infection spreading!',1200);
+      }
+    }
     // King tiles — award 1 point per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
       kingTiles.forEach(function(kt){
@@ -7865,6 +7905,41 @@ function aiMove(){
     if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
+    }
+    // Time Bombs — countdown each turn
+    if(timeBombs.length>0){
+      var exploded2=[];
+      timeBombs.forEach(function(bomb,idx){
+        bomb.timer--;
+        if(bomb.timer<=0){
+          exploded2.push(idx);
+          for(var er=bomb.r-1;er<=bomb.r+1;er++)for(var ec=bomb.c-1;ec<=bomb.c+1;ec++){
+            if(er>=0&&er<ROWS&&ec>=0&&ec<COLS){owner[er][ec]=0;}
+          }
+          showToast('💣 Bomb exploded!',1500);
+        }
+      });
+      for(var ei2=exploded2.length-1;ei2>=0;ei2--)timeBombs.splice(exploded2[ei2],1);
+    }
+    // Infection — spreads every 3 turns
+    if(infectionTiles.length>0){
+      infectionTimer++;
+      if(infectionTimer%3===0){
+        var newInfected2=[];
+        var dirs2=[[-1,0],[1,0],[0,-1],[0,1]];
+        infectionTiles.forEach(function(inf){
+          dirs2.forEach(function(d){
+            var nr=inf.r+d[0],nc=inf.c+d[1];
+            if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==0){
+              owner[nr][nc]=0;
+              if(!newInfected2.some(function(i){return i.r===nr&&i.c===nc}))
+                newInfected2.push({r:nr,c:nc});
+            }
+          });
+        });
+        infectionTiles=infectionTiles.concat(newInfected2);
+        if(newInfected2.length>0)showToast('🦠 Infection spreading!',1200);
+      }
     }
     // King tiles — award 1 point per tile held this turn, teleport every 7 turns
     if(kingTiles.length>0){
