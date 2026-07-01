@@ -698,7 +698,7 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   // Rewarded ads
   adWatchedToday:0,lastAdDate:null,monthlyPassExpiry:null,foreverPass:false,lastPassGrantDate:null,
         adBpToday:0,adCoinsToday:0,adSpinToday:0,adPowerToday:0,adDiamondsToday:0,adShopToday:0,limitedShopRotation:null,limitedShopItems:null,
-  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false,testerGiftGiven:false
+  friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false,testerGiftGiven:false,seasonMechanicOrder:null,seasonMechanicOrder:null
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
@@ -1443,7 +1443,7 @@ function getDefaultSave(){
     limitedShopRotation:null,limitedShopItems:null,
     friends:[],friendRequests:[],sentRequests:[],friendCode:null,
     localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],
-    loginPromptShown:false,testerGiftGiven:false
+    loginPromptShown:false,testerGiftGiven:false,seasonMechanicOrder:null
   };
 }
 function authSignOut(){
@@ -2214,17 +2214,63 @@ function renderProfileTab(tab,externalCont){
 }
 
 // Season rotation — when new season starts, generate new seasonal skins
+// 8 rotating mechanics pool
+var SEASON_MECHANICS=[
+  {id:'king',name:'King of the Hill',icon:'👑',desc:'Capture crown tiles for per-turn bonus points. Tiles teleport every 7 turns.'},
+  {id:'darkZones',name:'Dark Zones',icon:'🌑',desc:'Hidden patches reveal only when captured from inside. Use Scout to peek.'},
+  {id:'fogOfWar',name:'Fog of War',icon:'🌫️',desc:'You can only see tiles within 2 steps of your territory. Expand carefully.'},
+  {id:'timeBombs',name:'Time Bombs',icon:'💣',desc:'Bomb tiles explode after 8 turns, converting a 2x2 area back to neutral.'},
+  {id:'colorLock',name:'Color Lock',icon:'🔒',desc:'Locked tiles can only be claimed with a specific color. Plan your sequence.'},
+  {id:'infection',name:'Infection',icon:'🦠',desc:'Infected tiles spread to adjacent unclaimed tiles every 3 turns. Contain the spread!'},
+  {id:'gravityWells',name:'Gravity Wells',icon:'🌀',desc:'Tiles within 2 steps of gravity wells count double in the final score.'},
+  {id:'shieldTiles',name:'Shield Tiles',icon:'🛡️',desc:'Shield tiles cannot be decayed or converted. Capture them directly to claim.'},
+];
+
+function getSeasonMechanics(){
+  // Returns array of 3 mechanic IDs for current season [diamond, master, chromancer]
+  if(!save.seasonMechanicOrder||save.seasonMechanicOrder.length<3){
+    // First time — shuffle all 8
+    var order=SEASON_MECHANICS.map(function(_,i){return i});
+    for(var i=order.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=order[i];order[i]=order[j];order[j]=tmp;
+    }
+    save.seasonMechanicOrder=order;
+    saveProg();
+  }
+  var s=(save.season||1)-1;
+  var pool=save.seasonMechanicOrder;
+  // Pick 3 mechanics for this season, cycling through pool
+  var idx1=(s*3)%pool.length;
+  var idx2=(s*3+1)%pool.length;
+  var idx3=(s*3+2)%pool.length;
+  // If we've used all 8, reshuffle
+  if(s*3>=pool.length&&(s*3)%pool.length===0){
+    var newOrder=SEASON_MECHANICS.map(function(_,i){return i});
+    for(var i=newOrder.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=newOrder[i];newOrder[i]=newOrder[j];newOrder[j]=tmp;
+    }
+    save.seasonMechanicOrder=newOrder;
+    saveProg();
+    idx1=0;idx2=1;idx3=2;
+  }
+  return[pool[idx1],pool[idx2],pool[idx3]];
+}
+
+function getSeasonMechanicId(slot){
+  // slot 0=diamond+, 1=master+, 2=chromancer
+  var mechs=getSeasonMechanics();
+  return SEASON_MECHANICS[mechs[slot]].id;
+}
+
 function checkSeasonRotation(){
   var elapsed=Date.now()-save.seasonStart;
   if(elapsed>=30*24*60*60*1000&&save.seasonClaimed){
-    // Start new season
     save.season++;
     save.seasonStart=Date.now();
     save.seasonHighElo=save.elo;
     save.seasonClaimed=false;
-    // New season skins are generated based on season number
-    // The SEASONAL_SKINS array uses season:1 — for future seasons,
-    // the checkSeasonEnd function grants skins for matching season numbers
     saveProg();
   }
 }
@@ -4656,10 +4702,17 @@ function startOnlineMatch(data){
   pvpOpponent={name:opp.name,elo:opp.elo,rank:getRank(opp.elo)};
 
   curChapter=-1;curLevel=-1;isFreeplay=false;
+  var sm0=getSeasonMechanicId(0); // Diamond+
+  var sm1=getSeasonMechanicId(1); // Master+
+  var sm2=getSeasonMechanicId(2); // Chromancer
+  var elo=save.elo||0;
   curConfig={cols:rc.cols,rows:rc.rows,colors:rc.colors,aiSmart:0,fog:rc.fog||false,
     powerTiles:rc.powerTiles||false,moveLimit:rc.moveLimit||false,baseMoves:rc.baseMoves||999,
     starThresholds:[55,65,80],winPct:0,isRanked:true,chapterIdx:-1,
-    isOnline:true,aiLookahead:0,aiBlock:false};
+    isOnline:true,aiLookahead:0,aiBlock:false,
+    seasonMech0:elo>=2600?sm0:null,
+    seasonMech1:elo>=3500?sm1:null,
+    seasonMech2:elo>=4700?sm2:null};
 
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
@@ -5034,6 +5087,8 @@ function showRankTab(tab,btn){
       +'<div style="font-size:10px;color:var(--c4);margin-top:6px;font-weight:700">'+(daysLeft>0?'Season ends in '+daysLeft+' days':'Season ending soon!')+'</div>'
       +'<div style="font-size:10px;color:var(--text);margin-top:4px">Your peak: <span style="color:'+highRank.color+';font-weight:800">'+highRank.icon+' '+highRank.name+'</span> ('+highElo+' ELO)</div>';
     wrap.appendChild(header);
+    // Season mechanics display
+    var mechDiv=document.createElement('div');mechDiv.innerHTML=mechHtml;wrap.appendChild(mechDiv);
 
     var rankRewardDefs={
       'Unranked':  {coins:50,   diamonds:10,  medal:'🔘',titleSuffix:null,                  border:false,icon:false},
@@ -5799,6 +5854,7 @@ function exitLevel(){
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
   if(myRoomCode){pvpDB.remove('pvp-rooms/'+myRoomCode).catch(function(){});}
   myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
+  fogOfWarActive=false;timeBombs=[];colorLockTiles=[];infectionTiles=[];gravityWells=[];shieldTiles=[];infectionTimer=0;
   var ctp=document.getElementById('chTutorialPopup');if(ctp)ctp.remove();
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
@@ -5918,6 +5974,60 @@ function initGame(){
       }
     }
   }
+  // Reset all seasonal mechanics
+  fogOfWarActive=false;
+  timeBombs=[];colorLockTiles=[];infectionTiles=[];gravityWells=[];shieldTiles=[];infectionTimer=0;
+
+  // Apply seasonal mechanics based on rank
+  var allSeasonMechs=[curConfig.seasonMech0,curConfig.seasonMech1,curConfig.seasonMech2].filter(Boolean);
+  allSeasonMechs.forEach(function(mechId){
+    if(mechId==='fogOfWar'){fogOfWarActive=true;}
+    if(mechId==='timeBombs'){
+      var numBombs=3+Math.floor(Math.random()*3);
+      for(var b=0;b<numBombs;b++){
+        var br,bc,battempts=0;
+        do{br=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);bc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);battempts++;}
+        while(battempts<100&&owner[br][bc]!==0);
+        if(battempts<100)timeBombs.push({r:br,c:bc,timer:8});
+      }
+    }
+    if(mechId==='colorLock'){
+      var numLocks=4+Math.floor(Math.random()*4);
+      for(var l=0;l<numLocks;l++){
+        var lr,lc,lattempts=0;
+        do{lr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);lc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);lattempts++;}
+        while(lattempts<100&&owner[lr][lc]!==0);
+        if(lattempts<100)colorLockTiles.push({r:lr,c:lc,color:Math.floor(Math.random()*NUM_COLORS)});
+      }
+    }
+    if(mechId==='infection'){
+      var numInfected=2+Math.floor(Math.random()*2);
+      for(var inf=0;inf<numInfected;inf++){
+        var ir,ic,iattempts=0;
+        do{ir=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);ic=Math.floor(COLS*0.2+Math.random()*COLS*0.6);iattempts++;}
+        while(iattempts<100&&owner[ir][ic]!==0);
+        if(iattempts<100)infectionTiles.push({r:ir,c:ic});
+      }
+    }
+    if(mechId==='gravityWells'){
+      var numWells=3;
+      for(var w=0;w<numWells;w++){
+        var wr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);
+        var wc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);
+        gravityWells.push({r:wr,c:wc});
+      }
+    }
+    if(mechId==='shieldTiles'){
+      var numShields=4+Math.floor(Math.random()*3);
+      for(var sh=0;sh<numShields;sh++){
+        var shr,shc,shattempts=0;
+        do{shr=Math.floor(ROWS*0.2+Math.random()*ROWS*0.6);shc=Math.floor(COLS*0.2+Math.random()*COLS*0.6);shattempts++;}
+        while(shattempts<100&&owner[shr][shc]!==0);
+        if(shattempts<100)shieldTiles.push({r:shr,c:shc});
+      }
+    }
+  });
+
   // Bonus cells — worth 2x territory, placed in contested middle areas
   bonusCells=[];
   const numBonus=Math.floor(COLS*ROWS*0.04)+2; // ~4-8 bonus cells
@@ -6982,6 +7092,9 @@ function draw(){
 let previewReachable=null;
 
 // Territory decay — vulnerable border cells crumble
+function isShielded(r,c){
+  return shieldTiles.some(function(s){return s.r===r&&s.c===c});
+}
 function applyDecay(player){
   const vulnerable=[];
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
@@ -6993,7 +7106,75 @@ function applyDecay(player){
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
       if(owner[nr][nc]===0||owner[nr][nc]===(player===1?2:1))threats++;
     });
-    if(threats>=3)vulnerable.push({r,c}); // Exposed on 3+ sides
+    if(threats>=3&&!isShielded(r,c))// Time Bombs
+  timeBombs.forEach(function(bomb){
+    if(!fogRevealed[bomb.r][bomb.c])return;
+    var x=bomb.c*cellW,y=bomb.r*cellH;
+    ctx.save();
+    ctx.fillStyle='rgba(239,71,111,0.85)';
+    ctx.beginPath();ctx.arc(x+cellW/2,y+cellH/2,Math.min(cellW,cellH)*0.35,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font='bold '+Math.floor(Math.min(cellW,cellH)*0.4)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(bomb.timer,x+cellW/2,y+cellH/2);
+    ctx.restore();
+  });
+
+  // Color Lock tiles
+  colorLockTiles.forEach(function(cl){
+    if(!fogRevealed[cl.r][cl.c])return;
+    if(owner[cl.r][cl.c]!==0)return; // Already captured
+    var x=cl.c*cellW,y=cl.r*cellH;
+    ctx.save();
+    ctx.strokeStyle=COLOR_HEX[cl.color];ctx.lineWidth=3;
+    ctx.strokeRect(x+3,y+3,cellW-6,cellH-6);
+    ctx.fillStyle=COLOR_HEX[cl.color]+'44';
+    ctx.fillRect(x+3,y+3,cellW-6,cellH-6);
+    ctx.fillStyle='#fff';ctx.font=Math.floor(Math.min(cellW,cellH)*0.45)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🔒',x+cellW/2,y+cellH/2);
+    ctx.restore();
+  });
+
+  // Infection tiles
+  infectionTiles.forEach(function(inf){
+    if(!fogRevealed[inf.r][inf.c])return;
+    var x=inf.c*cellW,y=inf.r*cellH;
+    ctx.save();
+    ctx.fillStyle='rgba(100,200,50,0.5)';
+    ctx.beginPath();ctx.arc(x+cellW/2,y+cellH/2,Math.min(cellW,cellH)*0.3,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#fff';ctx.font=Math.floor(Math.min(cellW,cellH)*0.45)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🦠',x+cellW/2,y+cellH/2);
+    ctx.restore();
+  });
+
+  // Gravity Wells
+  gravityWells.forEach(function(w){
+    if(!fogRevealed[w.r][w.c])return;
+    var x=w.c*cellW,y=w.r*cellH;
+    ctx.save();
+    ctx.strokeStyle='rgba(138,43,226,0.8)';ctx.lineWidth=2;
+    ctx.beginPath();ctx.arc(x+cellW/2,y+cellH/2,Math.min(cellW,cellH)*0.4,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='#fff';ctx.font=Math.floor(Math.min(cellW,cellH)*0.45)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🌀',x+cellW/2,y+cellH/2);
+    ctx.restore();
+  });
+
+  // Shield tiles
+  shieldTiles.forEach(function(s){
+    if(!fogRevealed[s.r][s.c])return;
+    var x=s.c*cellW,y=s.r*cellH;
+    ctx.save();
+    ctx.strokeStyle='rgba(100,180,255,0.9)';ctx.lineWidth=3;
+    ctx.strokeRect(x+2,y+2,cellW-4,cellH-4);
+    ctx.fillStyle='#fff';ctx.font=Math.floor(Math.min(cellW,cellH)*0.45)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🛡️',x+cellW/2,y+cellH/2);
+    ctx.restore();
+  });
+
+  // Dark Zones — mystery patches only visible when close
   }
   // Decay 1-2 random vulnerable cells
   const toDecay=vulnerable.sort(()=>Math.random()-0.5).slice(0,Math.min(2,vulnerable.length));
@@ -7440,6 +7621,46 @@ async function playerMove(colorIdx){
       applyDecay(1);applyDecay(2);
     }
   }
+  // Time Bombs — countdown each turn, explode when timer hits 0
+  if(timeBombs.length>0){
+    var exploded=[];
+    timeBombs.forEach(function(bomb,idx){
+      bomb.timer--;
+      if(bomb.timer<=0){
+        exploded.push(idx);
+        // Explode — convert 2x2 area back to neutral
+        for(var er=bomb.r-1;er<=bomb.r+1;er++)for(var ec=bomb.c-1;ec<=bomb.c+1;ec++){
+          if(er>=0&&er<ROWS&&ec>=0&&ec<COLS){owner[er][ec]=0;}
+        }
+        showToast('💣 Bomb exploded!',1500);
+      }
+    });
+    // Remove exploded bombs
+    for(var ei=exploded.length-1;ei>=0;ei--)timeBombs.splice(exploded[ei],1);
+  }
+
+  // Infection — spreads every 3 turns to adjacent unclaimed tiles
+  if(infectionTiles.length>0){
+    infectionTimer++;
+    if(infectionTimer%3===0){
+      var newInfected=[];
+      var dirs=[[-1,0],[1,0],[0,-1],[0,1]];
+      infectionTiles.forEach(function(inf){
+        dirs.forEach(function(d){
+          var nr=inf.r+d[0],nc=inf.c+d[1];
+          if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==0){
+            // Convert player tile back to neutral
+            owner[nr][nc]=0;
+            if(!newInfected.some(function(i){return i.r===nr&&i.c===nc}))
+              newInfected.push({r:nr,c:nc});
+          }
+        });
+      });
+      infectionTiles=infectionTiles.concat(newInfected);
+      if(newInfected.length>0)showToast('🦠 Infection spreading!',1200);
+    }
+  }
+
   // King tiles — award 1 point per tile held this turn, teleport every 7 turns
   if(kingTiles.length>0){
     kingTiles.forEach(function(kt){
