@@ -4203,7 +4203,7 @@ const CHAPTERS=[
   {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[48,51,55],powerTiles:true},
   {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[47,50,53],powerTiles:true},
   {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[46,49,52],powerTiles:true,darkZones:true},
-  {name:"Convergence",desc:"All mechanics active. Limited moves. SHADE at full power.",mechanic:"FINAL TRIAL",mechanicDesc:"Every mechanic unlocked — Power Tiles, Territory Decay, King of the Hill, and Dark Zones. Beat SHADE with limited moves. This is the final test.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.92,story:"SHADE has evolved beyond all prediction. The Chromatic Council has fallen. You are the last Chromancer standing. End this — or be consumed.",starThresholds:[44,48,52],powerTiles:true,darkZones:true,moveLimit:true,baseMoves:150},
+  {name:"Convergence",desc:"King of the Hill, Dark Zones and Decay combined. SHADE at near-full power.",mechanic:"CONVERGENCE",mechanicDesc:"King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE has never been sharper. Outthink it.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has grown beyond what you trained for. Three mechanics at once. No shortcuts, no limits — just you and the board. Prove you're ready for what comes next.",starThresholds:[46,52,58],powerTiles:true,darkZones:true,moveLimit:false,baseMoves:999},
 ];
 const CHALLENGES=[
  {name:"Territory Lord",desc:"Win 25 games to prove your dominance.",reward:"Title: Territory Lord",rewardTitle:'Territory Lord',cols:9,rows:11,colors:5,aiSmart:0.5,reqChapter:0},
@@ -5458,7 +5458,7 @@ function buildChapters(){
     {num:3,name:'The Rot',desc:'Your borders crumble every 6 turns. Expand or die.',mechanic:'TERRITORY DECAY',levels:5,color:'var(--c5)'},
     {num:4,name:"King's Court",desc:'Control the crown tile at the center to gain a bonus.',mechanic:'KING OF THE HILL',levels:5,color:'var(--gold)'},
     {num:5,name:'Dark Frontier',desc:'Mystery zones hide secrets. Expand to reveal them.',mechanic:'DARK ZONES',levels:5,color:'var(--master)'},
-    {num:6,name:'Convergence',desc:'All mechanics. Limited moves. SHADE at full power.',mechanic:'FINAL TRIAL',levels:5,color:'var(--c4)'},
+    {num:6,name:'Convergence',desc:'King of the Hill, Dark Zones and Decay. SHADE near full power.',mechanic:'CONVERGENCE',levels:5,color:'var(--c4)'},
   ];
   chapters.forEach(function(ch){
     var unlocked=ch.num===1?save.tutorialDone:Object.keys(save.cleared||{}).some(function(k){return k.startsWith('ch'+(ch.num-1)+'_')})&&save.tutorialDone;
@@ -5641,11 +5641,11 @@ function startCampaignLevel(ci,li){
     ],
     // Chapter 6 — CONVERGENCE: all mechanics + move limit
     [
-      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:150,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.95,baseMoves:140,fog:false,powerTiles:true,darkZones:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:135,fog:false,powerTiles:true,darkZones:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.98,baseMoves:130,fog:false,powerTiles:true,darkZones:true},
-      {cols:14,rows:16,colors:6,aiSmart:1.00,baseMoves:120,fog:false,powerTiles:true,darkZones:true}
+      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.91,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.93,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.95,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
     ]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
@@ -5795,7 +5795,7 @@ var CHAPTER_TIPS=[
   {icon:'💀',title:'TERRITORY DECAY',tip:'Your border tiles crumble every 6 turns! Keep expanding or you\'ll shrink. Watch the turn counter in the top bar.'},
   {icon:'👑',title:'KING OF THE HILL',tip:'Capture 👑 crown tiles to earn bonus points every turn you hold them! They teleport every 7 turns — stay alert!'},
   {icon:'🌑',title:'DARK ZONES',tip:'Black 🌑 patches hide secrets! Expand into them to reveal what\'s inside. Use the Scout power-up to peek first.'},
-  {icon:'🔥',title:'FINAL TRIAL',tip:'All mechanics active! Manage power-ups, decay, crown tiles, and dark zones — and watch your move limit carefully!'},
+  {icon:'⚡',title:'CONVERGENCE',tip:'King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE plays at near-maximum skill. Control the board.'},
 ];
 function showChapterTutorial(ci){
   if(ci<0||ci>=CHAPTER_TIPS.length)return;
