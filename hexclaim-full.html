@@ -847,6 +847,8 @@ function checkDailyLogin(){
   }
   const today=getGameDay();
   if(save.lastLoginDate===today)return; // Already logged in today
+  if(window._dailyLoginChecked)return; // Prevent double-fire from cloud restore
+  window._dailyLoginChecked=true;
   // Yesterday in game-day terms: get current ET, subtract 1 day, check if before 7 PM
   var nowET=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
   var yestET=new Date(nowET);yestET.setDate(yestET.getDate()-1);
@@ -862,7 +864,8 @@ function checkDailyLogin(){
   save.lastLoginDate=today;
   save.freeSpinsToday=0; // Reset daily free spins
   saveProg();
-  showStreakPopup();
+  // Small delay so menu is visible before popup appears
+  setTimeout(function(){showStreakPopup();},800);
 }
 
 function showStreakPopup(){
@@ -1550,6 +1553,9 @@ function loadCloudSave(uid){
       updateAllUI();updateTopBar();buildAccountScreen();updateAuthUI();
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
+      // Run daily login check after cloud restore — cloud data may have yesterday's date
+      window._dailyLoginChecked=false;
+      checkDailyLogin();
     } else {
       // New account — save current progress to cloud
       save.authUid=uid;
