@@ -7304,15 +7304,16 @@ function fireBomb(row,col){
     if(nr2>=0&&nr2<ROWS&&nc2>=0&&nc2<COLS&&owner[nr2][nc2]===1){isAdjacentToPlayer=true;break;}
   }
   if(!isAdjacentToPlayer){showToast('💥 Bomb must be placed near your territory!',2000);bombTargetMode=true;return;}
-  // Claim 3x3 area around tapped tile (enemy and neutral only)
-  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
-    const nr=row+dr,nc=col+dc;
-    if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==1){
-      owner[nr][nc]=1;grid[nr][nc]=p1Color;
+  // Cross pattern (5 tiles) — convert enemy to neutral, claim neutral only
+  var crossDirs=[[0,0],[-1,0],[1,0],[0,-1],[0,1]];
+  crossDirs.forEach(function(d){
+    var nr=row+d[0],nc=col+d[1];
+    if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS){
+      if(owner[nr][nc]===2){owner[nr][nc]=0;} // Enemy tiles → neutral
+      else if(owner[nr][nc]===0){owner[nr][nc]=1;grid[nr][nc]=p1Color;} // Neutral → yours
     }
-  }
-  // Chain any newly same-colored adjacent cells
-  expandTerritory(1,p1Color);
+  });
+  // No chain expansion — bomb is disruption not territory grab
   playerPowers.bomb--;
   activePower=null;
   buildPowerups();
