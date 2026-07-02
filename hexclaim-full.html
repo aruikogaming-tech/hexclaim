@@ -660,7 +660,7 @@ const OPP_NAMES=['ChromaKnight','PixelStorm','NeonViper','HexMaster','ShadeHunte
 
 // ===== SAVE =====
 let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
-  elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,
+  elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,winStreak:0,winStreak:0,
   matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:false,
   playerName:'Player',
   // Profile
@@ -1421,7 +1421,7 @@ function authSkip(){
 function getDefaultSave(){
   return {
     cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:[],
-    elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,
+    elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,winStreak:0,winStreak:0,
     matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:[],
     playerName:'Player',profileLevel:1,profileXP:0,portrait:'⬡',
     tutorialDone:false,isAdmin:false,adminCode:'',nameChangesFree:2,activeSkin:'default',
@@ -2378,12 +2378,13 @@ function showRatePrompt(){
 // ===== REWARDED ADS (Placeholder — activate with AdMob in Capacitor) =====
 function checkAdReset(){}
 
-function showRewardedAd(){}
+function showRewardedAd(rewardType,callback){
+  if(callback)callback();
+}
 function _adRemoved(rewardType,callback,placementKey,placementMax){
   checkAdReset();
-  if(placementKey&&placementMax&&(save[placementKey]||0)>=placementMax){
-    showToast('You\'ve used all '+placementMax+' ad rewards for this today!');return;
-  }
+  if(callback)callback();
+  return;
   var popup=document.createElement('div');popup.id='adPopup';
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.9)';
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:24px;text-align:center;max-width:280px;width:90%;animation:popIn 0.3s ease">'
@@ -4778,6 +4779,12 @@ function startOnlineMatch(data){
   kingTileTimer=data.kingTileTimer||0;
   p1KingScore=data.p1KingScore||0;
   p2KingScore=data.p2KingScore||0;
+  timeBombs=data.timeBombs?data.timeBombs.map(function(b){return{r:b.r,c:b.c,timer:b.timer}}):[]; 
+  infectionTiles=data.infectionTiles?data.infectionTiles.map(function(t){return{r:t.r,c:t.c}}):[]; 
+  colorLockTiles=data.colorLockTiles?data.colorLockTiles.map(function(t){return{r:t.r,c:t.c,color:t.color}}):[]; 
+  gravityWells=data.gravityWells?data.gravityWells.map(function(t){return{r:t.r,c:t.c}}):[]; 
+  shieldTiles=data.shieldTiles?data.shieldTiles.map(function(t){return{r:t.r,c:t.c}}):[]; 
+  fogOfWarActive=data.fogOfWarActive||false;
   // Dark Zones — shared from room data
   darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
   // Power tiles generated AFTER dark zones so they can spawn inside them
@@ -7633,6 +7640,9 @@ async function playerMove(colorIdx){
         data.turn=myPlayer===1?2:1;
         data.kingTiles=kingTiles;data.kingTileTimer=kingTileTimer;
         data.p1KingScore=p1KingScore;data.p2KingScore=p2KingScore;
+        data.timeBombs=timeBombs;data.infectionTiles=infectionTiles;
+        data.colorLockTiles=colorLockTiles;data.gravityWells=gravityWells;
+        data.shieldTiles=shieldTiles;data.fogOfWarActive=fogOfWarActive;
         await pvpDB.set('pvp-rooms/'+myRoomCode,data);
         pvpRoomData=data;
       }
