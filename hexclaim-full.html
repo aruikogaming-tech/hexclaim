@@ -7237,15 +7237,6 @@ function applyDecay(player){
   });
 
   // Dark Zones — mystery patches only visible when close
-  }
-  // Decay 1-2 random vulnerable cells
-  const toDecay=vulnerable.sort(()=>Math.random()-0.5).slice(0,Math.min(2,vulnerable.length));
-  toDecay.forEach(d=>{
-    owner[d.r][d.c]=0;
-    grid[d.r][d.c]=Math.floor(Math.random()*NUM_COLORS);
-  });
-  if(toDecay.length>0&&player===1){playSfx('decay')};
-}
 
 function computePreview(colorIdx){
   if(colorIdx<0){previewColor=-1;previewReachable=null;draw();return}
