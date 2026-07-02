@@ -6198,7 +6198,7 @@ function expandTerritory(player,newColor){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
-  const MAX_CAPTURE=2; // Max tiles per move
+  const MAX_CAPTURE=window._scoutActive?4:2; // Scout doubles cap
  while(changed){changed=false;
     const candidates=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]!==player)continue;
@@ -6222,7 +6222,7 @@ function expandTerritoryAnimated(player,newColor,callback){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
 
   // Collect cells to claim — MAX 2 per move
-  const MAX_CAP=2;
+  const MAX_CAP=window._scoutActive?4:2;
   const waves=[];
   const tempOwner=owner.map(r=>[...r]);
   const tempGrid=grid.map(r=>[...r]);
@@ -7011,11 +7011,10 @@ function draw(){
     ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
     ctx.restore();
   });
-  // Scout targeting — blue tint on unrevealed dark zones
+  // Scout no longer uses targeting mode
   if(scoutTargetMode&&activePower==='scout'){
-    var hasUnscoutedZones=darkZones.some(function(dz){return !dz.revealed&&!dz.scoutedByP1});
+    var hasUnscoutedZones=false;
     if(!hasUnscoutedZones){
-      showToast('👁 No dark zones to scout!',1500);
       scoutTargetMode=false;activePower=null;buildPowerups();
       canvas.style.cursor='default';
     } else {
@@ -7268,32 +7267,15 @@ function computePreview(colorIdx){
 
 var bombTargetMode=false;
 var scoutTargetMode=false;
-function fireScout(row,col){
-  scoutTargetMode=false;
-  // Check if tapped tile is inside an unrevealed dark zone
-  var foundZone=false;
-  darkZones.forEach(function(dz){
-    if(dz.revealed||dz.scoutedByP1)return;
-    for(var dr=0;dr<dz.size;dr++){
-      for(var dc=0;dc<dz.size;dc++){
-        if(dz.r+dr===row&&dz.c+dc===col){
-          dz.scoutedByP1=true;
-          foundZone=true;
-          showToast('👁 Dark Zone contents revealed — only you can see this!',2500);
-        }
-      }
-    }
-  });
-  if(!foundZone){
-    showToast('👁 Tap a 🌑 Dark Zone to scout it!',2000);
-    scoutTargetMode=true; // Keep targeting mode active so player can try again
-    return;
-  }
+function fireScout(){
+  // Scout — doubles BFS cap for next move (4 tiles instead of 2)
   playerPowers.scout--;
   activePower=null;
+  scoutTargetMode=false;
+  window._scoutActive=true;
   buildPowerups();
   playSfx('claim');
-  draw();
+  showToast('👁 Scout active — your next move captures double the tiles!',2500);
 }
 function fireBomb(row,col){
   bombTargetMode=false;
@@ -7381,16 +7363,16 @@ function buildPowerups(){
     var hasPow=playerPowers[type]>0;
     var isActive=activePower===type;
     b.className='pu-btn'+(hasPow?'':' empty')+(isActive?' active':hasPow?' has-power':'');
-    var activeLabel=type==='bomb'?'ACTIVE — tap tile':type==='scout'?'ACTIVE — tap dark zone':'ACTIVE — pick color';
+    var activeLabel=type==='bomb'?'ACTIVE — tap tile':type==='scout'?'ACTIVE — next move x2':'ACTIVE — pick color';
     b.innerHTML={bomb:'💥 Bomb',scout:'👁 Scout',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?`<div style="font-size:7px;color:var(--c3);margin-top:1px">${activeLabel}</div>`:'');
     b.onclick=()=>{
       if(!playerPowers[type])return;
       var wasActive=activePower===type;
       activePower=wasActive?null:type;
       bombTargetMode=!wasActive&&type==='bomb';
-      scoutTargetMode=!wasActive&&type==='scout';
+      scoutTargetMode=false;
       if(bombTargetMode)showToast('💥 Tap any tile to place your Bomb!',2000);
-      if(scoutTargetMode)showToast('👁 Tap a 🌑 Dark Zone to reveal its contents!',2000);
+      if(!wasActive&&type==='scout'&&playerPowers.scout>0){fireScout();}
       buildPowerups();
     };c.appendChild(b)})
 }
@@ -7744,6 +7726,7 @@ async function playerMove(colorIdx){
     }
   }
 
+  window._scoutActive=false; // Reset after move
   expandTerritoryAnimated(1,p1Color,(gained,chainBonus)=>{
     if(gained>0)showCellsGained(gained,1);
     if(curConfig.moveLimit)movesLeft--;
