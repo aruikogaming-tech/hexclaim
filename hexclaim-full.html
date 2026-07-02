@@ -5791,7 +5791,7 @@ function startBlitzMode(){
 function startFreeplay(){startVsAi('medium')}
 var CHAPTER_TIPS=[
   {icon:'⭐',title:'BONUS CELLS',tip:'Capture the gold ⭐ cells on the board for extra territory! They count as bonus tiles in your final score.'},
-  {icon:'⚡',title:'POWER TILES',tip:'Grab 💥 Bomb, 👁 Scout, or 2x Double Turn tiles before SHADE does! Tap a power-up at the bottom to activate it.'},
+  {icon:'⚡',title:'POWER TILES',tip:'Grab 💥 Bomb, 👁 Scout, or ⚡ Double Turn tiles before SHADE does! Scout doubles your next move — capture 4 tiles instead of 2!'},
   {icon:'💀',title:'TERRITORY DECAY',tip:'Your border tiles crumble every 6 turns! Keep expanding or you\'ll shrink. Watch the turn counter in the top bar.'},
   {icon:'👑',title:'KING OF THE HILL',tip:'Capture 👑 crown tiles to earn bonus points every turn you hold them! They teleport every 7 turns — stay alert!'},
   {icon:'🌑',title:'DARK ZONES',tip:'Black 🌑 patches hide secrets! Expand into them to reveal what\'s inside. Use the Scout power-up to peek first.'},
@@ -5852,7 +5852,7 @@ function launchLevel(){
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
-  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;
+  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;window._scoutActive=false;
 
   // Labels
   if(isPVP&&pvpOpponent){
@@ -5895,6 +5895,7 @@ function exitLevel(){
   myRoomCode=null;pvpRoomData=null;kingTile=null;kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;darkZones=[];bombTargetMode=false;scoutTargetMode=false;
   fogOfWarActive=false;timeBombs=[];colorLockTiles=[];infectionTiles=[];gravityWells=[];shieldTiles=[];infectionTimer=0;
   var ctp=document.getElementById('chTutorialPopup');if(ctp)ctp.remove();
+  window._scoutActive=false;
   if(curConfig&&curConfig.vsAiDiff&&curConfig.vsAiDiff!=='custom'&&curConfig.vsAiDiff!=='blitz_custom')showScreen('vsAiScreen'),buildVsAi();
   else if(curConfig&&(curConfig.vsAiDiff==='custom'||curConfig.vsAiDiff==='blitz_custom'))showScreen('localPvpScreen'),buildCustomGame();
   else if(isPVP&&isLocalPVP)showScreen('localPvpScreen'),buildCustomGame();
@@ -7372,7 +7373,7 @@ function buildPowerups(){
       bombTargetMode=!wasActive&&type==='bomb';
       scoutTargetMode=false;
       if(bombTargetMode)showToast('💥 Tap any tile to place your Bomb!',2000);
-      if(!wasActive&&type==='scout'&&playerPowers.scout>0){fireScout();}
+      if(!wasActive&&type==='scout'&&playerPowers.scout>0){activePower=null;fireScout();}
       buildPowerups();
     };c.appendChild(b)})
 }
