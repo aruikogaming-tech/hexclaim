@@ -4847,7 +4847,7 @@ function startOnlinePoll(){
         pvpRoomData=data;
         turn=expectedMoves%2===0?1:2;
         // Apply decay on opponent's turn too
-        if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
+        if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=2)){
           decayTimer++;
           if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
         }
@@ -7676,7 +7676,7 @@ async function playerMove(colorIdx){
   resetTurnTimer();
 
   // Territory decay — Platinum+ ranked, every 6 turns
-  if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
+  if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
@@ -7784,7 +7784,7 @@ function p2Move(colorIdx){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
+    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
@@ -7918,7 +7918,7 @@ function aiMove(){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=3)){
+    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
