@@ -4473,7 +4473,7 @@ function generateBoard(seed,cols,rows,numColors){
 
   // Power tiles
   const pow=[];
-  const types=['bomb','scout','double'];
+  const types=['bomb','surge','double'];
   const powCount=3+Math.floor(rng()*3);
   for(let i=0;i<powCount;i++){
     let pr,pc,tries=0;
@@ -4796,7 +4796,7 @@ function startOnlineMatch(data){
   // Power tiles generated AFTER dark zones so they can spawn inside them
   if(curConfig.powerTiles){
     const cnt=2+Math.floor(Math.random()*4);
-    const types=['bomb','scout','double'];
+    const types=['bomb','surge','double'];
     for(let i=0;i<cnt;i++){
       let pr,pc,attempts=0;
       // 40% chance to place inside a dark zone if available
@@ -6081,7 +6081,7 @@ function initGame(){
   // Power tiles generated AFTER dark zones so they can spawn inside them
   if(curConfig.powerTiles){
     const cnt=2+Math.floor(Math.random()*4);
-    const types=['bomb','scout','double'];
+    const types=['bomb','surge','double'];
     for(let i=0;i<cnt;i++){
       let pr,pc,attempts=0;
       // 40% chance to place inside a dark zone if available
@@ -7122,8 +7122,8 @@ function draw(){
     if(!fogRevealed[p.r][p.c])return;
     var px=p.c*cellW,py=p.r*cellH;
     var cx2=px+cellW/2,cy2=py+cellH/2;
-    var colors={bomb:'rgba(239,71,111,0.85)',scout:'rgba(6,214,160,0.85)',double:'rgba(131,56,236,0.85)'};
-    var emojis={bomb:'💥',scout:'🌊',double:'⚡'};
+    var colors={bomb:'rgba(239,71,111,0.85)',surge:'rgba(6,214,160,0.85)',double:'rgba(131,56,236,0.85)'};
+    var emojis={bomb:'💥',surge:'🌊',double:'⚡'};
     ctx.save();
     // Colored background circle
     ctx.beginPath();ctx.arc(cx2,cy2,Math.min(cellW,cellH)*0.32,0,Math.PI*2);
@@ -7357,7 +7357,7 @@ function buildColorPicker(){
 }
 function buildPowerups(){
   const c=document.getElementById('powerups');c.innerHTML='';if(!curConfig.powerTiles)return;
-  var anyPower=playerPowers.bomb>0||playerPowers.scout>0||playerPowers.double>0;
+  var anyPower=playerPowers.bomb>0||playerPowers.surge>0||playerPowers.double>0;
   if(anyPower&&!activePower&&turn===1){
     var hint=document.createElement('div');
     hint.style.cssText='font-size:8px;color:var(--c3);text-align:center;width:100%;margin-bottom:3px;font-weight:700;letter-spacing:1px;animation:titleGlow 1s ease infinite';
