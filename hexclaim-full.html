@@ -2020,7 +2020,7 @@ function startLocalPVPWithName(opponentName,config){
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
-  movesLeft=999;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
+  movesLeft=999;playerPowers={bomb:0,surge:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
   document.getElementById('gChapter').textContent='PVP';
   document.getElementById('gLevel').textContent='vs '+opponentName;
   resize();initGame();
@@ -4199,7 +4199,7 @@ function renderLeaderboardList(container,lb){
 // ===== CHAPTERS =====
 const CHAPTERS=[
   {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[52,57,62]},
-  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb clears a zone, 👁 Scout reveals the board, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[50,54,58],powerTiles:true},
+  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb disrupts enemy territory, 🌊 Surge doubles your next move, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[50,54,58],powerTiles:true},
   {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[48,51,55],powerTiles:true},
   {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[47,50,53],powerTiles:true},
   {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[46,49,52],powerTiles:true,darkZones:true},
@@ -4256,7 +4256,7 @@ const P1_GLOW='rgba(255,255,255,0.35)',P2_GLOW='rgba(239,71,111,0.38)';
 let p1Color,p2Color,turn,gameOver,totalCells;
 let curChapter=-1,curLevel=-1,curConfig=null;
 let movesLeft=999,isFreeplay=false,isPVP=false,isLocalPVP=false;
-let powerTiles=[],playerPowers={bomb:0,scout:0,double:0},activePower=null,doubleActive=false;
+let powerTiles=[],playerPowers={bomb:0,surge:0,double:0},activePower=null,doubleActive=false;
 let pvpOpponent=null;
 
 // Timer system
@@ -4751,7 +4751,7 @@ function startOnlineMatch(data){
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   COLS=rc.cols;ROWS=rc.rows;NUM_COLORS=rc.colors;
   movesLeft=rc.baseMoves||999;
-  playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;
+  playerPowers={bomb:0,surge:0,double:0};activePower=null;doubleActive=false;
 
   // Load board from shared seed
   const b=data.board;
@@ -5317,7 +5317,7 @@ function startTutorial(){
   setMusicMode('game');
   comboCount=0;bestCombo=0;shakeAmount=0;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
-  movesLeft=999;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
+  movesLeft=999;playerPowers={bomb:0,surge:0,double:0};activePower=null;doubleActive=false;powerTiles=[];
   document.getElementById('gChapter').textContent='TUTORIAL';
   document.getElementById('gLevel').textContent='How to Play';
   resize();initGame();playSfx('menuOpen');
@@ -5852,7 +5852,7 @@ function launchLevel(){
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
-  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,scout:0,double:0};activePower=null;doubleActive=false;powerTiles=[];kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;window._scoutActive=false;
+  movesLeft=curConfig.baseMoves;playerPowers={bomb:0,surge:0,double:0};activePower=null;doubleActive=false;powerTiles=[];kingTiles=[];kingTileTimer=0;p1KingScore=0;p2KingScore=0;window._scoutActive=false;
 
   // Labels
   if(isPVP&&pvpOpponent){
@@ -7122,23 +7122,18 @@ function draw(){
     if(!fogRevealed[p.r][p.c])return;
     var px=p.c*cellW,py=p.r*cellH;
     var cx2=px+cellW/2,cy2=py+cellH/2;
-    var colors={bomb:'rgba(239,71,111,0.85)',scout:'rgba(17,138,178,0.85)',double:'rgba(131,56,236,0.85)'};
-    var emojis={bomb:'💥',scout:'👁',double:'2x'};
+    var colors={bomb:'rgba(239,71,111,0.85)',scout:'rgba(6,214,160,0.85)',double:'rgba(131,56,236,0.85)'};
+    var emojis={bomb:'💥',scout:'🌊',double:'⚡'};
     ctx.save();
     // Colored background circle
     ctx.beginPath();ctx.arc(cx2,cy2,Math.min(cellW,cellH)*0.32,0,Math.PI*2);
     ctx.fillStyle=colors[p.type];ctx.fill();
     ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=1.5;ctx.stroke();
     // Icon/text
-    if(p.type==='double'){
-      ctx.font='bold '+Math.min(cellW*0.38,11)+'px Manrope';
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillStyle='#fff';ctx.fillText('2x',cx2,cy2);
-    } else {
-      ctx.font='bold '+Math.min(cellW*0.4,12)+'px Manrope';
-      ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(emojis[p.type],cx2,cy2);
-    }
+    ctx.font='bold '+Math.min(cellW*0.4,12)+'px Manrope';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#fff';
+    ctx.fillText(emojis[p.type],cx2,cy2);
     ctx.shadowColor=colors[p.type];ctx.shadowBlur=8;ctx.restore();
   });
   ctx.save();ctx.font='bold '+Math.min(cellW*0.35,10)+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -7157,14 +7152,23 @@ function applyDecay(player){
   const vulnerable=[];
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(owner[r][c]!==player)continue;
-    // A cell is vulnerable if it has 2+ unclaimed or enemy neighbors
     let threats=0;
     [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
       const nr=r+dr,nc=c+dc;
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
       if(owner[nr][nc]===0||owner[nr][nc]===(player===1?2:1))threats++;
     });
-    if(threats>=3&&!isShielded(r,c))// Time Bombs
+    if(threats>=3&&!isShielded(r,c))vulnerable.push({r,c});
+  }
+  // Remove up to 2 random vulnerable cells
+  for(let i=0;i<2&&vulnerable.length>0;i++){
+    const idx=Math.floor(Math.random()*vulnerable.length);
+    const cell=vulnerable.splice(idx,1)[0];
+    owner[cell.r][cell.c]=0;
+    playSfx('decay');
+  }
+}
+// Time Bombs
   timeBombs.forEach(function(bomb){
     if(!fogRevealed[bomb.r][bomb.c])return;
     var x=bomb.c*cellW,y=bomb.r*cellH;
@@ -7270,7 +7274,7 @@ var bombTargetMode=false;
 var scoutTargetMode=false;
 function fireScout(){
   // Scout — doubles BFS cap for next move (4 tiles instead of 2)
-  playerPowers.scout--;
+  playerPowers.surge--;
   activePower=null;
   scoutTargetMode=false;
   window._scoutActive=true;
@@ -7360,12 +7364,12 @@ function buildPowerups(){
     hint.textContent='⬆ TAP A POWER-UP TO ACTIVATE';
     c.appendChild(hint);
   }
-  ['bomb','scout','double'].forEach(type=>{const b=document.createElement('button');
+  ['bomb','surge','double'].forEach(type=>{const b=document.createElement('button');
     var hasPow=playerPowers[type]>0;
     var isActive=activePower===type;
     b.className='pu-btn'+(hasPow?'':' empty')+(isActive?' active':hasPow?' has-power':'');
-    var activeLabel=type==='bomb'?'ACTIVE — tap tile':type==='scout'?'ACTIVE — next move x2':'ACTIVE — pick color';
-    b.innerHTML={bomb:'💥 Bomb',scout:'👁 Scout',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?`<div style="font-size:7px;color:var(--c3);margin-top:1px">${activeLabel}</div>`:'');
+    var activeLabel=type==='bomb'?'ACTIVE — tap tile':type==='surge'?'ACTIVE — next move x2':'ACTIVE — pick color';
+    b.innerHTML={bomb:'💥 Bomb',surge:'🌊 Surge',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?`<div style="font-size:7px;color:var(--c3);margin-top:1px">${activeLabel}</div>`:'');
     b.onclick=()=>{
       if(!playerPowers[type])return;
       var wasActive=activePower===type;
@@ -7373,7 +7377,7 @@ function buildPowerups(){
       bombTargetMode=!wasActive&&type==='bomb';
       scoutTargetMode=false;
       if(bombTargetMode)showToast('💥 Tap any tile to place your Bomb!',2000);
-      if(!wasActive&&type==='scout'&&playerPowers.scout>0){activePower=null;fireScout();}
+      if(!wasActive&&type==='surge'&&playerPowers.surge>0){activePower=null;fireScout();}
       buildPowerups();
     };c.appendChild(b)})
 }
