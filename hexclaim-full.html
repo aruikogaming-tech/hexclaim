@@ -6236,7 +6236,7 @@ function expandTerritory(player,newColor){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
-  const MAX_CAPTURE=window._scoutActive?4:2; // Scout doubles cap
+  const MAX_CAPTURE=window._scoutActive?4:2;window._scoutActive=false; // Surge doubles cap for this one move
  while(changed){changed=false;
     const candidates=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]!==player)continue;
@@ -6260,7 +6260,7 @@ function expandTerritoryAnimated(player,newColor,callback){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
 
   // Collect cells to claim — MAX 2 per move
-  const MAX_CAP=window._scoutActive?4:2;
+  const MAX_CAP=window._scoutActive?4:2;window._scoutActive=false;
   const waves=[];
   const tempOwner=owner.map(r=>[...r]);
   const tempGrid=grid.map(r=>[...r]);
@@ -7817,7 +7817,6 @@ async function playerMove(colorIdx){
     }
   }
 
-  window._scoutActive=false; // Reset after move
   expandTerritoryAnimated(1,p1Color,(gained,chainBonus)=>{
     if(gained>0)showCellsGained(gained,1);
     if(curConfig.moveLimit)movesLeft--;
