@@ -1502,8 +1502,9 @@ function authLinkProvider(provider){
 
 
 function saveToCloud(){
-  if(!firebaseReady||!save.authUid||save.isGuest)return;
-  var uid=save.authUid;
+  if(!firebaseReady||save.isGuest)return;
+  if(!firebaseAuth.currentUser)return;              // session dropped: keep localStorage only
+  var uid=firebaseAuth.currentUser.uid;             // use the LIVE session, not stale save.authUid
   var data=JSON.parse(JSON.stringify(save));
   firebaseDB.ref('users/'+uid+'/save').set(data).catch(function(e){
     console.log('Cloud save failed:',e.message);
