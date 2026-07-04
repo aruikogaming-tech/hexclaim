@@ -6040,7 +6040,7 @@ function initGame(){
   kingTiles=[];
   kingTileTimer=0;
   p1KingScore=0;p2KingScore=0;
-  if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=3)){
+  if(curConfig.chapterIdx>=3){
     var kAttempts=0;
     while(kingTiles.length<3&&kAttempts<200){
       kAttempts++;
@@ -6493,7 +6493,7 @@ function updateFog(){
   }
   if(!curConfig.fog||curConfig.isRanked)return;
   // Deep fog (2 tiles) for Chapter 3+, ranked Diamond+, and ranked Master/Chromancer
-  var isDeepFog=(curConfig.chapterIdx>=2)||(curConfig.isRanked&&save.elo>=1900);
+  var isDeepFog=(curConfig.chapterIdx>=2);
   var radius=isDeepFog?2:1;
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     if(owner[r][c]===1)fogRevealed[r][c]=true;
@@ -7138,6 +7138,7 @@ function draw(){
   // King of the Hill tiles — 3 roaming bonus tiles
   kingTiles.forEach(function(kt){
     if(!fogRevealed[kt.r][kt.c])return;
+    if(inHiddenDarkZone(kt.r,kt.c))return;
     var kx=kt.c*cellW+cellW/2,ky=kt.r*cellH+cellH/2;
     var pulse=0.7+0.3*Math.sin(Date.now()*0.003);
     ctx.save();
@@ -7223,6 +7224,7 @@ function drawSeasonalOverlays(){
   // Time Bombs
   timeBombs.forEach(function(bomb){
     if(!fogRevealed[bomb.r][bomb.c])return;
+    if(inHiddenDarkZone(bomb.r,bomb.c))return;
     var x=bomb.c*cellW,y=bomb.r*cellH;
     ctx.save();
     ctx.fillStyle='rgba(239,71,111,0.85)';
@@ -7236,6 +7238,7 @@ function drawSeasonalOverlays(){
   // Color Lock tiles
   colorLockTiles.forEach(function(cl){
     if(!fogRevealed[cl.r][cl.c])return;
+    if(inHiddenDarkZone(cl.r,cl.c))return;
     if(owner[cl.r][cl.c]!==0)return; // Already captured
     var x=cl.c*cellW,y=cl.r*cellH;
     ctx.save();
@@ -7252,6 +7255,7 @@ function drawSeasonalOverlays(){
   // Infection tiles
   infectionTiles.forEach(function(inf){
     if(!fogRevealed[inf.r][inf.c])return;
+    if(inHiddenDarkZone(inf.r,inf.c))return;
     var x=inf.c*cellW,y=inf.r*cellH;
     ctx.save();
     ctx.fillStyle='rgba(100,200,50,0.5)';
@@ -7265,6 +7269,7 @@ function drawSeasonalOverlays(){
   // Gravity Wells
   gravityWells.forEach(function(w){
     if(!fogRevealed[w.r][w.c])return;
+    if(inHiddenDarkZone(w.r,w.c))return;
     var x=w.c*cellW,y=w.r*cellH;
     ctx.save();
     ctx.strokeStyle='rgba(138,43,226,0.8)';ctx.lineWidth=2;
@@ -7278,6 +7283,7 @@ function drawSeasonalOverlays(){
   // Shield tiles
   shieldTiles.forEach(function(s){
     if(!fogRevealed[s.r][s.c])return;
+    if(inHiddenDarkZone(s.r,s.c))return;
     var x=s.c*cellW,y=s.r*cellH;
     ctx.save();
     ctx.strokeStyle='rgba(100,180,255,0.9)';ctx.lineWidth=3;
@@ -7754,7 +7760,7 @@ async function playerMove(colorIdx){
   resetTurnTimer();
 
   // Territory decay — Platinum+ ranked, every 6 turns
-  if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
+  if(curConfig.chapterIdx>=2){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
@@ -7862,7 +7868,7 @@ function p2Move(colorIdx){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
+    if(curConfig.chapterIdx>=2){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
@@ -7996,7 +8002,7 @@ function aiMove(){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if((curConfig.isRanked&&save.elo>=1900)||(curConfig.chapterIdx>=2)){
+    if(curConfig.chapterIdx>=2){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
