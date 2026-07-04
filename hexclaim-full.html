@@ -6502,6 +6502,40 @@ function countOwned(p){
   else if(p===2)n+=p2KingScore;
   return n;
 }
+
+function maxDecayLoss(p){
+  var decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2));
+  if(!decayOn)return 0;
+  var loss=0;
+  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++){
+    if(owner[r][c]!==p)continue;
+    if(isShielded(r,c))continue;
+    var open=0;
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(function(d){var nr=r+d[0],nc=c+d[1];if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;if(owner[nr][nc]===0||owner[nr][nc]===(p===1?2:1))open++;});
+    if(open>=3)loss++;
+  }
+  return loss;
+}
+
+function computeDecisiveOutcome(){
+  var s1=countOwned(1), s2=countOwned(2), unclaimedVal=0;
+  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++){
+    if(owner[r][c]!==0)continue;
+    var v=1;
+    if(bonusCells.some(function(b){return b.r===r&&b.c===c}))v++;
+    if(gravityWells.some(function(w){return Math.abs(w.r-r)<=2&&Math.abs(w.c-c)<=2}))v++;
+    unclaimedVal+=v;
+  }
+  var bombSwing=(playerPowers.bomb||0)*5;
+  var kingLeft=kingTiles.length?Math.max(0,60-(p1KingScore+p2KingScore)):0;
+  var p1Ceiling=s1+unclaimedVal+kingLeft+bombSwing;
+  var p1Floor=s1-maxDecayLoss(1);
+  var p2Ceiling=s2+unclaimedVal+kingLeft;
+  var p2Floor=s2-bombSwing-maxDecayLoss(2);
+  if(p1Floor>p2Ceiling)return {decided:true,winner:1};
+  if(p2Floor>p1Ceiling)return {decided:true,winner:2};
+  return {decided:false,winner:0};
+}
 // Raw cell count without bonus (for totalCells percentage)
 function countOwnedRaw(p){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(owner[r][c]===p)n++;return n;}
 
@@ -8102,6 +8136,11 @@ function aiMove(){
 }
 
 function checkEnd(){
+  if(window._decideDebug){
+    var _d=computeDecisiveOutcome();
+    console.log('[DECIDE]', _d.decided?('DECIDED -> winner P'+_d.winner):'live',
+      '| s1='+countOwned(1), 's2='+countOwned(2));
+  }
   if(gameOver)return false;
   if(window._checkEndRunning)return false;
   window._checkEndRunning=true;
