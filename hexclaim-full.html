@@ -4509,6 +4509,10 @@ function buildMatchState(seed,rc,matchElo){
   if(matchElo>=2600)st.seasonMechs[0]=getSeasonMechanicId(0);
   if(matchElo>=3500)st.seasonMechs[1]=getSeasonMechanicId(1);
   if(matchElo>=4700)st.seasonMechs[2]=getSeasonMechanicId(2);
+  // Stacking guardrail — at most one info-hiding mechanic; no decay+infection double-strip
+  var _fogIdx=st.seasonMechs.indexOf('fogOfWar'),_dzIdx=st.seasonMechs.indexOf('darkZones');
+  if(_fogIdx>=0&&_dzIdx>=0){if(_fogIdx<_dzIdx)st.seasonMechs[_dzIdx]=null;else st.seasonMechs[_fogIdx]=null;}
+  if(matchElo>=1900){var _infIdx=st.seasonMechs.indexOf('infection');if(_infIdx>=0)st.seasonMechs[_infIdx]=null;}
   st.seasonMechs.filter(Boolean).forEach(function(id){
     if(id==='fogOfWar')st.fogOfWarActive=true;
     else if(id==='timeBombs')midMany(3+Math.floor(rM()*3),st.timeBombs,function(r,c){return{r:r,c:c,timer:8};});
@@ -6238,10 +6242,13 @@ function checkDarkZoneReveal(r,c){
   });
 }
 // Shared capture-priority rule: prefer candidates furthest from P1's start corner (toward the opponent); random tiebreak among equals
-function forwardScore(r,c){return Math.abs(r-p1StartCorner.r)+Math.abs(c-p1StartCorner.c);}
-function pickForwardCandidates(candidates,maxCount){
+function forwardScore(r,c,player){
+  const corner=player===2?{r:ROWS-1-p1StartCorner.r,c:COLS-1-p1StartCorner.c}:p1StartCorner;
+  return Math.abs(r-corner.r)+Math.abs(c-corner.c);
+}
+function pickForwardCandidates(candidates,maxCount,player){
   if(candidates.length<=maxCount)return candidates.slice();
-  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c)};});
+  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c,player)};});
   scored.sort(function(a,b){return b.score-a.score});
   let i=0;
   while(i<scored.length){
@@ -6255,7 +6262,7 @@ function expandTerritory(player,newColor){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
   let capturedThisTurn=0;
-  const MAX_CAPTURE=window._scoutActive?4:2;window._scoutActive=false; // Surge doubles cap for this one move
+  const MAX_CAPTURE=window._scoutActive?6:2;window._scoutActive=false; // Surge doubles cap for this one move
  while(changed){changed=false;
     const candidates=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]!==player)continue;
@@ -6265,7 +6272,7 @@ function expandTerritory(player,newColor){
           var lockIdx=colorLockTiles.findIndex(function(cl){return cl.r===nr&&cl.c===nc});
           if(lockIdx>=0&&colorLockTiles[lockIdx].color!==newColor)return;
           if(!candidates.some(x=>x.r===nr&&x.c===nc))candidates.push({r:nr,c:nc});}});}
-    const picked=pickForwardCandidates(candidates,MAX_CAPTURE-capturedThisTurn);
+    const picked=pickForwardCandidates(candidates,MAX_CAPTURE-capturedThisTurn,player);
     for(let i=0;i<picked.length;i++){
       const {r:nr,c:nc}=picked[i];
       owner[nr][nc]=player;changed=true;capturedThisTurn++;
@@ -6280,7 +6287,7 @@ function expandTerritoryAnimated(player,newColor,callback){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
 
   // Collect cells to claim — MAX 2 per move
-  const MAX_CAP=window._scoutActive?4:2;window._scoutActive=false;
+  const MAX_CAP=window._scoutActive?6:2;window._scoutActive=false;
   const waves=[];
   const tempOwner=owner.map(r=>[...r]);
   const tempGrid=grid.map(r=>[...r]);
@@ -6302,7 +6309,7 @@ function expandTerritoryAnimated(player,newColor,callback){
         }
       });
     }
-    const wave=pickForwardCandidates(frontier,MAX_CAP-totalCollected);
+    const wave=pickForwardCandidates(frontier,MAX_CAP-totalCollected,player);
     if(wave.length){
       wave.forEach(w=>{tempOwner[w.r][w.c]=player;changed=true});
       waves.push(wave);
