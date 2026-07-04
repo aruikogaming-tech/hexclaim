@@ -7176,6 +7176,7 @@ function draw(){
   ctx.save();ctx.font='bold '+Math.min(cellW*0.35,10)+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='rgba(6,214,160,0.9)';ctx.fillText('⬡',cellW/2,(ROWS-1)*cellH+cellH/2);
   ctx.fillStyle='rgba(239,71,111,0.9)';ctx.fillText('⬡',(COLS-1)*cellW+cellW/2,cellH/2);ctx.restore();
+  drawSeasonalOverlays();
 
   drawSeasonalOverlays();
 }
@@ -7216,6 +7217,7 @@ function applyDecay(player){
   // --- END TEMP DECAY DEBUG ---
 }
 function drawSeasonalOverlays(){
+  function drawSeasonalOverlays(){
   // Time Bombs
   timeBombs.forEach(function(bomb){
     if(!fogRevealed[bomb.r][bomb.c])return;
@@ -7325,6 +7327,47 @@ function drawSeasonalOverlays(){
   }
 
   // Dark Zones — mystery patches only visible when close
+}
+
+// Territory Decay warning: telegraph the local player's at-risk tiles
+  var _decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2));
+  if(_decayOn){
+    var _me=curConfig.isOnline?(myPlayerSlot||1):1;
+    var _foe=_me===1?2:1;
+    var _rem=6-(decayTimer%6);
+    if(_rem<=2){
+      var _urgent=_rem<=1;
+      var _pulse=0.5+0.5*Math.sin(Date.now()/220);
+      for(var _dr=0;_dr<ROWS;_dr++)for(var _dc=0;_dc<COLS;_dc++){
+        if(owner[_dr][_dc]!==_me)continue;
+        if(!fogRevealed[_dr][_dc])continue;
+        if(isShielded(_dr,_dc))continue;
+        var _th=0;
+        [[0,1],[0,-1],[1,0],[-1,0]].forEach(function(d){
+          var nr=_dr+d[0],nc=_dc+d[1];
+          if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
+          if(owner[nr][nc]===0||owner[nr][nc]===_foe)_th++;
+        });
+        if(_th<3)continue;
+        var _x=_dc*cellW,_y=_dr*cellH;
+        ctx.save();
+        ctx.fillStyle='rgba(255,140,0,'+(_urgent?(0.30+0.30*_pulse):0.18)+')';
+        ctx.fillRect(_x,_y,cellW,cellH);
+        ctx.strokeStyle='rgba(255,90,0,'+(_urgent?0.9:0.5)+')';
+        ctx.lineWidth=_urgent?3:1.5;
+        ctx.setLineDash([4,3]);
+        ctx.strokeRect(_x+1.5,_y+1.5,cellW-3,cellH-3);
+        ctx.setLineDash([]);
+        if(_urgent){
+          ctx.fillStyle='rgba(255,255,255,0.95)';
+          ctx.font=Math.floor(Math.min(cellW,cellH)*0.42)+'px Manrope';
+          ctx.textAlign='center';ctx.textBaseline='middle';
+          ctx.fillText('⚠',_x+cellW/2,_y+cellH/2);
+        }
+        ctx.restore();
+      }
+    }
+  }
 }
 
 function computePreview(colorIdx){
