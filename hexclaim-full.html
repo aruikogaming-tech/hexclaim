@@ -4242,6 +4242,8 @@ const CHALLENGES=[
 
 // ===== GAME STATE =====
 let grid=[],owner=[],fogRevealed=[];
+let captureTurn=[]; // per-tile: decayTimer value at time of capture (decay grace)
+let p1StartCorner={r:0,c:0}; // anchor for forward-priority capture rule
 let COLS,ROWS,NUM_COLORS;
 let COLOR_HEX=['#3a3660','#06d6a0','#118ab2','#ffd166','#ef476f','#8338ec','#ff8c42','#2ec4b6'];
 const COLOR_HEX_DEFAULT=['#3a3660','#06d6a0','#118ab2','#ffd166','#ef476f','#8338ec','#ff8c42','#2ec4b6'];
@@ -4782,6 +4784,7 @@ function startOnlineMatch(data){
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
   COLS=rc.cols;ROWS=rc.rows;NUM_COLORS=rc.colors;
+  p1StartCorner={r:ROWS-1,c:0}; // generateBoard always seats P1 bottom-left online
   movesLeft=rc.baseMoves||999;
   playerPowers={bomb:0,surge:0,double:0};activePower=null;doubleActive=false;
 
@@ -4789,6 +4792,7 @@ function startOnlineMatch(data){
   const b=data.board;
   grid=b.grid.map(r=>[...r]);
   owner=b.owner.map(r=>[...r]);
+  captureTurn=owner.map(function(row){return row.map(function(){return 0;});});
   powerTiles=b.powers?b.powers.map(p=>({...p})):[];
   fogRevealed=[];
   for(let r=0;r<ROWS;r++){fogRevealed[r]=[];for(let c=0;c<COLS;c++)fogRevealed[r][c]=!rc.fog;}
@@ -5956,7 +5960,7 @@ function initGame(){
   animatingMove=false;
   gameOver=false;
   applySkinColors();
-  grid=[];owner=[];fogRevealed=[];powerTiles=[];
+  grid=[];owner=[];fogRevealed=[];powerTiles=[];captureTurn=[];
   // STRICT max-2 rule: BFS flood fill check — no orthogonal group > 2 tiles
   function wouldExceedMax(testGrid,tr,tc,color,maxSize){
     // BFS from (tr,tc) counting connected cells of same color
@@ -5975,7 +5979,7 @@ function initGame(){
     }
     return count>maxSize;
   }
-  for(let r=0;r<ROWS;r++){grid[r]=[];owner[r]=[];fogRevealed[r]=[];
+  for(let r=0;r<ROWS;r++){grid[r]=[];owner[r]=[];fogRevealed[r]=[];captureTurn[r]=[];
     for(let c=0;c<COLS;c++){
       var colors=[];for(var ci=0;ci<NUM_COLORS;ci++)colors.push(ci);
       for(var i=colors.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var tmp=colors[i];colors[i]=colors[j];colors[j]=tmp}
@@ -5985,7 +5989,7 @@ function initGame(){
         if(!wouldExceedMax(grid,r,c,colors[ci],2)){placed=true;break}
       }
       if(!placed)grid[r][c]=colors[0];
-      owner[r][c]=0;fogRevealed[r][c]=!curConfig.fog;
+      owner[r][c]=0;fogRevealed[r][c]=!curConfig.fog;captureTurn[r][c]=0;
     }
   }
   // Random starting corners — pick 2 opposite corners randomly
@@ -5994,6 +5998,7 @@ function initGame(){
   var opposites=[[0,COLS-1],[ROWS-1,0],[ROWS-1,COLS-1],[0,0]];
   var p2corner=opposites[corners.indexOf(p1corner)];
   owner[p1corner[0]][p1corner[1]]=1;p1Color=grid[p1corner[0]][p1corner[1]];
+  p1StartCorner={r:p1corner[0],c:p1corner[1]};
   owner[p2corner[0]][p2corner[1]]=2;p2Color=grid[p2corner[0]][p2corner[1]];
   if(p1Color===p2Color){p2Color=(p2Color+1)%NUM_COLORS;grid[p2corner[0]][p2corner[1]]=p2Color}
   // Make surrounding corner tiles different colors to prevent auto-capture on first expand
@@ -6232,6 +6237,20 @@ function checkDarkZoneReveal(r,c){
     }
   });
 }
+// Shared capture-priority rule: prefer candidates furthest from P1's start corner (toward the opponent); random tiebreak among equals
+function forwardScore(r,c){return Math.abs(r-p1StartCorner.r)+Math.abs(c-p1StartCorner.c);}
+function pickForwardCandidates(candidates,maxCount){
+  if(candidates.length<=maxCount)return candidates.slice();
+  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c)};});
+  scored.sort(function(a,b){return b.score-a.score});
+  let i=0;
+  while(i<scored.length){
+    let j=i;while(j<scored.length&&scored[j].score===scored[i].score)j++;
+    for(let k=j-1;k>i;k--){const m=i+Math.floor(Math.random()*(k-i+1));const tmp=scored[k];scored[k]=scored[m];scored[m]=tmp;}
+    i=j;
+  }
+  return scored.slice(0,maxCount).map(function(s){return{r:s.r,c:s.c}});
+}
 function expandTerritory(player,newColor){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
@@ -6246,10 +6265,11 @@ function expandTerritory(player,newColor){
           var lockIdx=colorLockTiles.findIndex(function(cl){return cl.r===nr&&cl.c===nc});
           if(lockIdx>=0&&colorLockTiles[lockIdx].color!==newColor)return;
           if(!candidates.some(x=>x.r===nr&&x.c===nc))candidates.push({r:nr,c:nc});}});}
-    for(let i=candidates.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
-    for(let i=0;i<candidates.length&&capturedThisTurn<MAX_CAPTURE;i++){
-      const {r:nr,c:nc}=candidates[i];
+    const picked=pickForwardCandidates(candidates,MAX_CAPTURE-capturedThisTurn);
+    for(let i=0;i<picked.length;i++){
+      const {r:nr,c:nc}=picked[i];
       owner[nr][nc]=player;changed=true;capturedThisTurn++;
+      captureTurn[nr][nc]=decayTimer;
       newlyClaimed.push({r:nr,c:nc,player});
       const pi=powerTiles.findIndex(p=>p.r===nr&&p.c===nc);
       if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups();}}}
@@ -6268,24 +6288,23 @@ function expandTerritoryAnimated(player,newColor,callback){
   let changed=true;
   while(changed&&totalCollected<MAX_CAP){
     changed=false;
-    const wave=[];
+    const frontier=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
-      if(totalCollected+wave.length>=MAX_CAP)break;
       if(tempOwner[r][c]!==player)continue;
       [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
-        if(totalCollected+wave.length>=MAX_CAP)return;
         const nr=r+dr,nc=c+dc;
         if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&tempOwner[nr][nc]===0&&tempGrid[nr][nc]===newColor){
           var clIdx=colorLockTiles.findIndex(function(cl){return cl.r===nr&&cl.c===nc});
           if(clIdx>=0&&colorLockTiles[clIdx].color!==newColor)return;
-          if(!wave.some(w=>w.r===nr&&w.c===nc)){
-            wave.push({r:nr,c:nc});changed=true;
+          if(!frontier.some(w=>w.r===nr&&w.c===nc)){
+            frontier.push({r:nr,c:nc});
           }
         }
       });
     }
+    const wave=pickForwardCandidates(frontier,MAX_CAP-totalCollected);
     if(wave.length){
-      wave.forEach(w=>{tempOwner[w.r][w.c]=player});
+      wave.forEach(w=>{tempOwner[w.r][w.c]=player;changed=true});
       waves.push(wave);
       totalCollected+=wave.length;
     }
@@ -6318,6 +6337,7 @@ function expandTerritoryAnimated(player,newColor,callback){
     const wave=waves[waveIdx];
     wave.forEach(w=>{
       owner[w.r][w.c]=player;
+      captureTurn[w.r][w.c]=decayTimer;
       newlyClaimed.push({r:w.r,c:w.c,player});
       // Check power tiles
       const pi=powerTiles.findIndex(p=>p.r===w.r&&p.c===w.c);
@@ -7202,7 +7222,7 @@ function applyDecay(player){
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
       if(owner[nr][nc]===0||owner[nr][nc]===(player===1?2:1))threats++;
     });
-    if(threats>=3&&!isShielded(r,c))vulnerable.push({r,c});
+    if(threats>=3&&!isShielded(r,c)&&(decayTimer-(captureTurn[r][c]||0))>=2)vulnerable.push({r,c});
   }
   // Remove up to 2 random vulnerable cells
   var removed=0;
