@@ -855,7 +855,7 @@ function checkDailyLogin(){
   et.setDate(et.getDate()-1);
   var yesterday=et.toDateString();
   if(save.lastLoginDate===yesterday){
-    save.loginStreak=Math.min(save.loginStreak+1,30);
+    save.loginStreak=save.loginStreak+1;
   } else if(save.lastLoginDate){
     save.loginStreak=1; // Streak broken
   } else {
@@ -870,30 +870,34 @@ function checkDailyLogin(){
 
 function showStreakPopup(){
   const day=save.loginStreak;
-  const reward=STREAK_REWARDS[day-1]||STREAK_REWARDS[6];
+  // 30-day reward calendar loops so there's always a next day, even past day 30
+  const calDay=(day-1)%30+1;
+  const reward=STREAK_REWARDS[calDay-1]||STREAK_REWARDS[6];
+  // Claim is tracked by the actual game-day, not the streak number
+  var claimedToday=(save.lastStreakClaimDate===getGameDay());
   const popup=document.createElement('div');
   popup.id='streakPopup';
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
   let rewardGrid='';
   STREAK_REWARDS.forEach(function(r,i){
-    const isCurrent=i+1===day;
-    const isPast=i+1<day;
-    const isClaimed=save.streakClaimed&&save.streakClaimed[i+1];
-    const bg=isClaimed?'rgba(6,214,160,0.08)':isCurrent?'rgba(6,214,160,0.15)':isPast?'rgba(255,255,255,0.03)':'var(--dim)';
-    const border=isClaimed||isCurrent?'var(--p1)':'var(--border)';
-    const opacity=isPast&&!isClaimed&&!isCurrent?'opacity:0.4':'';
+    const isCurrent=i+1===calDay;
+    const isPast=i+1<calDay;
+    const isDoneCurrent=isCurrent&&claimedToday;
+    const bg=isPast?'rgba(6,214,160,0.08)':isCurrent?'rgba(6,214,160,0.15)':'var(--dim)';
+    const border=isPast||isCurrent?'var(--p1)':'var(--border)';
+    const opacity=(!isPast&&!isCurrent)?'opacity:0.4':'';
     rewardGrid+='<div style="text-align:center;padding:6px;border-radius:8px;background:'+bg+';border:1px solid '+border+';'+opacity+'">'
-      +'<div style="font-size:9px;font-weight:800;color:'+(isCurrent||isClaimed?'var(--p1)':'var(--muted)')+'">'+r.label+'</div>'
+      +'<div style="font-size:9px;font-weight:800;color:'+(isPast||isCurrent?'var(--p1)':'var(--muted)')+'">'+r.label+'</div>'
       +'<div style="font-size:10px;margin-top:2px">🟡'+(r.coins||0)+' 💎'+(r.chromas||0)+'</div>'
-      +(isClaimed?'<div style="font-size:8px;color:var(--p1)">✓</div>':'')
+      +((isPast||isDoneCurrent)?'<div style="font-size:8px;color:var(--p1)">✓</div>':'')
       +'</div>';
   });
   popup.onclick=function(e){if(e.target===popup)popup.remove();};
-  var alreadyClaimed=save.streakClaimed&&save.streakClaimed[day];
+  var alreadyClaimed=claimedToday;
   popup.innerHTML='<div style="position:relative;background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:20px;text-align:center;max-width:340px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:28px;margin-bottom:4px">🔥</div>'
     +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:16px;color:var(--p1)">'+day+'-Day Streak!</div>'
-    +'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+(day>=30?'🏆 Max streak achieved!':day>=14?'🔥 Amazing streak! Keep going!':'Come back tomorrow to continue!')+'</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-top:4px">'+(claimedToday?'✓ Claimed! Come back tomorrow to continue.':day>=14?'🔥 Amazing streak! Keep it going!':'Come back tomorrow to continue!')+'</div>'
     +'<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:12px 0">'+rewardGrid+'</div>'
     +'<button id="streakClaimBtn" style="padding:10px 28px;background:'+(alreadyClaimed?'var(--dim)':'var(--p1)')+';border:none;border-radius:8px;color:'+(alreadyClaimed?'var(--muted)':'#fff')+';font-weight:800;cursor:'+(alreadyClaimed?'default':'pointer')+';font-family:Manrope,sans-serif;font-size:13px">'+(alreadyClaimed?'Already Claimed ✓':'Claim 🟡'+(reward.coins||0)+' + 💎'+(reward.chromas||0))+'</button>'
     +'<button onclick="document.getElementById(\'streakPopup\').remove();playSfx(\'menuBack\')" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px">✕</button>'
@@ -902,11 +906,10 @@ function showStreakPopup(){
   var claimBtn=document.getElementById('streakClaimBtn');
   if(!alreadyClaimed){
     claimBtn.onclick=function(){
-      if(typeof save.streakClaimed!=='object'||save.streakClaimed===null)save.streakClaimed={};
-      if(save.streakClaimed[day])return;
+      if(save.lastStreakClaimDate===getGameDay())return; // one claim per game-day
       if(reward.coins)save.coins+=reward.coins;
       if(reward.chromas)save.chromas+=reward.chromas;
-      save.streakClaimed[day]=true;
+      save.lastStreakClaimDate=getGameDay();
       claimBtn.disabled=true;
       claimBtn.style.opacity='0.5';
       claimBtn.style.pointerEvents='none';
