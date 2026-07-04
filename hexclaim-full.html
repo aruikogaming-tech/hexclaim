@@ -6509,12 +6509,14 @@ function updateFog(){
   }
 }
 
+function inHiddenDarkZone(r,c){ return darkZones.some(function(dz){return !dz.revealed && !dz.scoutedByP1 && r>=dz.r && r<dz.r+dz.size && c>=dz.c && c<dz.c+dz.size;}); }
 function draw(){
   ctx.clearRect(0,0,W,H);
   for(let r=0;r<ROWS;r++){for(let c=0;c<COLS;c++){const x=c*cellW,y=r*cellH,pad=1.5,rad=4;
     ctx.save();ctx.beginPath();ctx.roundRect(x+pad,y+pad,cellW-pad*2,cellH-pad*2,rad);
 
     if(!fogRevealed[r][c]){ctx.fillStyle='#0c0c18';ctx.fill();ctx.restore();continue}
+    if(inHiddenDarkZone(r,c)){ctx.fillStyle='#03040c';ctx.fill();ctx.restore();continue}
     // Darken unclaimed tiles so they don't appear too bright
     var rawColor=COLOR_HEX[grid[r][c]];
     ctx.fillStyle=owner[r][c]===0?rawColor+'cc':rawColor;ctx.fill();
@@ -7041,6 +7043,7 @@ function draw(){
   // Bonus cells — draw diamond marker
   bonusCells.forEach(b=>{
     if(!fogRevealed[b.r][b.c])return;
+    if(inHiddenDarkZone(b.r,b.c))return;
     const x=b.c*cellW+cellW/2,y=b.r*cellH+cellH/2,s=Math.min(cellW,cellH)*0.18;
     ctx.save();
     ctx.shadowColor='rgba(255,209,102,0.5)';ctx.shadowBlur=6;
@@ -7157,6 +7160,7 @@ function draw(){
   // Power tiles
   powerTiles.forEach(function(p){
     if(!fogRevealed[p.r][p.c])return;
+    if(inHiddenDarkZone(p.r,p.c))return;
     var px=p.c*cellW,py=p.r*cellH;
     var cx2=px+cellW/2,cy2=py+cellH/2;
     var colors={bomb:'rgba(239,71,111,0.85)',surge:'rgba(6,214,160,0.85)',double:'rgba(131,56,236,0.85)'};
