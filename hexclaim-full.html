@@ -4484,6 +4484,49 @@ function generateBoard(seed,cols,rows,numColors){
   return{grid:g,owner:o,powers:pow,p1Color:g[rows-1][0],p2Color:g[0][cols-1]};
 }
 
+// Build ALL shared match state deterministically, gated on the MATCH average ELO.
+// Tiers: <1900 none | 1900+ Decay | 2600+ KotH+Seasonal1 | 3500+ +Seasonal2 | 4700+ +Seasonal3
+function buildMatchState(seed,rc,matchElo){
+  var st={matchElo:matchElo,seasonMechs:[null,null,null],
+    bonusCells:[],kingTiles:[],kingTileTimer:0,p1KingScore:0,p2KingScore:0,
+    darkZones:[],timeBombs:[],colorLockTiles:[],infectionTiles:[],
+    gravityWells:[],shieldTiles:[],fogOfWarActive:false};
+  var rows=rc.rows,cols=rc.cols;
+  var rB=seededRandom(seed+1),rK=seededRandom(seed+7),rM=seededRandom(seed+11);
+  function occ(r,c){return (r===rows-1&&c===0)||(r===0&&c===cols-1);}
+  function midMany(n,arr,make){for(var j=0;j<n;j++){var mr,mc,mt=0;do{mr=Math.floor(rows*0.2+rM()*rows*0.6);mc=Math.floor(cols*0.2+rM()*cols*0.6);mt++;}while(mt<100&&(occ(mr,mc)||arr.some(function(x){return x.r===mr&&x.c===mc;})));if(mt<100)arr.push(make(mr,mc));}}
+  // Bonus cells — every tier
+  var numB=Math.floor(cols*rows*0.04)+2;
+  for(var i=0;i<numB;i++){var br,bc,t=0;do{br=Math.floor(rows*0.25+rB()*rows*0.5);bc=Math.floor(cols*0.25+rB()*cols*0.5);t++;}while(t<50&&(occ(br,bc)||st.bonusCells.some(function(b){return b.r===br&&b.c===bc;})));if(t<50)st.bonusCells.push({r:br,c:bc});}
+  // King of the Hill — Diamond+ (matchElo>=2600), 3 tiles
+  if(matchElo>=2600){var ka=0;while(st.kingTiles.length<3&&ka<300){ka++;var kr=Math.floor(rows*0.2+rK()*rows*0.6),kc=Math.floor(cols*0.2+rK()*cols*0.6);if(!occ(kr,kc)&&!st.kingTiles.some(function(x){return x.r===kr&&x.c===kc;}))st.kingTiles.push({r:kr,c:kc});}}
+  // Resolve rotating seasonal ids by tier (host resolves; both clients read from room data)
+  if(matchElo>=2600)st.seasonMechs[0]=getSeasonMechanicId(0);
+  if(matchElo>=3500)st.seasonMechs[1]=getSeasonMechanicId(1);
+  if(matchElo>=4700)st.seasonMechs[2]=getSeasonMechanicId(2);
+  st.seasonMechs.filter(Boolean).forEach(function(id){
+    if(id==='fogOfWar')st.fogOfWarActive=true;
+    else if(id==='timeBombs')midMany(3+Math.floor(rM()*3),st.timeBombs,function(r,c){return{r:r,c:c,timer:8};});
+    else if(id==='colorLock')midMany(4+Math.floor(rM()*4),st.colorLockTiles,function(r,c){return{r:r,c:c,color:Math.floor(rM()*rc.colors)};});
+    else if(id==='infection')midMany(2+Math.floor(rM()*2),st.infectionTiles,function(r,c){return{r:r,c:c};});
+    else if(id==='gravityWells')midMany(3,st.gravityWells,function(r,c){return{r:r,c:c};});
+    else if(id==='shieldTiles')midMany(4+Math.floor(rM()*3),st.shieldTiles,function(r,c){return{r:r,c:c};});
+    else if(id==='darkZones'){var tc=cols*rows,nZ=Math.max(3,Math.floor(tc/30)),zS=tc>160?3:2,za=0;while(st.darkZones.length<nZ&&za<200){za++;var zr=Math.floor(rows*0.2+rM()*rows*0.6),zc=Math.floor(cols*0.2+rM()*cols*0.6),ov=false;for(var q=0;q<st.darkZones.length;q++){var dz=st.darkZones[q];if(Math.abs(dz.r-zr)<=zS+1&&Math.abs(dz.c-zc)<=zS+1){ov=true;break;}}if(!ov)st.darkZones.push({r:zr,c:zc,size:zS,revealed:false});}}
+  });
+  // Legacy Chromancer config dark zones (only if none rolled as a seasonal)
+  if(rc.darkZones&&st.darkZones.length===0){var tc2=cols*rows,nZ2=Math.max(3,Math.floor(tc2/30)),zS2=tc2>160?3:2,za2=0,rD=seededRandom(seed+2);while(st.darkZones.length<nZ2&&za2<200){za2++;var zr2=Math.floor(rows*0.2+rD()*rows*0.6),zc2=Math.floor(cols*0.2+rD()*cols*0.6),ov2=false;for(var q2=0;q2<st.darkZones.length;q2++){var dz2=st.darkZones[q2];if(Math.abs(dz2.r-zr2)<=zS2+1&&Math.abs(dz2.c-zc2)<=zS2+1){ov2=true;break;}}if(!ov2)st.darkZones.push({r:zr2,c:zc2,size:zS2,revealed:false});}}
+  return st;
+}
+
+// Per-turn mechanic tick for ONLINE matches. Only the moving player runs this,
+// then writes the resulting board so the opponent adopts it (keeps Math.random in sync).
+function applyOnlineTick(){
+  if(curConfig.matchElo>=1900){decayTimer++;if(decayTimer%6===0){applyDecay(1);applyDecay(2);}}
+  if(timeBombs.length>0){var ex=[];timeBombs.forEach(function(b,idx){b.timer--;if(b.timer<=0){ex.push(idx);for(var er=b.r-1;er<=b.r+1;er++)for(var ec=b.c-1;ec<=b.c+1;ec++){if(er>=0&&er<ROWS&&ec>=0&&ec<COLS)owner[er][ec]=0;}showToast('💣 Bomb exploded!',1500);}});for(var ei=ex.length-1;ei>=0;ei--)timeBombs.splice(ex[ei],1);}
+  if(infectionTiles.length>0){infectionTimer++;if(infectionTimer%3===0){var ni=[];var dd=[[-1,0],[1,0],[0,-1],[0,1]];infectionTiles.forEach(function(inf){dd.forEach(function(d){var nr=inf.r+d[0],nc=inf.c+d[1];if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==0){owner[nr][nc]=0;if(!ni.some(function(x){return x.r===nr&&x.c===nc;}))ni.push({r:nr,c:nc});}});});infectionTiles=infectionTiles.concat(ni);if(ni.length>0)showToast('🦠 Infection spreading!',1200);}}
+  if(kingTiles.length>0){kingTiles.forEach(function(kt){if(owner[kt.r][kt.c]===1)p1KingScore+=1;else if(owner[kt.r][kt.c]===2)p2KingScore+=1;});kingTileTimer++;if(kingTileTimer>=7){kingTileTimer=0;var rMin=Math.floor(ROWS*0.2),rMax=Math.floor(ROWS*0.8),cMin=Math.floor(COLS*0.2),cMax=Math.floor(COLS*0.8);kingTiles=kingTiles.map(function(){var a=0,nr,nc;do{nr=rMin+Math.floor(Math.random()*(rMax-rMin));nc=cMin+Math.floor(Math.random()*(cMax-cMin));a++;}while(a<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc;})));return{r:nr,c:nc};});showToast('👑 Crown tiles teleported!',1500);}}
+}
+
 // ===== CREATE ROOM =====
 async function showCreateRoom(){
   const c=document.getElementById('pvpContent');
@@ -4566,7 +4609,7 @@ async function joinRoom(){
   try{
     const res=await pvpDB.get('pvp-rooms/'+code);
     if(!res){document.getElementById('joinError').textContent='Room not found';return}
-    const data=JSON.parse(res.value);
+    const data=res;
     if(data.guest){document.getElementById('joinError').textContent='Room is full';return}
     if(data.state!=='waiting'){document.getElementById('joinError').textContent='Match already started';return}
 
@@ -4579,7 +4622,14 @@ async function joinRoom(){
     const avgElo=Math.floor((data.host.elo+data.guest.elo)/2);
     const rc=getRankedConfig(avgElo);
     const board=generateBoard(data.seed,rc.cols,rc.rows,rc.colors);
+    const ms=buildMatchState(data.seed,rc,avgElo);
     data.config=rc;data.board=board;data.moves=[];data.turn=1;
+    data.matchElo=avgElo;data.seasonMechs=ms.seasonMechs;
+    data.bonusCells=ms.bonusCells;data.kingTile=null;data.kingTiles=ms.kingTiles;data.kingTileTimer=0;
+    data.p1KingScore=0;data.p2KingScore=0;data.darkZones=ms.darkZones;
+    data.timeBombs=ms.timeBombs;data.colorLockTiles=ms.colorLockTiles;data.infectionTiles=ms.infectionTiles;
+    data.gravityWells=ms.gravityWells;data.shieldTiles=ms.shieldTiles;data.fogOfWarActive=ms.fogOfWarActive;
+    data.decayTimer=0;data.infectionTimer=0;
 
     await pvpDB.set('pvp-rooms/'+code,data);
     pvpRoomData=data;
@@ -4650,38 +4700,19 @@ async function showMatchmaking(){
             const seed=Math.floor(Math.random()*2147483647);
             const board=generateBoard(seed,rc.cols,rc.rows,rc.colors);
 
-            // Generate shared bonus cells using seed
-            const rng2=seededRandom(seed+1);
-            const sharedBonus=[];
-            const numB=Math.floor(rc.cols*rc.rows*0.04)+2;
-            for(let i=0;i<numB;i++){
-              let br,bc,tries=0;
-              do{br=Math.floor(rc.rows*0.25+rng2()*rc.rows*0.5);bc=Math.floor(rc.cols*0.25+rng2()*rc.cols*0.5);tries++}
-              while(tries<50&&sharedBonus.some(b=>b.r===br&&b.c===bc));
-              if(tries<50)sharedBonus.push({r:br,c:bc});
-            }
-            const sharedKingTile=avgElo>=2600?{r:Math.floor(rc.rows/2),c:Math.floor(rc.cols/2)}:null;
-            // Generate shared dark zones using seed
-            var sharedDarkZones=[];
-            if(rc.darkZones){
-              var rng3=seededRandom(seed+2);
-              var totalC=rc.cols*rc.rows;
-              var numZ=Math.max(3,Math.floor(totalC/30));
-              var zSz=totalC>160?3:2;
-              var att=0;
-              while(sharedDarkZones.length<numZ&&att<200){
-                att++;
-                var zr=Math.floor(rc.rows*0.2+rng3()*rc.rows*0.6);
-                var zc2=Math.floor(rc.cols*0.2+rng3()*rc.cols*0.6);
-                var ov=false;
-                for(var dz2 of sharedDarkZones){if(Math.abs(dz2.r-zr)<=zSz+1&&Math.abs(dz2.c-zc2)<=zSz+1){ov=true;break;}}
-                if(!ov)sharedDarkZones.push({r:zr,c:zc2,size:zSz,revealed:false});
-              }
-            }
+            // All shared match state from the MATCH average ELO (deterministic)
+            const ms=buildMatchState(seed,rc,avgElo);
             const roomData={
               code,host:{name:save.playerName||'Player',elo:save.elo},
               guest:{name:other.name,elo:other.elo},
-              state:'playing',seed,config:rc,board,bonusCells:sharedBonus,kingTile:sharedKingTile,kingTiles:kingTiles,kingTileTimer:0,p1KingScore:0,p2KingScore:0,darkZones:sharedDarkZones,moves:[],turn:1,created:Date.now()
+              state:'playing',seed,config:rc,board,
+              matchElo:avgElo,seasonMechs:ms.seasonMechs,
+              bonusCells:ms.bonusCells,kingTile:null,kingTiles:ms.kingTiles,kingTileTimer:0,
+              p1KingScore:0,p2KingScore:0,darkZones:ms.darkZones,
+              timeBombs:ms.timeBombs,colorLockTiles:ms.colorLockTiles,infectionTiles:ms.infectionTiles,
+              gravityWells:ms.gravityWells,shieldTiles:ms.shieldTiles,fogOfWarActive:ms.fogOfWarActive,
+              decayTimer:0,infectionTimer:0,
+              moves:[],turn:1,created:Date.now()
             };
             await pvpDB.set('pvp-rooms/'+code,roomData);
             // Notify the other player
@@ -4735,17 +4766,15 @@ function startOnlineMatch(data){
   pvpOpponent={name:opp.name,elo:opp.elo,rank:getRank(opp.elo)};
 
   curChapter=-1;curLevel=-1;isFreeplay=false;
-  var sm0=getSeasonMechanicId(0); // Diamond+
-  var sm1=getSeasonMechanicId(1); // Master+
-  var sm2=getSeasonMechanicId(2); // Chromancer
-  var elo=save.elo||0;
+  var matchElo=(data.matchElo!=null)?data.matchElo:Math.floor((((data.host&&data.host.elo)||save.elo)+((data.guest&&data.guest.elo)||save.elo))/2);
+  var sMechs=data.seasonMechs||[null,null,null];
   curConfig={cols:rc.cols,rows:rc.rows,colors:rc.colors,aiSmart:0,fog:rc.fog||false,
     powerTiles:rc.powerTiles||false,moveLimit:rc.moveLimit||false,baseMoves:rc.baseMoves||999,
     starThresholds:[55,65,80],winPct:0,isRanked:true,chapterIdx:-1,
-    isOnline:true,aiLookahead:0,aiBlock:false,
-    seasonMech0:elo>=2600?sm0:null,
-    seasonMech1:elo>=3500?sm1:null,
-    seasonMech2:elo>=4700?sm2:null};
+    isOnline:true,aiLookahead:0,aiBlock:false,matchElo:matchElo,
+    seasonMech0:sMechs[0]||null,
+    seasonMech1:sMechs[1]||null,
+    seasonMech2:sMechs[2]||null};
 
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
@@ -4837,20 +4866,25 @@ function startOnlinePoll(){
       const expectedMoves=data.moves.length;
       const localMoves=pvpRoomData.moves.length;
       if(expectedMoves>localMoves){
-        // Apply new moves
+        // Apply new color picks
         for(let i=localMoves;i<expectedMoves;i++){
           const m=data.moves[i];
           if(m.player===1){p1Color=m.color;expandTerritory(1,p1Color)}
           else{p2Color=m.color;expandTerritory(2,p2Color)}
           if(curConfig.moveLimit)movesLeft--;
         }
+        // Adopt the mover's authoritative board + mechanic state (no local recompute)
+        if(data.ownerState){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(data.ownerState[r]&&data.ownerState[r][c]!=null)owner[r][c]=data.ownerState[r][c];}}
+        if(data.kingTiles)kingTiles=data.kingTiles.map(function(t){return{r:t.r,c:t.c};});
+        if(data.kingTileTimer!=null)kingTileTimer=data.kingTileTimer;
+        if(data.p1KingScore!=null)p1KingScore=data.p1KingScore;
+        if(data.p2KingScore!=null)p2KingScore=data.p2KingScore;
+        if(data.decayTimer!=null)decayTimer=data.decayTimer;
+        if(data.infectionTimer!=null)infectionTimer=data.infectionTimer;
+        if(data.timeBombs)timeBombs=data.timeBombs.map(function(b){return{r:b.r,c:b.c,timer:b.timer};});
+        if(data.infectionTiles)infectionTiles=data.infectionTiles.map(function(t){return{r:t.r,c:t.c};});
         pvpRoomData=data;
         turn=expectedMoves%2===0?1:2;
-        // Apply decay on opponent's turn too
-        if((curConfig.isRanked&&save.elo>=2600)||(curConfig.chapterIdx>=2)){
-          decayTimer++;
-          if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
-        }
         updateFog();updateUI();buildColorPicker();updateObjBar();draw();
         checkEnd();
       }
@@ -7617,14 +7651,19 @@ async function playerMove(colorIdx){
     else{p2Color=colorIdx;expandTerritory(2,p2Color)}
     if(curConfig.moveLimit)movesLeft--;
 
+    // Mover is authoritative for this turn's mechanics
+    applyOnlineTick();
+
     try{
       const res=await pvpDB.get('pvp-rooms/'+myRoomCode);
       if(res){
-        const data=JSON.parse(res.value);
+        const data=res;
         data.moves.push({player:myPlayer,color:colorIdx,time:Date.now()});
         data.turn=myPlayer===1?2:1;
+        data.ownerState=owner;
         data.kingTiles=kingTiles;data.kingTileTimer=kingTileTimer;
         data.p1KingScore=p1KingScore;data.p2KingScore=p2KingScore;
+        data.decayTimer=decayTimer;data.infectionTimer=infectionTimer;
         data.timeBombs=timeBombs;data.infectionTiles=infectionTiles;
         data.colorLockTiles=colorLockTiles;data.gravityWells=gravityWells;
         data.shieldTiles=shieldTiles;data.fogOfWarActive=fogOfWarActive;
