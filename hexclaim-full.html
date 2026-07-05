@@ -5405,7 +5405,7 @@ function startTutorial(){
   if(window._tutTimeout)clearTimeout(window._tutTimeout);
   window._tutTimeout=setTimeout(function(){if(!gameOver&&curConfig&&curConfig.isTutorial){gameOver=true;stopGameTimer();var _i=document.querySelector('.turn-indicator');if(_i)_i.style.display='none';setTimeout(tutOnGameEnd,500);}},300000);
   // Start a small campaign-style game
-  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
+  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;isLocalPVP=false;
   curConfig={cols:8,rows:10,colors:4,aiSmart:0.2,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[60,75,90],winPct:30,isTutorial:true};
   COLS=curConfig.cols;ROWS=curConfig.rows;NUM_COLORS=curConfig.colors;
   gameLocked=true;showScreen('gameScreen');
@@ -5695,7 +5695,7 @@ function buildChallenges(){
 // ===== LAUNCH =====
 function startCampaignLevel(ci,li){
   window._tutorialJustDone=false;
-  curChapter=ci;curLevel=li;isFreeplay=false;isPVP=false;
+  curChapter=ci;curLevel=li;isFreeplay=false;isPVP=false;isLocalPVP=false;
   const ch=CHAPTERS[ci];
   const levelProgression=[
     // Chapter 1 — AWAKENING: basics + bonus cells
@@ -5752,7 +5752,7 @@ function startCampaignLevel(ci,li){
   if(li===0){showStory(ch,ci)}else{launchLevel()}
 }
 function startChallenge(i){
-  curChapter=-1;curLevel=i;isFreeplay=false;isPVP=false;
+  curChapter=-1;curLevel=i;isFreeplay=false;isPVP=false;isLocalPVP=false;
   const ch=CHALLENGES[i];
   curConfig={cols:ch.cols,rows:ch.rows,colors:ch.colors,aiSmart:ch.aiSmart,fog:ch.fog||false,powerTiles:ch.powerTiles||false,moveLimit:ch.moveLimit||false,baseMoves:ch.baseMoves||999,starThresholds:[50,60,75],winPct:ch.winPct||50,challengeIdx:i};
   launchLevel();
@@ -5867,7 +5867,7 @@ function buildVsAi(){
 function startVsAi(diffId){
   const d=AI_DIFFICULTIES.find(a=>a.id===diffId);
   if(!d)return;
-  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
+  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;isLocalPVP=false;
   curConfig={
     cols:d.cols,rows:d.rows,colors:d.colors,aiSmart:d.aiSmart,
     fog:d.fog,powerTiles:d.powerTiles,moveLimit:d.moveLimit,baseMoves:d.baseMoves,
@@ -5880,7 +5880,7 @@ function startVsAi(diffId){
 }
 
 function startBlitzMode(){
-  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;
+  curChapter=-1;curLevel=-1;isFreeplay=false;isPVP=false;isLocalPVP=false;
   curConfig={cols:10,rows:12,colors:4,aiSmart:0.5,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75,vsAiDiff:'blitz',vsAiName:'Blitz',vsAiIcon:'⚡',blitzMode:true,turnTimer:5};
   pvpOpponent={name:'Blitz Bot',elo:0};
   launchLevel();
