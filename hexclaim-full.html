@@ -6072,6 +6072,7 @@ function initGame(){
 
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
+  window._clinchPrompted=false;window._clinchFinish=false;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;comboCount=0;bestCombo=0;
 
   // Dark Zones — hidden mystery patches (Chromancer only, scaled to board size)
@@ -8216,6 +8217,15 @@ function aiMove(){
   });
 }
 
+function showClinchChoice(pct,goal){
+  if(document.getElementById('clinchModal'))return;
+  var m=document.createElement('div');m.id='clinchModal';
+  m.style.cssText='position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  m.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:300px;text-align:center"><div style="font-size:16px;font-weight:800;color:var(--p1);margin-bottom:6px">🏆 Victory Secured!</div><div style="font-size:12px;color:var(--muted);margin-bottom:16px">You\'re at '+pct+'% and the win is locked in. Capture up to '+goal+'% for 3 stars, or finish now.</div><div style="display:flex;gap:8px"><button id="clinchFinish" style="flex:1;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer">Finish Now</button><button id="clinchKeep" style="flex:1;padding:10px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer">Keep Playing</button></div></div>';
+  document.body.appendChild(m);
+  document.getElementById('clinchKeep').onclick=function(){m.remove();};
+  document.getElementById('clinchFinish').onclick=function(){m.remove();window._clinchFinish=true;checkEnd();};
+}
 function checkEnd(){
   if(window._decideDebug){
     var _d=computeDecisiveOutcome();
@@ -8245,10 +8255,8 @@ function checkEnd(){
     var _starsMatter=!curConfig.isOnline&&!curConfig.isRanked;
     var _topGoal=Math.max((curConfig.starThresholds?curConfig.starThresholds[2]:0),(curConfig.winPct||0));
     if(p1n>p2n+unclaimed){
-      // Win is clinched. In star/territory modes keep playing so the player can push for
-      // a higher star tier; end early only if stars don't matter (online/ranked), the top
-      // goal is met, or the player can no longer improve (3 turns with no capture).
-      if(!_starsMatter||p1p>=_topGoal||stalemateTurns>=3){ended=true;won=true;reason='Result decided'}
+      if(!_starsMatter||p1p>=_topGoal||stalemateTurns>=3||window._clinchFinish){ended=true;won=true;reason='Result decided'}
+      else if(!window._clinchPrompted){window._clinchPrompted=true;showClinchChoice(Math.round(p1p),_topGoal);return false;}
     } else if(p2n>p1n+unclaimed){
       ended=true;won=false;reason='Result decided'
     }
