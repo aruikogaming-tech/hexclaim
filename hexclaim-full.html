@@ -250,6 +250,8 @@ body{display:flex;align-items:flex-start;justify-content:center;
 .color-btn.disabled{opacity:0.5;pointer-events:none;transform:scale(0.85)}
 .color-btn.selectable:not(.disabled){animation:colorBtnGlow 1.5s ease infinite}
 @keyframes colorBtnGlow{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,0.15),0 0 8px rgba(255,255,255,0.1)}50%{box-shadow:0 0 0 2px rgba(255,255,255,0.45),0 0 14px rgba(255,255,255,0.25)}}
+.mech-chip{padding:6px 10px;background:var(--dim);border:1px solid var(--border);border-radius:16px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s}
+.mech-chip.active{background:rgba(6,214,160,0.18);border-color:var(--p1);color:var(--p1)}
 .powerups{display:flex;gap:5px;padding:0 4px;justify-content:center}
 .pu-btn{padding:5px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:9px;font-weight:700;cursor:pointer;color:var(--muted);transition:all 0.15s;text-transform:uppercase;letter-spacing:1px}
 .pu-btn:hover{border-color:var(--c3);color:var(--c3)}
@@ -2014,7 +2016,7 @@ function startLocalPVP(config){
 function startLocalPVPWithName(opponentName,config){
   isPVP=true;isLocalPVP=true;
   pvpOpponent={name:opponentName,elo:0};
-  curConfig={cols:config.cols,rows:config.rows,colors:config.colors,aiSmart:0,fog:false,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:0};
+  curConfig={cols:config.cols,rows:config.rows,colors:config.colors,aiSmart:0,fog:config.fog||false,powerTiles:config.powerTiles||false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:0,decay:config.decay||false,kingHill:config.kingHill||false,darkZones:config.darkZones||false,seasonMechs:config.seasonMechs||[]};
   COLS=config.cols;ROWS=config.rows;NUM_COLORS=config.colors;
   gameLocked=true;showScreen('gameScreen');
   canvas=document.getElementById('canvas');ctx=canvas.getContext('2d');
@@ -4962,6 +4964,24 @@ function buildCustomGame(){
     +'<select id="cgFog" style="padding:6px 10px;background:var(--dim);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px">'
     +'<option value="0" selected>Off</option><option value="1">On</option></select></div>'
 
+    // Mechanics — mix-and-match chips
+    +'<div style="font-size:11px;font-weight:700">Mechanics (tap to toggle)</div>'
+    +'<div id="cgMechs" style="display:flex;flex-wrap:wrap;gap:6px">'
+    +'<div class="mech-chip" data-mech="powerTiles" onclick="toggleMechChip(this)">💥 Power Tiles</div>'
+    +'<div class="mech-chip" data-mech="decay" onclick="toggleMechChip(this)">🌫 Decay</div>'
+    +'<div class="mech-chip" data-mech="kingHill" onclick="toggleMechChip(this)">👑 King of the Hill</div>'
+    +'<div class="mech-chip" data-mech="darkZones" onclick="toggleMechChip(this)">🌑 Dark Zones</div>'
+    +'<div class="mech-chip" data-mech="timeBombs" onclick="toggleMechChip(this)">💣 Time Bombs</div>'
+    +'<div class="mech-chip" data-mech="colorLock" onclick="toggleMechChip(this)">🔒 Color Lock</div>'
+    +'<div class="mech-chip" data-mech="infection" onclick="toggleMechChip(this)">🦠 Infection</div>'
+    +'<div class="mech-chip" data-mech="gravityWells" onclick="toggleMechChip(this)">🌀 Gravity Wells</div>'
+    +'<div class="mech-chip" data-mech="shieldTiles" onclick="toggleMechChip(this)">🛡 Shield Tiles</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="randomizeMechChips()" style="padding:8px 16px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">🎲 Random</button>'
+    +'<button onclick="clearMechChips()" style="padding:8px 16px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:12px">Clear</button>'
+    +'</div>'
+
     // Start button
     +'<button onclick="launchCustomGame()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--p1),#0ea573);border:none;border-radius:10px;color:#fff;font-weight:800;font-size:13px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;margin-top:4px">Start Match</button>'
     +'</div></div>';
@@ -4999,6 +5019,16 @@ function toggleCgOppField(){
   }
 }
 
+function toggleMechChip(el){el.classList.toggle('active');if(window.playSfx)playSfx('menuNav');}
+function clearMechChips(){document.querySelectorAll('#cgMechs .mech-chip').forEach(function(c){c.classList.remove('active');});}
+function randomizeMechChips(){
+  clearMechChips();
+  var chips=Array.prototype.slice.call(document.querySelectorAll('#cgMechs .mech-chip'));
+  for(var i=chips.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=chips[i];chips[i]=chips[j];chips[j]=t;}
+  var n=2+Math.floor(Math.random()*3);
+  chips.slice(0,n).forEach(function(c){c.classList.add('active');});
+  if(window.playSfx)playSfx('menuNav');
+}
 function launchCustomGame(){
   var mode=document.getElementById('cgMode').value;
   var opp=document.getElementById('cgOpp').value;
@@ -5008,19 +5038,23 @@ function launchCustomGame(){
   var fog=document.getElementById('cgFog').value==='1';
   var isBlitz=mode==='blitz';
 
+  var _mEls=Array.prototype.slice.call(document.querySelectorAll('#cgMechs .mech-chip.active'));
+  var _m={}; _mEls.forEach(function(c){_m[c.dataset.mech]=true;});
+  var _seasonal=['timeBombs','colorLock','infection','gravityWells','shieldTiles'].filter(function(id){return _m[id];});
+
   if(opp==='ai'){
     var diffEl=document.getElementById('cgAiDiff');
     var aiSmart=diffEl?parseFloat(diffEl.value):0.6;
     isPVP=false;isLocalPVP=false;
     curChapter=-1;curLevel=-1;isFreeplay=true;
-    curConfig={cols:cols,rows:rows,colors:colors,aiSmart:aiSmart,fog:fog,powerTiles:false,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75,blitzMode:isBlitz,vsAiDiff:'custom'};
+    curConfig={cols:cols,rows:rows,colors:colors,aiSmart:aiSmart,fog:fog,powerTiles:!!_m.powerTiles,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75,blitzMode:isBlitz,vsAiDiff:'custom',decay:!!_m.decay,kingHill:!!_m.kingHill,darkZones:!!_m.darkZones,seasonMechs:_seasonal};
     pvpOpponent={name:isBlitz?'Blitz Bot':'AI ('+Math.round(aiSmart*100)+'%)',elo:0};
     launchLevel();
     if(isBlitz){var t=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t},200)}
   } else if(opp==='local'){
     var nameEl=document.getElementById('cgP2Name');
     var oppName=nameEl?nameEl.value.trim()||'Player 2':'Player 2';
-    startLocalPVPWithName(oppName,{cols:cols,rows:rows,colors:colors});
+    startLocalPVPWithName(oppName,{cols:cols,rows:rows,colors:colors,fog:fog,powerTiles:!!_m.powerTiles,decay:!!_m.decay,kingHill:!!_m.kingHill,darkZones:!!_m.darkZones,seasonMechs:_seasonal});
     if(isBlitz){var t2=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t2},200)}
   } else if(opp==='friend'){
     var codeEl=document.getElementById('cgFriendCode');
@@ -6050,7 +6084,7 @@ function initGame(){
   kingTiles=[];
   kingTileTimer=0;
   p1KingScore=0;p2KingScore=0;
-  if(curConfig.chapterIdx>=3){
+  if(curConfig.chapterIdx>=3||curConfig.kingHill){
     var kAttempts=0;
     while(kingTiles.length<3&&kAttempts<200){
       kAttempts++;
@@ -6066,7 +6100,7 @@ function initGame(){
   timeBombs=[];colorLockTiles=[];infectionTiles=[];gravityWells=[];shieldTiles=[];infectionTimer=0;
 
   // Apply seasonal mechanics based on rank
-  var allSeasonMechs=[curConfig.seasonMech0,curConfig.seasonMech1,curConfig.seasonMech2].filter(Boolean);
+  var allSeasonMechs=(curConfig.seasonMechs&&curConfig.seasonMechs.length?curConfig.seasonMechs:[curConfig.seasonMech0,curConfig.seasonMech1,curConfig.seasonMech2]).filter(Boolean);
   allSeasonMechs.forEach(function(mechId){
     if(mechId==='fogOfWar'){fogOfWarActive=true;}
     if(mechId==='timeBombs'){
@@ -7357,7 +7391,7 @@ function drawSeasonalOverlays(){
   });
 
   // Territory Decay warning — telegraph the local player's at-risk tiles
-  var _decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2));
+  var _decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2)||curConfig.decay);
   if(_decayOn){
     var _me=curConfig.isOnline?(myPlayerSlot||1):1;
     var _foe=_me===1?2:1;
@@ -7822,7 +7856,7 @@ async function playerMove(colorIdx){
   resetTurnTimer();
 
   // Territory decay — Platinum+ ranked, every 6 turns
-  if(curConfig.chapterIdx>=2){
+  if(curConfig.chapterIdx>=2||curConfig.decay){
     decayTimer++;
     if(decayTimer%6===0){
       applyDecay(1);applyDecay(2);
@@ -7930,7 +7964,7 @@ function p2Move(colorIdx){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if(curConfig.chapterIdx>=2){
+    if(curConfig.chapterIdx>=2||curConfig.decay){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
@@ -8064,7 +8098,7 @@ function aiMove(){
   expandTerritoryAnimated(2,p2Color,(gained)=>{
     if(gained>0)showCellsGained(gained,2);
     // Territory decay
-    if(curConfig.chapterIdx>=2){
+    if(curConfig.chapterIdx>=2||curConfig.decay){
       decayTimer++;
       if(decayTimer%6===0){applyDecay(1);applyDecay(2);}
     }
