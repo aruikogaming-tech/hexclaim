@@ -4497,28 +4497,32 @@ function generateBoard(seed,cols,rows,numColors){
 
 // Build ALL shared match state deterministically, gated on the MATCH average ELO.
 // Tiers: <1900 none | 1900+ Decay | 2600+ KotH+Seasonal1 | 3500+ +Seasonal2 | 4700+ +Seasonal3
-function buildMatchState(seed,rc,matchElo){
+function buildMatchState(seed,rc,matchElo,customMechs){
   var st={matchElo:matchElo,seasonMechs:[null,null,null],
     bonusCells:[],kingTiles:[],kingTileTimer:0,p1KingScore:0,p2KingScore:0,
     darkZones:[],timeBombs:[],colorLockTiles:[],infectionTiles:[],
-    gravityWells:[],shieldTiles:[],fogOfWarActive:false};
+    gravityWells:[],shieldTiles:[],fogOfWarActive:false,powerTiles:[],decayOn:false};
   var rows=rc.rows,cols=rc.cols;
-  var rB=seededRandom(seed+1),rK=seededRandom(seed+7),rM=seededRandom(seed+11);
+  var rB=seededRandom(seed+1),rK=seededRandom(seed+7),rM=seededRandom(seed+11),rP=seededRandom(seed+13);
   function occ(r,c){return (r===rows-1&&c===0)||(r===0&&c===cols-1);}
   function midMany(n,arr,make){for(var j=0;j<n;j++){var mr,mc,mt=0;do{mr=Math.floor(rows*0.2+rM()*rows*0.6);mc=Math.floor(cols*0.2+rM()*cols*0.6);mt++;}while(mt<100&&(occ(mr,mc)||arr.some(function(x){return x.r===mr&&x.c===mc;})));if(mt<100)arr.push(make(mr,mc));}}
-  // Bonus cells — every tier
   var numB=Math.floor(cols*rows*0.04)+2;
   for(var i=0;i<numB;i++){var br,bc,t=0;do{br=Math.floor(rows*0.25+rB()*rows*0.5);bc=Math.floor(cols*0.25+rB()*cols*0.5);t++;}while(t<50&&(occ(br,bc)||st.bonusCells.some(function(b){return b.r===br&&b.c===bc;})));if(t<50)st.bonusCells.push({r:br,c:bc});}
-  // King of the Hill — Diamond+ (matchElo>=2600), 3 tiles
-  if(matchElo>=2600){var ka=0;while(st.kingTiles.length<3&&ka<300){ka++;var kr=Math.floor(rows*0.2+rK()*rows*0.6),kc=Math.floor(cols*0.2+rK()*cols*0.6);if(!occ(kr,kc)&&!st.kingTiles.some(function(x){return x.r===kr&&x.c===kc;}))st.kingTiles.push({r:kr,c:kc});}}
-  // Resolve rotating seasonal ids by tier (host resolves; both clients read from room data)
-  if(matchElo>=2600)st.seasonMechs[0]=getSeasonMechanicId(0);
-  if(matchElo>=3500)st.seasonMechs[1]=getSeasonMechanicId(1);
-  if(matchElo>=4700)st.seasonMechs[2]=getSeasonMechanicId(2);
-  // Stacking guardrail — at most one info-hiding mechanic; no decay+infection double-strip
-  var _fogIdx=st.seasonMechs.indexOf('fogOfWar'),_dzIdx=st.seasonMechs.indexOf('darkZones');
-  if(_fogIdx>=0&&_dzIdx>=0){if(_fogIdx<_dzIdx)st.seasonMechs[_dzIdx]=null;else st.seasonMechs[_fogIdx]=null;}
-  if(matchElo>=1900){var _infIdx=st.seasonMechs.indexOf('infection');if(_infIdx>=0)st.seasonMechs[_infIdx]=null;}
+  var _cm=null; if(customMechs){_cm={}; customMechs.forEach(function(m){_cm[m]=true;});}
+  var kingOn=_cm?(!!_cm.kingHill||!!_cm.king):(matchElo>=2600);
+  if(kingOn){var ka=0;while(st.kingTiles.length<3&&ka<300){ka++;var kr=Math.floor(rows*0.2+rK()*rows*0.6),kc=Math.floor(cols*0.2+rK()*cols*0.6);if(!occ(kr,kc)&&!st.kingTiles.some(function(x){return x.r===kr&&x.c===kc;}))st.kingTiles.push({r:kr,c:kc});}}
+  if(_cm){
+    st.seasonMechs=customMechs.filter(function(m){return ['timeBombs','colorLock','infection','gravityWells','shieldTiles','fogOfWar','darkZones'].indexOf(m)>=0;});
+    st.decayOn=!!_cm.decay;
+  } else {
+    if(matchElo>=2600)st.seasonMechs[0]=getSeasonMechanicId(0);
+    if(matchElo>=3500)st.seasonMechs[1]=getSeasonMechanicId(1);
+    if(matchElo>=4700)st.seasonMechs[2]=getSeasonMechanicId(2);
+    var _fogIdx=st.seasonMechs.indexOf('fogOfWar'),_dzIdx=st.seasonMechs.indexOf('darkZones');
+    if(_fogIdx>=0&&_dzIdx>=0){if(_fogIdx<_dzIdx)st.seasonMechs[_dzIdx]=null;else st.seasonMechs[_fogIdx]=null;}
+    if(matchElo>=1900){var _infIdx=st.seasonMechs.indexOf('infection');if(_infIdx>=0)st.seasonMechs[_infIdx]=null;}
+    st.decayOn=(matchElo>=1900);
+  }
   st.seasonMechs.filter(Boolean).forEach(function(id){
     if(id==='fogOfWar')st.fogOfWarActive=true;
     else if(id==='timeBombs')midMany(3+Math.floor(rM()*3),st.timeBombs,function(r,c){return{r:r,c:c,timer:8};});
@@ -4528,15 +4532,15 @@ function buildMatchState(seed,rc,matchElo){
     else if(id==='shieldTiles')midMany(4+Math.floor(rM()*3),st.shieldTiles,function(r,c){return{r:r,c:c};});
     else if(id==='darkZones'){var tc=cols*rows,nZ=Math.max(3,Math.floor(tc/30)),zS=tc>160?3:2,za=0;while(st.darkZones.length<nZ&&za<200){za++;var zr=Math.floor(rows*0.2+rM()*rows*0.6),zc=Math.floor(cols*0.2+rM()*cols*0.6),ov=false;for(var q=0;q<st.darkZones.length;q++){var dz=st.darkZones[q];if(Math.abs(dz.r-zr)<=zS+1&&Math.abs(dz.c-zc)<=zS+1){ov=true;break;}}if(!ov)st.darkZones.push({r:zr,c:zc,size:zS,revealed:false});}}
   });
-  // Legacy Chromancer config dark zones (only if none rolled as a seasonal)
   if(rc.darkZones&&st.darkZones.length===0){var tc2=cols*rows,nZ2=Math.max(3,Math.floor(tc2/30)),zS2=tc2>160?3:2,za2=0,rD=seededRandom(seed+2);while(st.darkZones.length<nZ2&&za2<200){za2++;var zr2=Math.floor(rows*0.2+rD()*rows*0.6),zc2=Math.floor(cols*0.2+rD()*cols*0.6),ov2=false;for(var q2=0;q2<st.darkZones.length;q2++){var dz2=st.darkZones[q2];if(Math.abs(dz2.r-zr2)<=zS2+1&&Math.abs(dz2.c-zc2)<=zS2+1){ov2=true;break;}}if(!ov2)st.darkZones.push({r:zr2,c:zc2,size:zS2,revealed:false});}}
+  if(_cm&&_cm.powerTiles){var numP=Math.floor(cols*rows*0.03)+2;var PT=['bomb','surge','double'];midMany(numP,st.powerTiles,function(r,c){return{r:r,c:c,type:PT[Math.floor(rP()*3)]};});}
   return st;
 }
 
 // Per-turn mechanic tick for ONLINE matches. Only the moving player runs this,
 // then writes the resulting board so the opponent adopts it (keeps Math.random in sync).
 function applyOnlineTick(){
-  if(curConfig.matchElo>=1900){decayTimer++;if(decayTimer%6===0){applyDecay(1);applyDecay(2);}}
+  if(curConfig.matchElo>=1900||curConfig.decay){decayTimer++;if(decayTimer%6===0){applyDecay(1);applyDecay(2);}}
   if(timeBombs.length>0){var ex=[];timeBombs.forEach(function(b,idx){b.timer--;if(b.timer<=0){ex.push(idx);for(var er=b.r-1;er<=b.r+1;er++)for(var ec=b.c-1;ec<=b.c+1;ec++){if(er>=0&&er<ROWS&&ec>=0&&ec<COLS)owner[er][ec]=0;}showToast('💣 Bomb exploded!',1500);}});for(var ei=ex.length-1;ei>=0;ei--)timeBombs.splice(ex[ei],1);}
   if(infectionTiles.length>0){infectionTimer++;if(infectionTimer%3===0){var ni=[];var dd=[[-1,0],[1,0],[0,-1],[0,1]];infectionTiles.forEach(function(inf){dd.forEach(function(d){var nr=inf.r+d[0],nc=inf.c+d[1];if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]!==0){owner[nr][nc]=0;if(!ni.some(function(x){return x.r===nr&&x.c===nc;}))ni.push({r:nr,c:nc});}});});infectionTiles=infectionTiles.concat(ni);if(ni.length>0)showToast('🦠 Infection spreading!',1200);}}
   if(kingTiles.length>0){kingTiles.forEach(function(kt){if(owner[kt.r][kt.c]===1)p1KingScore+=1;else if(owner[kt.r][kt.c]===2)p2KingScore+=1;});kingTileTimer++;if(kingTileTimer>=7){kingTileTimer=0;var rMin=Math.floor(ROWS*0.2),rMax=Math.floor(ROWS*0.8),cMin=Math.floor(COLS*0.2),cMax=Math.floor(COLS*0.8);kingTiles=kingTiles.map(function(){var a=0,nr,nc;do{nr=rMin+Math.floor(Math.random()*(rMax-rMin));nc=cMin+Math.floor(Math.random()*(cMax-cMin));a++;}while(a<100&&(owner[nr][nc]!==0||kingTiles.some(function(t){return t.r===nr&&t.c===nc;})));return{r:nr,c:nc};});showToast('👑 Crown tiles teleported!',1500);}}
@@ -4567,9 +4571,11 @@ async function showCreateRoom(){
   const roomData={
     code,host:{name:save.playerName||'Player',elo:save.elo},
     guest:null,state:'waiting',seed:Math.floor(Math.random()*2147483647),
-    grid:null,moves:[],turn:1,created:Date.now()
+    grid:null,moves:[],turn:1,created:Date.now(),
+    customCfg:window._customRoomCfg||null
   };
   await pvpDB.set('pvp-rooms/'+code,roomData)
+  window._customRoomCfg=null;
 
   // Poll for guest joining
   pollInterval=setInterval(async()=>{
@@ -4635,11 +4641,14 @@ async function joinRoom(){
 
     // Generate board config based on average ELO
     const avgElo=Math.floor((data.host.elo+data.guest.elo)/2);
-    const rc=getRankedConfig(avgElo);
+    const rc = data.customCfg
+      ? {cols:data.customCfg.cols,rows:data.customCfg.rows,colors:data.customCfg.colors,fog:!!data.customCfg.fog,powerTiles:data.customCfg.mechs.indexOf('powerTiles')>=0,moveLimit:false,baseMoves:999}
+      : getRankedConfig(avgElo);
     const board=generateBoard(data.seed,rc.cols,rc.rows,rc.colors);
-    const ms=buildMatchState(data.seed,rc,avgElo);
+    const ms=buildMatchState(data.seed,rc,data.customCfg?0:avgElo,data.customCfg?data.customCfg.mechs:null);
     data.config=rc;data.board=board;data.moves=[];data.turn=1;
-    data.matchElo=avgElo;data.seasonMechs=ms.seasonMechs;
+    data.matchElo=data.customCfg?0:avgElo;data.seasonMechs=ms.seasonMechs;
+    data.decayOn=ms.decayOn;data.powerTiles=ms.powerTiles;
     data.bonusCells=ms.bonusCells;data.kingTile=null;data.kingTiles=ms.kingTiles;data.kingTileTimer=0;
     data.p1KingScore=0;data.p2KingScore=0;data.darkZones=ms.darkZones;
     data.timeBombs=ms.timeBombs;data.colorLockTiles=ms.colorLockTiles;data.infectionTiles=ms.infectionTiles;
@@ -4787,6 +4796,7 @@ function startOnlineMatch(data){
     powerTiles:rc.powerTiles||false,moveLimit:rc.moveLimit||false,baseMoves:rc.baseMoves||999,
     starThresholds:[55,65,80],winPct:0,isRanked:true,chapterIdx:-1,
     isOnline:true,aiLookahead:0,aiBlock:false,matchElo:matchElo,
+    decay:!!data.decayOn,seasonMechs:data.seasonMechs||[],
     seasonMech0:sMechs[0]||null,
     seasonMech1:sMechs[1]||null,
     seasonMech2:sMechs[2]||null};
@@ -4835,7 +4845,8 @@ function startOnlineMatch(data){
   infectionTiles=data.infectionTiles?data.infectionTiles.map(function(t){return{r:t.r,c:t.c}}):[]; 
   colorLockTiles=data.colorLockTiles?data.colorLockTiles.map(function(t){return{r:t.r,c:t.c,color:t.color}}):[]; 
   gravityWells=data.gravityWells?data.gravityWells.map(function(t){return{r:t.r,c:t.c}}):[]; 
-  shieldTiles=data.shieldTiles?data.shieldTiles.map(function(t){return{r:t.r,c:t.c}}):[]; 
+  shieldTiles=data.shieldTiles?data.shieldTiles.map(function(t){return{r:t.r,c:t.c}}):[];
+  powerTiles = data.powerTiles ? data.powerTiles.map(function(p){return{r:p.r,c:p.c,type:p.type};}) : [];
   fogOfWarActive=data.fogOfWarActive||false;
   // Dark Zones — shared from room data
   darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
@@ -5039,6 +5050,7 @@ function randomizeMechChips(){
   chips.slice(0,n).forEach(function(c){c.classList.add('active');});
   if(window.playSfx)playSfx('menuNav');
 }
+function readCustomMechs(){return Array.prototype.slice.call(document.querySelectorAll('#cgMechs .mech-chip.active')).map(function(c){return c.dataset.mech;});}
 function launchCustomGame(){
   var mode=document.getElementById('cgMode').value;
   var opp=document.getElementById('cgOpp').value;
@@ -5048,23 +5060,21 @@ function launchCustomGame(){
   var fog=document.getElementById('cgFog').value==='1';
   var isBlitz=mode==='blitz';
 
-  var _mEls=Array.prototype.slice.call(document.querySelectorAll('#cgMechs .mech-chip.active'));
-  var _m={}; _mEls.forEach(function(c){_m[c.dataset.mech]=true;});
-  var _seasonal=['timeBombs','colorLock','infection','gravityWells','shieldTiles'].filter(function(id){return _m[id];});
+  var _mechs=(typeof readCustomMechs==='function'?readCustomMechs():[]); var _mh={}; _mechs.forEach(function(m){_mh[m]=true;}); var _seasonal=_mechs.filter(function(id){return ['timeBombs','colorLock','infection','gravityWells','shieldTiles','fogOfWar'].indexOf(id)>=0;});
 
   if(opp==='ai'){
     var diffEl=document.getElementById('cgAiDiff');
     var aiSmart=diffEl?parseFloat(diffEl.value):0.6;
     isPVP=false;isLocalPVP=false;
     curChapter=-1;curLevel=-1;isFreeplay=true;
-    curConfig={cols:cols,rows:rows,colors:colors,aiSmart:aiSmart,fog:fog,powerTiles:!!_m.powerTiles,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75,blitzMode:isBlitz,vsAiDiff:'custom',decay:!!_m.decay,kingHill:!!_m.kingHill,darkZones:!!_m.darkZones,seasonMechs:_seasonal};
+    curConfig={cols:cols,rows:rows,colors:colors,aiSmart:aiSmart,fog:fog,powerTiles:!!_mh.powerTiles,moveLimit:false,baseMoves:999,starThresholds:[55,65,80],winPct:75,blitzMode:isBlitz,vsAiDiff:'custom',decay:!!_mh.decay,kingHill:!!_mh.kingHill,darkZones:!!_mh.darkZones,seasonMechs:_seasonal};
     pvpOpponent={name:isBlitz?'Blitz Bot':'AI ('+Math.round(aiSmart*100)+'%)',elo:0};
     launchLevel();
     if(isBlitz){var t=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t},200)}
   } else if(opp==='local'){
     var nameEl=document.getElementById('cgP2Name');
     var oppName=nameEl?nameEl.value.trim()||'Player 2':'Player 2';
-    startLocalPVPWithName(oppName,{cols:cols,rows:rows,colors:colors,fog:fog,powerTiles:!!_m.powerTiles,decay:!!_m.decay,kingHill:!!_m.kingHill,darkZones:!!_m.darkZones,seasonMechs:_seasonal});
+    startLocalPVPWithName(oppName,{cols:cols,rows:rows,colors:colors,fog:fog,powerTiles:!!_mh.powerTiles,decay:!!_mh.decay,kingHill:!!_mh.kingHill,darkZones:!!_mh.darkZones,seasonMechs:_seasonal});
     if(isBlitz){var t2=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t2},200)}
   } else if(opp==='friend'){
     var codeEl=document.getElementById('cgFriendCode');
@@ -5073,6 +5083,7 @@ function launchCustomGame(){
     var friends=save.friends||[];
     var friend=friends.find(function(f){return f.code===code});
     var friendName=friend?friend.name:'Friend ('+code+')';
+    window._customRoomCfg={cols:cols,rows:rows,colors:colors,fog:fog,mechs:_mechs};
     showCreateRoom();
     if(isBlitz){var t3=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t3},200)}
   }
