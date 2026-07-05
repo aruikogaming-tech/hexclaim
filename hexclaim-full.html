@@ -614,6 +614,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <div class="ps p2"><span class="pn" id="p2name">AI ⬡</span><div><span class="pv" id="p2cells">1</span><span class="pp" id="p2pct"></span></div></div>
   </div>
   <div class="obj-bar" id="objBar"></div>
+  <button id="matchDecidedBtn" onclick="requestMatchDecided()" style="display:none;margin:6px auto 0;padding:6px 14px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:800;cursor:pointer">🏁 Call Match Decided</button>
   <div class="board-wrap">
     <canvas id="canvas"></canvas>
     <div class="overlay" id="overlay">
@@ -4905,6 +4906,13 @@ function startOnlinePoll(){
         checkEnd();
       }
 
+      if(data.decideBy&&data.decideBy!==myPlayerSlot){
+        var _dd=computeDecisiveOutcome();
+        if(_dd.decided&&_dd.winner===data.decideBy)showDecideConfirm(data.decideBy);
+      } else if(!data.decideBy){ closeDecideModal(); }
+      pvpRoomData=data;
+      updateMatchDecidedBtn();
+
       // Check for forfeit or disconnect
       if(data.state==='finished'&&!gameOver){
         gameOver=true;checkEnd();
@@ -6540,7 +6548,7 @@ function countOwned(p){
 }
 
 function maxDecayLoss(p){
-  var decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2));
+  var decayOn=((curConfig.isRanked&&((curConfig.matchElo!=null?curConfig.matchElo:(save.elo||0))>=1900))||(curConfig.chapterIdx>=2)||curConfig.decay);
   if(!decayOn)return 0;
   var loss=0;
   for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++){
@@ -6571,6 +6579,33 @@ function computeDecisiveOutcome(){
   if(p1Floor>p2Ceiling)return {decided:true,winner:1};
   if(p2Floor>p1Ceiling)return {decided:true,winner:2};
   return {decided:false,winner:0};
+}
+function updateMatchDecidedBtn(){
+  var btn=document.getElementById('matchDecidedBtn');
+  if(!btn)return;
+  if(!curConfig||!curConfig.isOnline||gameOver||myPlayerSlot===0){btn.style.display='none';return;}
+  var d=computeDecisiveOutcome();
+  var pending=pvpRoomData&&pvpRoomData.decideBy;
+  if(d.decided&&d.winner===myPlayerSlot&&!pending){btn.style.display='block';btn.disabled=false;btn.textContent='🏁 Call Match Decided';}
+  else if(pending&&pvpRoomData.decideBy===myPlayerSlot){btn.style.display='block';btn.disabled=true;btn.textContent='⏳ Waiting for opponent…';}
+  else{btn.style.display='none';}
+}
+async function requestMatchDecided(){
+  if(!myRoomCode||!pvpRoomData)return;
+  var d=computeDecisiveOutcome();
+  if(!d.decided||d.winner!==myPlayerSlot)return;
+  try{var data=await pvpDB.get('pvp-rooms/'+myRoomCode);if(!data)return;data.decideBy=myPlayerSlot;data.decideTs=Date.now();await pvpDB.set('pvp-rooms/'+myRoomCode,data);pvpRoomData=data;updateMatchDecidedBtn();}catch(e){}
+}
+function closeDecideModal(){var m=document.getElementById('decideModal');if(m)m.remove();window._decideModalOpen=false;}
+function showDecideConfirm(winnerSlot){
+  if(window._decideModalOpen)return;
+  window._decideModalOpen=true;
+  var m=document.createElement('div');m.id='decideModal';
+  m.style.cssText='position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  m.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;max-width:300px;text-align:center"><div style="font-size:15px;font-weight:800;color:var(--p2);margin-bottom:8px">Match Decided?</div><div style="font-size:12px;color:var(--muted);margin-bottom:16px">Your opponent has a mathematically decided lead — you cannot catch up. End the match now?</div><div style="display:flex;gap:8px"><button id="decideKeep" style="flex:1;padding:10px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer">Keep Playing</button><button id="decideConfirm" style="flex:1;padding:10px;background:var(--p2);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer">Concede</button></div></div>';
+  document.body.appendChild(m);
+  document.getElementById('decideConfirm').onclick=async function(){try{var data=await pvpDB.get('pvp-rooms/'+myRoomCode);if(data){data.state='finished';data.decideBy=null;await pvpDB.set('pvp-rooms/'+myRoomCode,data);pvpRoomData=data;}}catch(e){}closeDecideModal();gameOver=true;checkEnd();};
+  document.getElementById('decideKeep').onclick=async function(){try{var data=await pvpDB.get('pvp-rooms/'+myRoomCode);if(data){data.decideBy=null;await pvpDB.set('pvp-rooms/'+myRoomCode,data);pvpRoomData=data;}}catch(e){}closeDecideModal();};
 }
 // Raw cell count without bonus (for totalCells percentage)
 function countOwnedRaw(p){let n=0;for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(owner[r][c]===p)n++;return n;}
@@ -7800,6 +7835,7 @@ function updateObjBar(){
     mp.innerHTML=`<span class="ol">Moves</span><span class="ov ${movesLeft<=5?'warn':'ok'}">${movesLeft}</span>`;
     bar.appendChild(mp);
   }
+  if(typeof updateMatchDecidedBtn==='function')updateMatchDecidedBtn();
 }
 
 async function playerMove(colorIdx){
