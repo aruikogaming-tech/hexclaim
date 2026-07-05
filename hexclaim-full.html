@@ -6291,7 +6291,7 @@ function forwardScore(r,c,player){
 }
 function pickForwardCandidates(candidates,maxCount,player){
   if(candidates.length<=maxCount)return candidates.slice();
-  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c,player)};});
+  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c,player)+Math.random()*4};});
   scored.sort(function(a,b){return b.score-a.score});
   let i=0;
   while(i<scored.length){
@@ -7333,13 +7333,13 @@ function applyDecay(player){
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
       if(owner[nr][nc]===0||owner[nr][nc]===(player===1?2:1))threats++;
     });
-    if(threats>=3&&!isShielded(r,c))vulnerable.push({r,c});
+    if(threats>=3&&!isShielded(r,c))vulnerable.push({r,c,threats});
   }
   // Remove up to 2 random vulnerable cells
   var removed=0;
+  vulnerable.sort(function(a,b){return (b.threats-a.threats)||(Math.random()-0.5);});
   for(let i=0;i<2&&vulnerable.length>0;i++){
-    const idx=Math.floor(Math.random()*vulnerable.length);
-    const cell=vulnerable.splice(idx,1)[0];
+    const cell=vulnerable.shift();
     owner[cell.r][cell.c]=0;
     removed++;
     playSfx('decay');
