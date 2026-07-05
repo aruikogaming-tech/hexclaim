@@ -4132,7 +4132,8 @@ function grantMatchXP(won,isRanked){
   save.bpXP+=xp;
   // Grant coins and chromas for playing
   save.coins+=won?25:10;
-  save.chromas+=won?5:1;
+  matchDiamonds=0;
+  if(won&&save.lastDiamondWinDate!==getGameDay()){save.chromas+=5;save.lastDiamondWinDate=getGameDay();matchDiamonds=5;}
 
   // Profile XP — separate from battle pass XP
   let profileXp=won?40:15;
@@ -4262,6 +4263,7 @@ function applySkinColors(){
 const P1_BORDER='rgba(255,255,255,1)',P2_BORDER='rgba(239,71,111,1)';
 const P1_GLOW='rgba(255,255,255,0.35)',P2_GLOW='rgba(239,71,111,0.38)';
 let p1Color,p2Color,turn,gameOver,totalCells;
+let matchDiamonds=0;
 let curChapter=-1,curLevel=-1,curConfig=null;
 let movesLeft=999,isFreeplay=false,isPVP=false,isLocalPVP=false;
 let powerTiles=[],playerPowers={bomb:0,surge:0,double:0},activePower=null,doubleActive=false;
@@ -8363,7 +8365,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
 
   // XP/Coins earned display
   const xpEarned=won?65:15;const coinsEarned=(won?40:15)+(extraCoinsEarned||0);extraCoinsEarned=0;
-  const chromasEarned=won?5:1;
+  const chromasEarned=matchDiamonds;
   const xpBonus=curConfig.isRanked?15:0;
 
   if(curConfig.isRanked){
