@@ -5216,8 +5216,6 @@ function showRankTab(tab,btn){
       +'<div style="font-size:10px;color:var(--c4);margin-top:6px;font-weight:700">'+(daysLeft>0?'Season ends in '+daysLeft+' days':'Season ending soon!')+'</div>'
       +'<div style="font-size:10px;color:var(--text);margin-top:4px">Your peak: <span style="color:'+highRank.color+';font-weight:800">'+highRank.icon+' '+highRank.name+'</span> ('+highElo+' ELO)</div>';
     wrap.appendChild(header);
-    // Season mechanics display
-    var mechDiv=document.createElement('div');mechDiv.innerHTML=mechHtml;wrap.appendChild(mechDiv);
 
     var rankRewardDefs={
       'Unranked':  {coins:50,   diamonds:10,  medal:'🔘',titleSuffix:null,                  border:false,icon:false},
