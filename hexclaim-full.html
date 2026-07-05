@@ -7298,7 +7298,7 @@ function applyDecay(player){
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
       if(owner[nr][nc]===0||owner[nr][nc]===(player===1?2:1))threats++;
     });
-    if(threats>=3&&!isShielded(r,c)&&(decayTimer-(captureTurn[r][c]||0))>=2)vulnerable.push({r,c});
+    if(threats>=3&&!isShielded(r,c))vulnerable.push({r,c});
   }
   // Remove up to 2 random vulnerable cells
   var removed=0;
