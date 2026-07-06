@@ -3754,10 +3754,11 @@ function renderShopTab(tab){
         el.innerHTML='<div class="si-preview" style="background:var(--dim);filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div class="si-desc">'+item.desc+'</div><div style="font-size:8px;color:var(--c4);margin-top:2px;font-weight:700">🔒 '+lockDesc+'</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
         el.onclick=function(){playSfx('click')};
       } else {
-        el.innerHTML='<div class="si-preview" style="background:var(--dim)">'+item.preview+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc">'+item.desc+'</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
+        el.innerHTML='<div class="si-preview" style="background:var(--dim)"><canvas class="fx-sample" width="72" height="72" style="width:36px;height:36px;border-radius:6px"></canvas></div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc">'+item.desc+'</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
         el.onclick=function(){if(equipped)return;if(owned){save.equipped.effect=item.id;saveProg();renderShopTab('effects');playSfx('click');return}if(!buyItem('effect',item))return;renderShopTab('effects')};
       }
       cont.appendChild(el);
+      var _fx=el.querySelector('.fx-sample'); if(_fx)renderEffectSample(_fx,item.id);
     }
     noRankEffects.forEach(renderEffectItem);
     rankEffectGroups.forEach(function(g){
@@ -3950,6 +3951,40 @@ function makeActiveSkinPreview(skin){
   return html;
 }
 
+function renderEffectSample(canvas,effectId){
+  if(!canvas||!canvas.getContext)return;
+  var g=canvas.getContext('2d');
+  var eff=(typeof SHOP_EFFECTS!=='undefined'?SHOP_EFFECTS.find(function(e){return e.id===effectId;}):null)||{preview:'✨'};
+  function fam(id){id=id||'';
+    if(/fire|meteor|magma|inferno|dragon/.test(id))return'255,120,0';
+    if(/ice|frost|diamond|shatter/.test(id))return'150,220,255';
+    if(/light|storm|electric|thunder|plasma|surge/.test(id))return'80,180,255';
+    if(/cherry|sakura|petal|divine/.test(id))return'255,120,180';
+    if(/void|shadow|phantom|nebula|collapse/.test(id))return'150,60,255';
+    if(/gold|supernova|celest|star/.test(id))return'255,210,80';
+    if(/rainbow|holo|aurora/.test(id))return'0,214,160';
+    return'255,235,120';
+  }
+  var col=fam(effectId);
+  function frame(){
+    if(!canvas.isConnected)return;
+    var W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,t=Date.now()*0.001,pulse=0.5+0.5*Math.sin(t*3);
+    g.clearRect(0,0,W,H);
+    var gr=g.createRadialGradient(cx,cy,0,cx,cy,W*0.55);
+    gr.addColorStop(0,'rgba('+col+','+(0.22+0.22*pulse)+')');
+    gr.addColorStop(1,'rgba('+col+',0)');
+    g.fillStyle=gr;g.fillRect(0,0,W,H);
+    for(var i=0;i<8;i++){
+      var a=i*Math.PI/4+t*2,d=W*0.28*(0.7+0.3*pulse),px=cx+Math.cos(a)*d,py=cy+Math.sin(a)*d;
+      g.beginPath();g.arc(px,py,1.3+1.5*pulse,0,Math.PI*2);g.fillStyle='rgba('+col+','+(0.5+0.4*pulse)+')';g.fill();
+    }
+    g.font=Math.floor(W*0.42)+'px serif';g.textAlign='center';g.textBaseline='middle';
+    g.fillText(eff.preview||'✨',cx,cy+1);
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
 function buyItem(type,item){
   if(item.rankReq&&!meetsRankReq(item.rankReq)){showToast('Requires '+item.rankReq+' rank to unlock!');return false}
   var cur=item.currency==='coins'?'coins':'chromas';
@@ -4007,20 +4042,22 @@ function buildBattlePass(){
     const premClaimed=save.bpClaimed['prem_'+tier.level];
     const freeClaimable=reached&&!freeClaimed;
     const premClaimable=reached&&!premClaimed&&save.bpPremium;
+    const freeIcon=tier.free.type==='effect'?'<canvas class="fx-sample-bp" data-effect="'+tier.free.id+'" width="36" height="36" style="width:18px;height:18px;border-radius:4px"></canvas>':tier.free.icon;
+    const premIcon=tier.premium.type==='effect'?'<canvas class="fx-sample-bp" data-effect="'+tier.premium.id+'" width="36" height="36" style="width:18px;height:18px;border-radius:4px"></canvas>':tier.premium.icon;
 
     html+=`<div class="bp-tier">
       <div class="bp-level ${reached?'done':''}">${tier.level}<div class="bp-line ${reached?'done':''}"></div></div>
       <div class="bp-track">
         <div class="bp-reward ${freeClaimed?'claimed':''} ${freeClaimable?'claimable':''}" style="${!reached&&!freeClaimed?'opacity:0.35;filter:grayscale(0.8)':''}" onclick="${freeClaimable?`claimBPReward('free',${tier.level})`:''}">
           ${freeClaimed?'<div class="bp-check">✅</div>':''}
-          <div class="bp-icon">${tier.free.icon}</div>
+          <div class="bp-icon">${freeIcon}</div>
           <div class="bp-rname">${tier.free.name}</div>
           <div class="bp-rtag">Free</div>
         </div>
         <div class="bp-reward premium ${premClaimed?'claimed':''} ${premClaimable?'claimable':''} ${!save.bpPremium&&!premClaimed?'locked':''}" onclick="${premClaimable?`claimBPReward('prem',${tier.level})`:''}">
           ${premClaimed?'<div class="bp-check">✅</div>':''}
           ${!save.bpPremium&&!premClaimed?'<div class="bp-check">🔒</div>':''}
-          <div class="bp-icon">${tier.premium.icon}</div>
+          <div class="bp-icon">${premIcon}</div>
           <div class="bp-rname">${tier.premium.name}</div>
           <div class="bp-rtag">Premium</div>
         </div>
@@ -4029,6 +4066,7 @@ function buildBattlePass(){
   });
 
   cont.innerHTML=html;
+  cont.querySelectorAll('.fx-sample-bp').forEach(function(cv){var eid=cv.dataset.effect;if(eid)renderEffectSample(cv,eid);});
 }
 
 function buyBattlePass(){
@@ -5697,9 +5735,18 @@ function buildChallenges(){
         +'<span style="font-size:9px;color:'+(bOwned?'var(--c2)':'rgba(100,200,255,0.5)')+'">🖼 '+(bName?bName.name:'Border')+(bOwned?' ✅':'')+'</span>'
         +'</div>';
     }
-    card.innerHTML=`<div style="font-size:13px;font-weight:800;color:${diff==='legendary'?'#ef476f':diff==='medium'?'#ffd166':'var(--c3)'}">${done?'✅ ':''}${ch.name}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${ch.desc}</div><div style="font-size:9px;color:var(--p1);margin-top:5px;text-transform:uppercase;letter-spacing:1px">${ch.reward}</div>${skinPreview}${borderPreview}${titlePreview}`;
+    let effectPreview='';
+    if(ch.rewardEffect){
+      const eOwned=save.owned['effect_'+ch.rewardEffect];
+      effectPreview='<div style="margin-top:5px;display:flex;align-items:center;gap:6px">'
+        +'<canvas class="fx-sample-ch" width="40" height="40" style="width:20px;height:20px;border-radius:4px"></canvas>'
+        +'<span style="font-size:9px;color:'+(eOwned?'var(--c2)':'rgba(150,60,255,0.6)')+'">✨ Effect'+(eOwned?' ✅':'')+'</span>'
+        +'</div>';
+    }
+    card.innerHTML=`<div style="font-size:13px;font-weight:800;color:${diff==='legendary'?'#ef476f':diff==='medium'?'#ffd166':'var(--c3)'}">${done?'✅ ':''}${ch.name}</div><div style="font-size:10px;color:var(--muted);margin-top:3px">${ch.desc}</div><div style="font-size:9px;color:var(--p1);margin-top:5px;text-transform:uppercase;letter-spacing:1px">${ch.reward}</div>${skinPreview}${borderPreview}${titlePreview}${effectPreview}`;
     if(unlocked)card.onclick=()=>startChallenge(i);
     list.appendChild(card);
+    var _cfx=card.querySelector('.fx-sample-ch'); if(_cfx&&ch.rewardEffect)renderEffectSample(_cfx,ch.rewardEffect);
   });
 }
 
