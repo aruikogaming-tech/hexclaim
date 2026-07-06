@@ -4541,7 +4541,7 @@ function buildMatchState(seed,rc,matchElo,customMechs){
     else if(id==='darkZones'){var tc=cols*rows,nZ=Math.max(3,Math.floor(tc/30)),zS=tc>160?3:2,za=0;while(st.darkZones.length<nZ&&za<200){za++;var zr=Math.floor(rows*0.2+rM()*rows*0.6),zc=Math.floor(cols*0.2+rM()*cols*0.6),ov=false;for(var q=0;q<st.darkZones.length;q++){var dz=st.darkZones[q];if(Math.abs(dz.r-zr)<=zS+1&&Math.abs(dz.c-zc)<=zS+1){ov=true;break;}}if(!ov)st.darkZones.push({r:zr,c:zc,size:zS,revealed:false});}}
   });
   if(rc.darkZones&&st.darkZones.length===0){var tc2=cols*rows,nZ2=Math.max(3,Math.floor(tc2/30)),zS2=tc2>160?3:2,za2=0,rD=seededRandom(seed+2);while(st.darkZones.length<nZ2&&za2<200){za2++;var zr2=Math.floor(rows*0.2+rD()*rows*0.6),zc2=Math.floor(cols*0.2+rD()*cols*0.6),ov2=false;for(var q2=0;q2<st.darkZones.length;q2++){var dz2=st.darkZones[q2];if(Math.abs(dz2.r-zr2)<=zS2+1&&Math.abs(dz2.c-zc2)<=zS2+1){ov2=true;break;}}if(!ov2)st.darkZones.push({r:zr2,c:zc2,size:zS2,revealed:false});}}
-  if(_cm&&_cm.powerTiles){var numP=Math.floor(cols*rows*0.03)+2;var PT=['bomb','surge','double'];midMany(numP,st.powerTiles,function(r,c){return{r:r,c:c,type:PT[Math.floor(rP()*3)]};});}
+  if(_cm&&_cm.powerTiles){var numP=Math.floor(cols*rows*0.03)+2;var PT=['surge','double'];midMany(numP,st.powerTiles,function(r,c){return{r:r,c:c,type:PT[Math.floor(rP()*2)]};});}
   return st;
 }
 
@@ -4580,7 +4580,8 @@ async function showCreateRoom(){
     code,host:{name:save.playerName||'Player',elo:save.elo},
     guest:null,state:'waiting',seed:Math.floor(Math.random()*2147483647),
     grid:null,moves:[],turn:1,created:Date.now(),
-    customCfg:window._customRoomCfg||null
+    customCfg:window._customRoomCfg||null,
+    isRanked:false
   };
   await pvpDB.set('pvp-rooms/'+code,roomData)
   window._customRoomCfg=null;
@@ -4802,7 +4803,7 @@ function startOnlineMatch(data){
   var sMechs=data.seasonMechs||[null,null,null];
   curConfig={cols:rc.cols,rows:rc.rows,colors:rc.colors,aiSmart:0,fog:rc.fog||false,
     powerTiles:rc.powerTiles||false,moveLimit:rc.moveLimit||false,baseMoves:rc.baseMoves||999,
-    starThresholds:[55,65,80],winPct:0,isRanked:true,chapterIdx:-1,
+    starThresholds:[55,65,80],winPct:0,isRanked:data.isRanked!==false,chapterIdx:-1,
     isOnline:true,aiLookahead:0,aiBlock:false,matchElo:matchElo,
     decay:!!data.decayOn,seasonMechs:data.seasonMechs||[],
     seasonMech0:sMechs[0]||null,
@@ -4859,9 +4860,10 @@ function startOnlineMatch(data){
   // Dark Zones — shared from room data
   darkZones=data.darkZones?data.darkZones.map(d=>({...d,scoutedByP1:false})):[];
   // Power tiles generated AFTER dark zones so they can spawn inside them
+  // (bomb excluded online — no network sync exists for it yet, see fireBomb())
   if(curConfig.powerTiles){
     const cnt=2+Math.floor(Math.random()*4);
-    const types=['bomb','surge','double'];
+    const types=['surge','double'];
     for(let i=0;i<cnt;i++){
       let pr,pc,attempts=0;
       // 40% chance to place inside a dark zone if available
@@ -4874,7 +4876,7 @@ function startOnlineMatch(data){
         do{pr=Math.floor(Math.random()*ROWS);pc=Math.floor(Math.random()*COLS);attempts++;}
         while(attempts<100&&(owner[pr][pc]!==0||powerTiles.some(p=>p.r===pr&&p.c===pc)));
       }
-      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*3)]});
+      powerTiles.push({r:pr,c:pc,type:types[Math.floor(Math.random()*2)]});
     }
   }
   expandTerritory(1,p1Color);expandTerritory(2,p2Color);
@@ -6322,6 +6324,13 @@ function pickForwardCandidates(candidates,maxCount,player){
   }
   return scored.slice(0,maxCount).map(function(s){return{r:s.r,c:s.c}});
 }
+// Power-tile pickup credit: online, credit whichever player slot is actually mine;
+// offline (VS AI / campaign / local PVP), power-ups remain player-1-only by design.
+// Bomb is excluded online (no network sync exists for it yet — see fireBomb()).
+function creditsPowerTile(player,type){
+  var mine=curConfig.isOnline?(player===myPlayerSlot):(player===1);
+  return mine&&!(curConfig.isOnline&&type==='bomb');
+}
 function expandTerritory(player,newColor){
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(owner[r][c]===player)grid[r][c]=newColor}
   let changed=true;
@@ -6343,7 +6352,7 @@ function expandTerritory(player,newColor){
       captureTurn[nr][nc]=decayTimer;
       newlyClaimed.push({r:nr,c:nc,player});
       const pi=powerTiles.findIndex(p=>p.r===nr&&p.c===nc);
-      if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups();}}}
+      if(pi>=0){if(creditsPowerTile(player,powerTiles[pi].type))playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups();}}}
 }
 // Animated expand — reveals cells wave by wave
 function expandTerritoryAnimated(player,newColor,callback){
@@ -6412,7 +6421,7 @@ function expandTerritoryAnimated(player,newColor,callback){
       newlyClaimed.push({r:w.r,c:w.c,player});
       // Check power tiles
       const pi=powerTiles.findIndex(p=>p.r===w.r&&p.c===w.c);
-      if(pi>=0){if(player===1)playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups()}
+      if(pi>=0){if(creditsPowerTile(player,powerTiles[pi].type))playerPowers[powerTiles[pi].type]++;powerTiles.splice(pi,1);buildPowerups()}
       // Check dark zone reveals
       checkDarkZoneReveal(w.r,w.c);
     });
@@ -7601,7 +7610,7 @@ function buildColorPicker(){
 function buildPowerups(){
   const c=document.getElementById('powerups');c.innerHTML='';if(!curConfig.powerTiles)return;
   var anyPower=playerPowers.bomb>0||playerPowers.surge>0||playerPowers.double>0;
-  if(anyPower&&!activePower&&turn===1){
+  if(anyPower&&!activePower&&(curConfig.isOnline?isMyTurn():turn===1)){
     var hint=document.createElement('div');
     hint.style.cssText='font-size:8px;color:var(--c3);text-align:center;width:100%;margin-bottom:3px;font-weight:700;letter-spacing:1px;animation:titleGlow 1s ease infinite';
     hint.textContent='⬆ TAP A POWER-UP TO ACTIVATE';
