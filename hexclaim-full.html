@@ -1556,8 +1556,15 @@ function loadCloudSave(uid){
   firebaseDB.ref('users/'+uid+'/save').once('value').then(function(snapshot){
     var cloudData=snapshot.val();
     if(cloudData){
-      // Cloud data exists — restore it
+      // Cloud data exists — restore it, but never let a STALE cloud copy roll back
+      // login progress (keep the more-recent date and the higher streak).
+      var _ls=save.loginStreak,_ld=save.lastLoginDate,_lc=save.lastStreakClaimDate;
       Object.assign(save,cloudData);
+      if(_ld&&(!save.lastLoginDate||new Date(_ld)>=new Date(save.lastLoginDate))){
+        save.lastLoginDate=_ld;
+        save.loginStreak=Math.max(save.loginStreak||0,_ls||0);
+        if(_lc)save.lastStreakClaimDate=_lc;
+      }
       save.authUid=uid;
       save.isGuest=false;
       saveProg._lastCloud=0;
