@@ -2270,15 +2270,20 @@ var SEASON_MECHANICS=[
 ];
 
 function getSeasonMechanics(){
-  // Returns array of 3 mechanic IDs for current season [diamond, master, chromancer]
-  if(!save.seasonMechanicOrder||save.seasonMechanicOrder.length<3){
-    // First time — shuffle all 8
+  // Returns array of 3 mechanic IDs for current season [diamond, master, chromancer].
+  // Deterministic and shared across every player (seeded, not Math.random()), so
+  // "Season N Mechanics" means the same thing for everyone, not whoever's local
+  // save happened to resolve a given match.
+  if(!save.seasonMechanicOrder||save.seasonMechanicOrder.length<3||!save.seasonMechDeterministic){
+    // First time (or migrating off the old per-account random shuffle) — shuffle all 8
     var order=SEASON_MECHANICS.map(function(_,i){return i});
+    var rnd0=seededRandom(1);
     for(var i=order.length-1;i>0;i--){
-      var j=Math.floor(Math.random()*(i+1));
+      var j=Math.floor(rnd0()*(i+1));
       var tmp=order[i];order[i]=order[j];order[j]=tmp;
     }
     save.seasonMechanicOrder=order;
+    save.seasonMechDeterministic=true;
     saveProg();
   }
   var s=(save.season||1)-1;
@@ -2287,11 +2292,13 @@ function getSeasonMechanics(){
   var idx1=(s*3)%pool.length;
   var idx2=(s*3+1)%pool.length;
   var idx3=(s*3+2)%pool.length;
-  // If we've used all 8, reshuffle
+  // If we've used all 8, reshuffle — seeded from the season number so every
+  // player reshuffles to the same new order at the same cycle boundary.
   if(s*3>=pool.length&&(s*3)%pool.length===0){
     var newOrder=SEASON_MECHANICS.map(function(_,i){return i});
+    var rnd1=seededRandom(s);
     for(var i=newOrder.length-1;i>0;i--){
-      var j=Math.floor(Math.random()*(i+1));
+      var j=Math.floor(rnd1()*(i+1));
       var tmp=newOrder[i];newOrder[i]=newOrder[j];newOrder[j]=tmp;
     }
     save.seasonMechanicOrder=newOrder;
