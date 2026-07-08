@@ -372,7 +372,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
   <div style="background:linear-gradient(135deg,rgba(6,214,160,0.1),rgba(131,56,236,0.1));border:1px solid rgba(6,214,160,0.3);border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:8px;cursor:pointer" onclick="showNewsPopup()">
     <span style="font-size:16px">📢</span>
     <div style="flex:1">
-      <div style="font-size:10px;font-weight:800;color:var(--p1)">WHAT'S NEW</div>
+      <div style="font-size:10px;font-weight:800;color:var(--p1)">WHAT'S NEW <span id="newsDot" style="display:none;color:#ef476f;font-size:11px">●</span></div>
       <div style="font-size:11px;color:var(--text)" id="newsBannerText">Season 1 is live! Climb the ranks and earn seasonal rewards and permanent titles!</div>
     </div>
     <span style="font-size:10px;color:var(--muted)">›</span>
@@ -2587,6 +2587,16 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v1.4',date:'July 2026',title:'Balance & Feature Update',notes:[
+    '🎮 Custom Games: mix and match any mechanics, or hit Random for a surprise!',
+    '🏆 Campaign: keep playing after a win to chase that 3rd star',
+    '⚡ Surge power-up buffed — grab even more tiles in one move',
+    '🌫️ Territory Decay reworked, with a warning before tiles crumble',
+    '🎯 Smarter capture that spreads naturally across your territory',
+    '✨ Challenge rewards now preview the real border and effect',
+    '💾 More reliable cloud saves and login streaks',
+    '🐛 Fixed campaign AI idling, Dark Zone glitches, diamond balance and more',
+  ]},
   {version:'v1.2',date:'June 2026',title:'2nd update for beta',notes:[
     '🎨 New legendary challenge skins with special glow effects',
     '📅 30-day login streak with milestone rewards',
@@ -2598,6 +2608,8 @@ const GAME_NEWS=[
   ]},
 ];
 function showNewsPopup(){
+  if(GAME_NEWS&&GAME_NEWS[0]){save.lastNewsSeen=GAME_NEWS[0].version;saveProg();}
+  var _nd=document.getElementById('newsDot');if(_nd)_nd.style.display='none';
   var popup=document.createElement('div');
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
   popup.onclick=function(e){if(e.target===popup)popup.remove();};
@@ -2623,6 +2635,8 @@ function showNewsPopup(){
   playSfx('menuOpen');
 }
 function updateNewsBanner(){
+  var _nd=document.getElementById('newsDot');
+  if(_nd){var _lv=(GAME_NEWS&&GAME_NEWS[0])?GAME_NEWS[0].version:null;_nd.style.display=(_lv&&save.lastNewsSeen!==_lv)?'inline':'none';}
   var el=document.getElementById('newsBannerText');
   if(el)el.textContent='Season '+(save.season||1)+' is live! Climb the ranks and earn seasonal rewards and permanent titles!';
 }
