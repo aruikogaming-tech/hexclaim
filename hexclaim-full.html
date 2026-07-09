@@ -2587,6 +2587,13 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v1.5',date:'July 2026',title:'Rewards & Polish Update',notes:[
+    '✨ Challenge rewards now show the real border and an animated effect preview',
+    '🛍️ Limited shop: clearer wording — new selection rotates every 2 weeks',
+    '🔔 "What\'s New" now shows a dot when there\'s an update you haven\'t read',
+    '💾 More reliable login streaks and cloud saves',
+    '📊 Behind-the-scenes improvements and bug fixes',
+  ]},
   {version:'v1.4',date:'July 2026',title:'Balance & Feature Update',notes:[
     '🎮 Custom Games: mix and match any mechanics, or hit Random for a surprise!',
     '🏆 Campaign: keep playing after a win to chase that 3rd star',
@@ -2638,7 +2645,7 @@ function updateNewsBanner(){
   var _nd=document.getElementById('newsDot');
   if(_nd){var _lv=(GAME_NEWS&&GAME_NEWS[0])?GAME_NEWS[0].version:null;_nd.style.display=(_lv&&save.lastNewsSeen!==_lv)?'inline':'none';}
   var el=document.getElementById('newsBannerText');
-  if(el)el.textContent='Season '+(save.season||1)+' is live! Climb the ranks and earn seasonal rewards and permanent titles!';
+  if(el)el.textContent='New update is live — tap to see what\'s new!';
 }
 function updateAllUI(){
   updateMenuStats();
