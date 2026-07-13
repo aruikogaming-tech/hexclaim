@@ -2541,7 +2541,6 @@ function getRewardForLevel(lv){
   if(lv===200)return{type:'milestone',desc:'🌑 ELITE! Void Nexus Skin + Phantom Burst Effect + Title: Elite!'};
   if(lv===100)return{type:'milestone',desc:'🥇 VETERAN! Century Frame Border + Title: Veteran!'};
   if(lv===50)return{type:'milestone',desc:'💚 DEDICATED! Title: Dedicated!'};
-  if(lv===10)return{type:'unlock',id:'ranked',desc:'🔓 Ranked PVP Unlocked!'};
   if(lv%100===0)return{type:'chromas',amount:1000,desc:'1000 💎 Century Bonus!'};
   if(lv%50===0)return{type:'portrait',id:['🐲','⚡','🌟','💠','🔥','🌊','☠️','👾','🦅','🎭','💫','🌙','🗡️','🛡️','🏴‍☠️','🦊','🐺','🦁','🎪','🃏'][Math.floor(lv/50)%20],desc:'Rare Portrait!'};
   if(lv%25===0)return{type:'chromas',amount:200,desc:'200 💎'};
@@ -2561,7 +2560,6 @@ function addProfileXP(amount){
     if(reward){
       if(reward.type==='coins'){save.coins+=reward.amount;if(reward.amount>=300)save.wonJackpot=true;}
       else if(reward.type==='chromas'){save.chromas=(save.chromas||0)+reward.amount;}
-      else if(reward.type==='unlock'){if(reward.id==='ranked')showToast('🔓 Ranked PVP Unlocked!');}
       else if(reward.type==='portrait')save.owned['portrait_'+reward.id]=true;
       else if(reward.type==='milestone'){
         var lv2=save.profileLevel;
@@ -2580,7 +2578,7 @@ function addProfileXP(amount){
 }
 
 function showLevelUpPopup(){
-  const LEVEL_REWARDS={10:{desc:'Ranked PVP Unlocked!'},50:{desc:'Title: Dedicated!'},100:{desc:'Title: Veteran + Century Border!'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
+  const LEVEL_REWARDS={50:{desc:'Title: Dedicated!'},100:{desc:'Title: Veteran + Century Border!'},200:{desc:'Title: Elite + Void Nexus Skin + Phantom Burst Effect!'},500:{desc:'Title: Legendary + Solar Crown Skin + Legendary Border!'},999:{desc:'TRANSCENDENT! Every reward + 999,999 Coins and Diamonds!'}};
   const reward=LEVEL_REWARDS[save.profileLevel];
   const popup=document.createElement('div');
   popup.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;background:rgba(8,8,16,0.95);border:1px solid var(--gold);border-radius:16px;padding:24px;text-align:center;min-width:240px;animation:cellGainPop 0.5s ease';
