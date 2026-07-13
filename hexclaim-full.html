@@ -707,6 +707,27 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
 
+// ===== APP LIFECYCLE: pause audio when backgrounded =====
+function hexPauseAll(){
+  try{ if(typeof stopMusic==='function')stopMusic(); }catch(e){}
+  try{ if(typeof audioCtx!=='undefined'&&audioCtx&&audioCtx.state==='running')audioCtx.suspend(); }catch(e){}
+}
+function hexResumeAll(){
+  try{ if(typeof audioCtx!=='undefined'&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume(); }catch(e){}
+  try{ if(save&&save.musicOn!==false&&typeof startMusic==='function')startMusic(); }catch(e){}
+}
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden)hexPauseAll(); else hexResumeAll();
+});
+window.addEventListener('pagehide',hexPauseAll);
+try{
+  if(typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.App){
+    Capacitor.Plugins.App.addListener('appStateChange',function(st){
+      if(st&&st.isActive===false)hexPauseAll(); else hexResumeAll();
+    });
+  }
+}catch(e){}
+
 // Toast notification — replaces alert() which doesn't work in artifacts
 function showToast(msg,duration){
   duration=duration||2500;
@@ -5167,6 +5188,7 @@ function launchCustomGame(){
     var friend=friends.find(function(f){return f.code===code});
     var friendName=friend?friend.name:'Friend ('+code+')';
     window._customRoomCfg={cols:cols,rows:rows,colors:colors,fog:fog,mechs:_mechs};
+    showScreen('pvpScreen');
     showCreateRoom();
     if(isBlitz){var t3=parseInt(document.getElementById('cgBlitzTimer').value);setTimeout(function(){turnTimerMax=t3},200)}
   }
@@ -7689,6 +7711,31 @@ function buildColorPicker(){
   }
 
 }
+const POWER_INFO={
+  bomb:{icon:'💥',name:'Bomb',desc:'Tap a tile near your territory to detonate a 5-tile cross (center + up/down/left/right). Enemy tiles turn neutral; neutral tiles become yours. Great for breaking through enemy walls.',showCross:true},
+  surge:{icon:'🌊',name:'Surge',desc:'Your next color pick captures up to 3x the normal tiles in one move. Best used when lots of matching tiles border your territory.',showCross:false},
+  double:{icon:'⚡',name:'2x Turn',desc:'Take two turns in a row. The color cooldown is cleared, so you can chain two strong picks back to back.',showCross:false}
+};
+function showPowerInfo(type){
+  var info=POWER_INFO[type];if(!info)return;
+  if(document.getElementById('powerInfoModal'))return;
+  var cross='';
+  if(info.showCross){
+    cross='<div style="margin:10px auto 4px;display:grid;grid-template-columns:repeat(3,20px);grid-template-rows:repeat(3,20px);gap:3px;justify-content:center">';
+    var hit=[[0,1],[1,0],[1,1],[1,2],[2,1]];
+    for(var r=0;r<3;r++)for(var c=0;c<3;c++){
+      var isHit=hit.some(function(h){return h[0]===r&&h[1]===c;});
+      var isCenter=(r===1&&c===1);
+      cross+='<div style="width:20px;height:20px;border-radius:4px;background:'+(isCenter?'var(--c4)':isHit?'rgba(239,71,111,0.45)':'var(--dim)')+';border:1px solid '+(isHit?'var(--c4)':'var(--border)')+'"></div>';
+    }
+    cross+='</div><div style="font-size:9px;color:var(--muted);text-align:center">Blast area (5 tiles)</div>';
+  }
+  var m=document.createElement('div');m.id='powerInfoModal';
+  m.style.cssText='position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
+  m.onclick=function(){m.remove();};
+  m.innerHTML='<div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;max-width:280px;text-align:center"><div style="font-size:26px">'+info.icon+'</div><div style="font-size:15px;font-weight:800;color:var(--p1);margin:4px 0 6px">'+info.name+'</div><div style="font-size:11px;color:var(--muted);line-height:1.5">'+info.desc+'</div>'+cross+'<div style="font-size:9px;color:var(--muted);margin-top:12px">Tap anywhere to close</div></div>';
+  document.body.appendChild(m);
+}
 function buildPowerups(){
   const c=document.getElementById('powerups');c.innerHTML='';if(!curConfig.powerTiles)return;
   var anyPower=playerPowers.bomb>0||playerPowers.surge>0||playerPowers.double>0;
@@ -7705,6 +7752,7 @@ function buildPowerups(){
     var activeLabel=type==='bomb'?'ACTIVE — tap tile':type==='surge'?'ACTIVE — next move x2':'ACTIVE — pick color';
     b.innerHTML={bomb:'💥 Bomb',surge:'🌊 Surge',double:'⚡ 2x'}[type]+`<span class="pu-count">×${playerPowers[type]}</span>`+(isActive?`<div style="font-size:7px;color:var(--c3);margin-top:1px">${activeLabel}</div>`:'');
     b.onclick=()=>{
+      if(b._longPressed){b._longPressed=false;return;}
       if(!playerPowers[type])return;
       var wasActive=activePower===type;
       activePower=wasActive?null:type;
@@ -7713,7 +7761,20 @@ function buildPowerups(){
       if(bombTargetMode)showToast('💥 Tap any tile to place your Bomb!',2000);
       if(!wasActive&&type==='surge'&&playerPowers.surge>0){activePower=null;fireScout();}
       buildPowerups();
-    };c.appendChild(b)})
+    };
+    // Long-press (or right-click) shows the power-up description
+    var _lpT=null;
+    var _startLP=function(e){_lpT=setTimeout(function(){b._longPressed=true;showPowerInfo(type);},450);};
+    var _endLP=function(){if(_lpT){clearTimeout(_lpT);_lpT=null;}};
+    b.addEventListener('touchstart',_startLP,{passive:true});
+    b.addEventListener('touchend',_endLP);
+    b.addEventListener('touchmove',_endLP);
+    b.addEventListener('mousedown',_startLP);
+    b.addEventListener('mouseup',_endLP);
+    b.addEventListener('mouseleave',_endLP);
+    b.addEventListener('contextmenu',function(e){e.preventDefault();showPowerInfo(type);});
+    b.title=POWER_INFO[type].name+' — '+POWER_INFO[type].desc;
+    c.appendChild(b)})
 }
 function usePower(type){
   if(type==='double'){doubleActive=true;playerPowers.double--;activePower=null;buildPowerups();}
