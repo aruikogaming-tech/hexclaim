@@ -691,6 +691,37 @@ document.addEventListener('visibilitychange',function(){
   if(document.hidden)hexPauseAll(); else hexResumeAll();
 });
 window.addEventListener('pagehide',hexPauseAll);
+
+// ===== ANDROID BACK BUTTON =====
+// Back goes up one screen; from the main menu it exits the app (double-tap to confirm).
+// Never yanks the player out of an active match by accident.
+var _backExitArmed=false;
+function hexHandleBack(){
+  // A modal/popup open? close the topmost one first.
+  var modal=document.getElementById('powerInfoModal')||document.getElementById('clinchModal')||document.getElementById('decideModal')||document.getElementById('streakPopup');
+  if(modal){modal.remove();return;}
+  if(typeof gameLocked!=='undefined'&&gameLocked){showToast('Finish or quit the match first',1500);return;}
+  var active=document.querySelector('.screen.active');
+  var id=active?active.id:'menuScreen';
+  if(id==='menuScreen'){
+    if(_backExitArmed){
+      try{ if(typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.App)Capacitor.Plugins.App.exitApp(); }catch(e){}
+      return;
+    }
+    _backExitArmed=true;
+    showToast('Press back again to exit',1800);
+    setTimeout(function(){_backExitArmed=false;},1800);
+    return;
+  }
+  if(id==='gameScreen'){return;} // in-match: use the in-game quit button
+  showScreen('menuScreen');
+  if(typeof playSfx==='function')playSfx('menuBack');
+}
+try{
+  if(typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.App){
+    Capacitor.Plugins.App.addListener('backButton',function(){ hexHandleBack(); });
+  }
+}catch(e){}
 try{
   if(typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.App){
     Capacitor.Plugins.App.addListener('appStateChange',function(st){
@@ -7961,7 +7992,7 @@ function updateObjBar(){
     var p1holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===1}).length;
     var p2holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===2}).length;
     var kBonus=p1holds>p2holds?'+':p2holds>p1holds?'-':'';
-    var kStatus='👑 '+p1holds+'-'+p2holds+' | '+p1KingScore+'/'+p2KingScore+'pts | '+(7-kingTileTimer)+'t';
+    var kStatus='👑 Crowns '+p1holds+'-'+p2holds+(p1holds?' · +'+p1holds+'/turn':'')+' · '+p1KingScore+' vs '+p2KingScore+' pts · moves in '+(7-kingTileTimer)+'t';
     var kColor=p1holds>p2holds?'var(--p1)':p2holds>p1holds?'var(--p2)':'var(--gold)';
     var kEl=document.getElementById('kingHillStatus');
     if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
