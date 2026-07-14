@@ -493,7 +493,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.5</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.6</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -2608,6 +2608,15 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v1.6',date:'July 2026',title:'Fairness & Clarity Update',notes:[
+    '👀 Power-ups, crowns and bonus tiles moved to corner badges so you can always see the tile colour',
+    '❓ Hold any power-up button to see what it does — including the Bomb blast area',
+    '👑 Crown scoring is now clearly shown — you earn points every turn you hold one',
+    '⚔️ Ranked PVP is now open to everyone (no level requirement)',
+    '🔇 Music now stops properly when you close or minimise the game',
+    '🔙 Android back button now works as expected',
+    '🐛 Fixed a Day 0 login streak bug on new accounts',
+  ]},
   {version:'v1.5',date:'July 2026',title:'Rewards & Polish Update',notes:[
     '✨ Challenge rewards now show the real border and an animated effect preview',
     '🛍️ Limited shop: clearer wording — new selection rotates every 2 weeks',
@@ -2624,6 +2633,20 @@ const GAME_NEWS=[
     '✨ Challenge rewards now preview the real border and effect',
     '💾 More reliable cloud saves and login streaks',
     '🐛 Fixed campaign AI idling, Dark Zone glitches, diamond balance and more',
+  ]},
+  {version:'v1.3',date:'June 2026',title:'Season & Progression Update',notes:[
+    '🏆 Season system fully automated — each season generates unique cosmetics forever',
+    '🔥 Login streak widget added to main menu',
+    '📢 News banner added to main menu',
+    '🎭 Season rewards simplified — 1 exclusive Chromancer skin per season',
+    '🏅 Rank-up rewards — exclusive cosmetics earned first time reaching each rank',
+    '💰 Shop prices rebalanced — rank-locked skins cost significantly more',
+    '🐛 Fixed game not starting bug — gameLocked and animatingMove now reset correctly',
+    '🐛 Fixed no victory/defeat screen appearing after matches',
+    '🐛 Fixed login streak claiming multiple times',
+    '🐛 Fixed duplicate titles in shop',
+    '📱 Improved Android safe area support for all screen sizes',
+    '🎮 Tutorial improved — can now skip at any time and no longer requires winning',
   ]},
   {version:'v1.2',date:'June 2026',title:'2nd update for beta',notes:[
     '🎨 New legendary challenge skins with special glow effects',
