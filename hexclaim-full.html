@@ -2599,10 +2599,6 @@ function tryRankedPVP(){
     showToast('Complete the tutorial first! Play Campaign → Chapter 1 → Level 1.');
     showScreen('chapterScreen');buildChapters();return;
   }
-  if(save.profileLevel<10){
-    showToast('Reach Level 10 for Ranked PVP! You are Level '+save.profileLevel);
-    return;
-  }
   showScreen('pvpScreen');showMatchmaking();
 }
 
@@ -2678,12 +2674,7 @@ function updateAllUI(){
   // Ranked PVP enabled
   const pvpBtn=document.getElementById('pvpBtn');
   if(pvpBtn){
-    if(save.profileLevel<10){
-      pvpBtn.style.opacity='0.45';pvpBtn.style.pointerEvents='auto';
-      pvpBtn.innerHTML='⚔ Ranked PVP <span style="font-size:9px;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;letter-spacing:0">Lv.10 Required</span>';
-    } else {
-      pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';
-    }
+    pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';
   }
 }
 
