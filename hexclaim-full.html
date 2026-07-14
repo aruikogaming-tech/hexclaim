@@ -873,7 +873,11 @@ function checkDailyLogin(){
     if(granted){save.lastPassGrantDate=passDay;saveProg();updateShopCurrency()}
   }
   const today=getGameDay();
-  if(save.lastLoginDate===today)return; // Already logged in today
+  if(save.lastLoginDate===today){
+    // Self-heal: logged in today but streak never got set (new account / cloud race) -> Day 1
+    if(!save.loginStreak||save.loginStreak<1){save.loginStreak=1;saveProg();}
+    return; // Already logged in today
+  }
   if(window._dailyLoginChecked)return; // Prevent double-fire from cloud restore
   window._dailyLoginChecked=true;
   // Yesterday in game-day terms: get current ET, subtract 1 day, check if before 7 PM
@@ -896,7 +900,7 @@ function checkDailyLogin(){
 }
 
 function showStreakPopup(){
-  const day=save.loginStreak;
+  const day=Math.max(1,save.loginStreak||1); // never show Day 0
   // 30-day reward calendar loops so there's always a next day, even past day 30
   const calDay=(day-1)%30+1;
   const reward=STREAK_REWARDS[calDay-1]||STREAK_REWARDS[6];
