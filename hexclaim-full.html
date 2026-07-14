@@ -7310,8 +7310,7 @@ function draw(){
     ctx.save();
     ctx.shadowColor='rgba(255,209,102,0.5)';ctx.shadowBlur=6;
     ctx.beginPath();ctx.moveTo(x,y-s);ctx.lineTo(x+s,y);ctx.lineTo(x,y+s);ctx.lineTo(x-s,y);ctx.closePath();
-    ctx.fillStyle='rgba(255,209,102,0.7)';ctx.fill();
-    ctx.strokeStyle='rgba(255,209,102,0.9)';ctx.lineWidth=1;ctx.stroke();
+    ctx.strokeStyle='rgba(255,209,102,0.95)';ctx.lineWidth=2;ctx.stroke();
     ctx.restore();
   });
   // Scout no longer uses targeting mode
@@ -7407,9 +7406,14 @@ function draw(){
     ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
     ctx.strokeStyle='rgba(255,215,0,'+pulse+')';ctx.lineWidth=3;
     ctx.shadowColor='rgba(255,215,0,0.9)';ctx.shadowBlur=15*pulse;ctx.stroke();ctx.shadowBlur=0;
-    ctx.font='bold '+Math.min(cellW*0.5,14)+'px sans-serif';
+    // Crown badge in the corner so the tile colour stays readable
+    var cR=Math.min(cellW,cellH)*0.22;
+    var cbx=kt.c*cellW+cellW-cR-2, cby=kt.r*cellH+cR+2;
+    ctx.beginPath();ctx.arc(cbx,cby,cR,0,Math.PI*2);
+    ctx.fillStyle='rgba(255,215,0,0.92)';ctx.fill();
+    ctx.font='bold '+Math.floor(cR*1.2)+'px sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('👑',kx,ky);
+    ctx.fillText('👑',cbx,cby+0.5);
     if(owner[kt.r][kt.c]===1){
       ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
       ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=2;ctx.stroke();
@@ -7429,17 +7433,19 @@ function draw(){
     var colors={bomb:'rgba(239,71,111,0.85)',surge:'rgba(6,214,160,0.85)',double:'rgba(131,56,236,0.85)'};
     var emojis={bomb:'💥',surge:'🌊',double:'⚡'};
     ctx.save();
-    // Hollow ring so the tile colour underneath stays readable
-    ctx.beginPath();ctx.arc(cx2,cy2,Math.min(cellW,cellH)*0.34,0,Math.PI*2);
-    ctx.strokeStyle=colors[p.type];ctx.lineWidth=Math.max(2,Math.min(cellW,cellH)*0.10);ctx.stroke();
-    ctx.beginPath();ctx.arc(cx2,cy2,Math.min(cellW,cellH)*0.34,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,255,255,0.75)';ctx.lineWidth=1;ctx.stroke();
-    // Icon/text
-    ctx.font='bold '+Math.min(cellW*0.4,12)+'px Manrope';
+    // Corner badge — keeps the tile's colour fully visible in the centre
+    var bR=Math.min(cellW,cellH)*0.22;
+    var bx=px+bR+2, by=py+bR+2;
+    ctx.beginPath();ctx.arc(bx,by,bR,0,Math.PI*2);
+    ctx.fillStyle=colors[p.type];ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,0.9)';ctx.lineWidth=1;ctx.stroke();
+    ctx.font='bold '+Math.floor(bR*1.25)+'px sans-serif';
     ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillStyle='#fff';
-    ctx.fillText(emojis[p.type],cx2,cy2);
-    ctx.shadowColor=colors[p.type];ctx.shadowBlur=8;ctx.restore();
+    ctx.fillText(emojis[p.type],bx,by+0.5);
+    // Thin outline so the whole tile still reads as special
+    ctx.strokeStyle=colors[p.type];ctx.lineWidth=2;
+    ctx.strokeRect(px+1,py+1,cellW-2,cellH-2);
+    ctx.restore();
   });
   ctx.save();ctx.font='bold '+Math.min(cellW*0.35,10)+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';
   ctx.fillStyle='rgba(6,214,160,0.9)';ctx.fillText('⬡',cellW/2,(ROWS-1)*cellH+cellH/2);
@@ -7739,7 +7745,7 @@ function buildPowerups(){
   if(anyPower&&!activePower&&(curConfig.isOnline?isMyTurn():turn===1)){
     var hint=document.createElement('div');
     hint.style.cssText='font-size:8px;color:var(--c3);text-align:center;width:100%;margin-bottom:3px;font-weight:700;letter-spacing:1px;animation:titleGlow 1s ease infinite';
-    hint.textContent='⬆ TAP A POWER-UP TO ACTIVATE';
+    hint.textContent='⬆ TAP TO ACTIVATE · HOLD FOR INFO';
     c.appendChild(hint);
   }
   ['bomb','surge','double'].forEach(type=>{const b=document.createElement('button');
