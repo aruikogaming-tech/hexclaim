@@ -1351,6 +1351,7 @@ function initFirebase(){
     firebaseAuth=firebase.auth();
     firebaseDB=firebase.database();
     firebaseReady=true;
+    try{ initAdMob(); }catch(e){}
     try{ if(firebase.analytics) firebaseAnalytics=firebase.analytics(); }catch(e){}
     // Handle Google redirect result (Capacitor)
     firebaseAuth.getRedirectResult().then(function(result){
@@ -2434,12 +2435,44 @@ function showRatePrompt(){
   document.getElementById('rateNever').onclick=function(){save.hasRated=true;saveProg();popup.remove()};
 }
 
-// ===== REWARDED ADS (Placeholder — activate with AdMob in Capacitor) =====
 function checkAdReset(){}
 
+// ===== ADMOB REWARDED ADS =====
+// Test ad unit id (Google's official rewarded test id). Swap for the real one before launch:
+// real: 'ca-app-pub-4470174548435236/4039214679'
+var ADMOB_REWARD_ID='ca-app-pub-3940256099942544/5224354917';
+var ADMOB_TESTING=true; // set false when using the real ad unit id in production
+var _admobReady=false, _admobBusy=false;
+function _admob(){ return (typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.AdMob)?Capacitor.Plugins.AdMob:null; }
+function initAdMob(){
+  var A=_admob(); if(!A)return; // web / plugin missing -> no-op
+  A.initialize({initializeForTesting:ADMOB_TESTING}).then(function(){_admobReady=true;}).catch(function(){});
+}
 function showRewardedAd(rewardType,callback){
-  if(callback)callback();
-  logGA('ad_watched',{reward:rewardType});
+  var A=_admob();
+  // No AdMob (web browser, or plugin unavailable): fall back to granting so the game still works.
+  if(!A){ if(callback)callback(); logGA('ad_watched',{reward:rewardType,fallback:1}); return; }
+  if(_admobBusy){ showToast('Ad already loading…',1500); return; }
+  _admobBusy=true;
+  var earned=false;
+  var subs=[];
+  function cleanup(){ subs.forEach(function(h){ try{ if(h&&h.remove)h.remove(); }catch(e){} }); subs=[]; _admobBusy=false; }
+  Promise.resolve()
+    .then(function(){ return A.addListener('onRewardedVideoAdReward', function(){ earned=true; }); })
+    .then(function(h){ if(h)subs.push(h); return A.addListener('onRewardedVideoAdRewarded', function(){ earned=true; }); })
+    .then(function(h){ if(h)subs.push(h); return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING}); })
+    .then(function(){ return A.showRewardVideoAd(); })
+    .then(function(reward){
+      if(reward)earned=true;
+      if(earned){ if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
+      else { showToast('Ad closed early — no reward',2000); }
+      cleanup();
+    })
+    .catch(function(e){
+      cleanup();
+      showToast('No ad available right now — try again soon',2200);
+      logGA('ad_failed',{reward:rewardType});
+    });
 }
 function _adRemoved(rewardType,callback,placementKey,placementMax){
   checkAdReset();
