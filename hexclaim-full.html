@@ -1372,23 +1372,33 @@ function initFirebase(){
 function authLogin(provider){
   if(!firebaseReady){showToast('⚠️ No connection. Check your internet.',2500);return;}
   showToast('Connecting...',1500);
+  var isNative=typeof Capacitor!=='undefined'&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform();
+  var FBA=(typeof Capacitor!=='undefined'&&Capacitor.Plugins)?Capacitor.Plugins.FirebaseAuthentication:null;
+  // ---- Native app path: native Google account picker, then hand the credential to Firebase ----
+  if(isNative&&FBA&&provider==='google'){
+    FBA.signInWithGoogle().then(function(result){
+      var idToken=result&&result.credential&&result.credential.idToken;
+      if(!idToken)throw new Error('No Google token returned');
+      var cred=firebase.auth.GoogleAuthProvider.credential(idToken);
+      return firebaseAuth.signInWithCredential(cred);
+    }).then(function(result){
+      loadCloudSave(result.user.uid);
+    }).catch(function(e){
+      showToast('Error: '+((e&&e.message)?e.message:e),3000);
+    });
+    return;
+  }
+  // ---- Web browser path: popup ----
   var authProvider;
   if(provider==='google')authProvider=new firebase.auth.GoogleAuthProvider();
   else if(provider==='facebook')authProvider=new firebase.auth.FacebookAuthProvider();
   else if(provider==='apple')authProvider=new firebase.auth.OAuthProvider('apple.com');
   else return;
-  var isCapacitor=typeof Capacitor!=='undefined'||window.location.protocol==='capacitor:';
-  if(isCapacitor){
-    firebaseAuth.signInWithRedirect(authProvider).catch(function(e){
-      showToast('Error: '+e.message,3000);
-    });
-  } else {
-    firebaseAuth.signInWithPopup(authProvider).then(function(result){
-      loadCloudSave(result.user.uid);
-    }).catch(function(e){
-      showToast('Error: '+e.message,3000);
-    });
-  }
+  firebaseAuth.signInWithPopup(authProvider).then(function(result){
+    loadCloudSave(result.user.uid);
+  }).catch(function(e){
+    showToast('Error: '+e.message,3000);
+  });
 }
   
 
