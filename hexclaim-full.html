@@ -2445,7 +2445,49 @@ function showRatePrompt(){
   document.getElementById('rateNever').onclick=function(){save.hasRated=true;saveProg();popup.remove()};
 }
 
-function checkAdReset(){}
+function checkAdReset(){
+  var today=getGameDay();
+  if(save.lastAdDate!==today){
+    save.lastAdDate=today;
+    save.adCoinsToday=0; save.adGemsToday=0; save.adDoubleToday=0;
+    saveProg();
+  }
+}
+// Daily caps per placement
+var AD_CAPS={coins:5,gems:3,double:3};
+function adCountLeft(kind){
+  checkAdReset();
+  var used=(kind==='coins'?save.adCoinsToday:kind==='gems'?save.adGemsToday:save.adDoubleToday)||0;
+  return Math.max(0,AD_CAPS[kind]-used);
+}
+function watchAdFor(kind){
+  if(adCountLeft(kind)<=0){ showToast('Come back tomorrow for more!',2000); return; }
+  var label=kind==='coins'?'🟡 25 Coins':kind==='gems'?'💎 3 Diamonds':'2× Next Match Rewards';
+  showRewardedAd(label,function(){
+    checkAdReset();
+    if(kind==='coins'){ save.coins+=25; save.adCoinsToday=(save.adCoinsToday||0)+1; showToast('🟡 +25 coins!',2000); }
+    else if(kind==='gems'){ save.chromas+=3; save.adGemsToday=(save.adGemsToday||0)+1; showToast('💎 +3 diamonds!',2000); }
+    else { save.adDoubleActive=true; save.adDoubleToday=(save.adDoubleToday||0)+1; showToast('2× rewards armed for your next match!',2500); }
+    saveProg();
+    if(typeof renderShopTab==='function'&&document.getElementById('shopContent'))renderShopTab('freebies');
+  });
+}
+function adFreebiesHtml(){
+  var c=adCountLeft('coins'),g=adCountLeft('gems'),d=adCountLeft('double');
+  function row(kind,icon,title,left,cap){
+    var out=left<=0;
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:6px">'
+      +'<div style="font-size:22px">'+icon+'</div>'
+      +'<div style="flex:1"><div style="font-size:12px;font-weight:800;color:var(--text)">'+title+'</div>'
+      +'<div style="font-size:9px;color:var(--muted)">'+left+'/'+cap+' left today</div></div>'
+      +'<button onclick="watchAdFor(\''+kind+'\')" '+(out?'disabled':'')+' style="padding:8px 14px;border:none;border-radius:8px;font-weight:800;font-size:11px;font-family:Manrope,sans-serif;cursor:'+(out?'default':'pointer')+';background:'+(out?'var(--dim)':'var(--p1)')+';color:'+(out?'var(--muted)':'#fff')+'">'+(out?'Done ✓':'▶ Watch')+'</button>'
+      +'</div>';
+  }
+  return '<div style="font-size:11px;font-weight:800;color:var(--gold);margin:2px 0 6px">🎬 FREE REWARDS — WATCH & EARN</div>'
+    +row('coins','🟡','25 Coins',c,AD_CAPS.coins)
+    +row('gems','💎','3 Diamonds',g,AD_CAPS.gems)
+    +row('double','✨','2× Next Match Rewards',d,AD_CAPS.double);
+}
 
 // ===== ADMOB REWARDED ADS =====
 // Test ad unit id (Google's official rewarded test id). Swap for the real one before launch:
@@ -3705,13 +3747,13 @@ function buildShop(){
   updateShopCurrency();
   const tabs=document.getElementById('shopTabs');
   tabs.innerHTML='';
-  ['Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
+  ['Free','Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
     const btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
-    var tabKey=t==='Tiles'?'skins':t.toLowerCase();
+    var tabKey=t==='Tiles'?'skins':t==='Free'?'freebies':t.toLowerCase();
     btn.textContent=t;btn.onclick=()=>{tabs.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderShopTab(tabKey);document.getElementById('shopContent').scrollTop=0;playSfx('click')};
     tabs.appendChild(btn);
   });
-  renderShopTab('skins');
+  renderShopTab('freebies');
 }
 
 function updateShopCurrency(){
@@ -3749,6 +3791,7 @@ function meetsReq(req){
 
 function renderShopTab(tab){
   var cont=document.getElementById('shopContent');
+  if(tab==='freebies'){ cont.innerHTML=adFreebiesHtml(); return; }
   cont.innerHTML='';cont.style.cssText='display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;scrollbar-width:none;-webkit-overflow-scrolling:touch';
 
   if(tab==='skins'||tab==='tiles'){
@@ -4287,11 +4330,14 @@ function checkRankUp(oldElo,newElo){
 }
 
 function grantMatchXP(won,isRanked){
+  var _adx=(save.adDoubleActive)?2:1;
+  if(save.adDoubleActive){save.adDoubleActive=false;}
   let xp=won?30:10;
   if(isRanked)xp+=15;
   save.bpXP+=xp;
   // Grant coins and chromas for playing
-  save.coins+=won?25:10;
+  save.coins+=(won?25:10)*_adx;
+  if(_adx>1)showToast('✨ 2× match rewards applied!',2000);
   matchDiamonds=0;
   if(won&&save.lastDiamondWinDate!==getGameDay()){save.chromas+=5;save.lastDiamondWinDate=getGameDay();matchDiamonds=5;}
 
