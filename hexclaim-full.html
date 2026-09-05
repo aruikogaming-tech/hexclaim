@@ -595,6 +595,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
       <div class="result-detail" id="olDetail"></div>
       <div class="elo-change" id="olElo"></div>
       <div class="reward-text" id="olReward"></div>
+      <button class="btn primary" id="olDoubleAd" style="display:none;margin:0 auto 8px;background:linear-gradient(135deg,#f5a623,#f7b733)" onclick="watchDoubleAd()">🎬 Watch Ad — Double Rewards</button>
       <div class="btn-row">
         <button class="btn secondary" onclick="exitLevel()">Menu</button>
         <button class="btn secondary" id="olReplay" onclick="launchLevel()" style="display:none">↺ Replay</button>
@@ -951,8 +952,8 @@ function showStreakPopup(){
   }
 }
 
-function showLuckySpin(){}
-function _spinRemoved(){
+function showLuckySpin(){ return _luckySpin.apply(this,arguments); }
+function _luckySpin(){
   if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
   if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
   const popup=document.createElement('div');
@@ -2472,8 +2473,20 @@ function watchAdFor(kind){
     if(typeof renderShopTab==='function'&&document.getElementById('shopContent'))renderShopTab('freebies');
   });
 }
+function watchDoubleAd(){
+  if(adCountLeft('double')<=0){ showToast('Come back tomorrow for more!',2000); return; }
+  var btn=document.getElementById('olDoubleAd'); if(btn)btn.style.display='none';
+  showRewardedAd('2× match rewards',function(){
+    checkAdReset();
+    var bonus=(typeof lastMatchCoins!=='undefined'&&lastMatchCoins)?lastMatchCoins:25;
+    save.coins+=bonus;
+    save.adDoubleToday=(save.adDoubleToday||0)+1;
+    saveProg();
+    showToast('✨ Rewards doubled! +'+bonus+' coins',2500);
+  });
+}
 function adFreebiesHtml(){
-  var c=adCountLeft('coins'),g=adCountLeft('gems'),d=adCountLeft('double');
+  var c=adCountLeft('coins'),g=adCountLeft('gems');
   function row(kind,icon,title,left,cap){
     var out=left<=0;
     return '<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:6px">'
@@ -2485,8 +2498,7 @@ function adFreebiesHtml(){
   }
   return '<div style="font-size:11px;font-weight:800;color:var(--gold);margin:2px 0 6px">🎬 FREE REWARDS — WATCH & EARN</div>'
     +row('coins','🟡','25 Coins',c,AD_CAPS.coins)
-    +row('gems','💎','3 Diamonds',g,AD_CAPS.gems)
-    +row('double','✨','2× Next Match Rewards',d,AD_CAPS.double);
+    +row('gems','💎','3 Diamonds',g,AD_CAPS.gems);
 }
 
 // ===== ADMOB REWARDED ADS =====
@@ -8691,12 +8703,15 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
   // Overlay
   const title=document.getElementById('olTitle'),starsEl=document.getElementById('olStars'),detail=document.getElementById('olDetail'),eloEl=document.getElementById('olElo'),reward=document.getElementById('olReward'),nextBtn=document.getElementById('olNext');
   title.textContent=won?'Victory! 🏆':'Defeated';title.className=won?'win':'lose';
+  var _dAd=document.getElementById('olDoubleAd');
+  if(_dAd){ _dAd.style.display=(won&&adCountLeft('double')>0&&!save.adDoubleActive)?'block':'none'; }
   let starStr='';for(let i=0;i<3;i++)starStr+=i<stars?'★':'☆';
   starsEl.textContent=curConfig.isRanked?'':starStr;starsEl.style.color=won?'var(--star)':'var(--muted)';
   detail.textContent=`${p1p}% vs ${p2p}%`;
 
   // XP/Coins earned display
   const xpEarned=won?65:15;const coinsEarned=(won?40:15)+(extraCoinsEarned||0);extraCoinsEarned=0;
+  window.lastMatchCoins=coinsEarned;
   const chromasEarned=matchDiamonds;
   const xpBonus=curConfig.isRanked?15:0;
 
