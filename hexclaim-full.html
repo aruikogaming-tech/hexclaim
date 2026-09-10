@@ -394,6 +394,10 @@ body{display:flex;align-items:flex-start;justify-content:center;
 
   <!-- Bottom icon bar -->
   <div style="display:flex;gap:6px;justify-content:center;margin-top:4px">
+    <button onclick="showFreeRewards();playSfx('menuOpen')" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;position:relative">
+      <div style="font-size:18px">🎁</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Free</div>
+      <span id="freeDot" style="display:none;position:absolute;top:6px;right:10px;width:8px;height:8px;border-radius:50%;background:#ef476f"></span>
+    </button>
     <button onclick="showScreen('shopScreen');buildShop();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.15s" onmouseover="this.style.borderColor='var(--diamond)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:18px">💎</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Shop</div>
     </button>
@@ -2485,6 +2489,41 @@ function watchDoubleAd(){
     showToast('✨ Rewards doubled! +'+bonus+' coins',2500);
   });
 }
+function showFreeRewards(){
+  if(document.getElementById('freeRewardsModal'))return;
+  var m=document.createElement('div');m.id='freeRewardsModal';
+  m.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
+  m.onclick=function(e){ if(e.target===m)m.remove(); };
+  var c=adCountLeft('coins'),g=adCountLeft('gems');
+  var canSpin=(save.freeSpinsToday==null?1:save.freeSpinsToday)>0 || (save.extraSpins||0)>0;
+  function adRow(kind,icon,title,left,cap){
+    var out=left<=0;
+    return '<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'
+      +'<div style="font-size:22px">'+icon+'</div>'
+      +'<div style="flex:1;text-align:left"><div style="font-size:12px;font-weight:800;color:var(--text)">'+title+'</div>'
+      +'<div style="font-size:9px;color:var(--muted)">'+left+'/'+cap+' left today</div></div>'
+      +'<button onclick="watchAdFor(\''+kind+'\');setTimeout(function(){var mm=document.getElementById(\'freeRewardsModal\');if(mm)mm.remove();},300)" '+(out?'disabled':'')+' style="padding:8px 14px;border:none;border-radius:8px;font-weight:800;font-size:11px;font-family:Manrope,sans-serif;cursor:'+(out?'default':'pointer')+';background:'+(out?'var(--dim)':'var(--p1)')+';color:'+(out?'var(--muted)':'#fff')+'">'+(out?'Done ✓':'▶ Watch')+'</button>'
+      +'</div>';
+  }
+  m.innerHTML='<div style="background:var(--bg,#12101a);border:1px solid var(--border);border-radius:16px;padding:18px;max-width:340px;width:100%;text-align:center">'
+    +'<div style="font-size:15px;font-weight:800;color:var(--gold);margin-bottom:12px">🎁 FREE REWARDS</div>'
+    +adRow('coins','🟡','25 Coins',c,AD_CAPS.coins)
+    +adRow('gems','💎','3 Diamonds',g,AD_CAPS.gems)
+    +'<button onclick="document.getElementById(\'freeRewardsModal\').remove();showLuckySpin()" style="width:100%;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid '+(canSpin?'var(--gold)':'var(--border)')+';border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;font-family:Manrope,sans-serif">'
+    +'<div style="font-size:22px">🎰</div>'
+    +'<div style="flex:1;text-align:left"><div style="font-size:12px;font-weight:800;color:var(--text)">Lucky Spin</div>'
+    +'<div style="font-size:9px;color:'+(canSpin?'var(--gold)':'var(--muted)')+'">'+(canSpin?'Free spin ready!':'Come back tomorrow')+'</div></div>'
+    +'<span style="padding:8px 14px;border-radius:8px;font-weight:800;font-size:11px;background:'+(canSpin?'var(--gold)':'var(--dim)')+';color:'+(canSpin?'#1a1a24':'var(--muted)')+'">'+(canSpin?'🎰 Spin':'—')+'</span>'
+    +'</div>'
+    +'<div style="font-size:9px;color:var(--muted);margin-top:8px">Tap outside to close</div></div>';
+  document.body.appendChild(m);
+}
+function updateFreeDot(){
+  var dot=document.getElementById('freeDot'); if(!dot)return;
+  var canSpin=(save.freeSpinsToday==null?1:save.freeSpinsToday)>0 || (save.extraSpins||0)>0;
+  var hasAd=adCountLeft('coins')>0||adCountLeft('gems')>0;
+  dot.style.display=(canSpin||hasAd)?'block':'none';
+}
 function adFreebiesHtml(){
   var c=adCountLeft('coins'),g=adCountLeft('gems');
   function row(kind,icon,title,left,cap){
@@ -2802,6 +2841,7 @@ function updateNewsBanner(){
 }
 function updateAllUI(){
   updateMenuStats();
+  try{updateFreeDot();}catch(e){}
   updateTopBar();
   updateNewsBanner();
   // Update settings name display
@@ -3771,13 +3811,13 @@ function buildShop(){
   updateShopCurrency();
   const tabs=document.getElementById('shopTabs');
   tabs.innerHTML='';
-  ['Free','Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
+  ['Tiles','Borders','Effects','Limited','Diamonds'].forEach((t,i)=>{
     const btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
-    var tabKey=t==='Tiles'?'skins':t==='Free'?'freebies':t.toLowerCase();
+    var tabKey=t==='Tiles'?'skins':t.toLowerCase();
     btn.textContent=t;btn.onclick=()=>{tabs.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderShopTab(tabKey);document.getElementById('shopContent').scrollTop=0;playSfx('click')};
     tabs.appendChild(btn);
   });
-  renderShopTab('freebies');
+  renderShopTab('skins');
 }
 
 function updateShopCurrency(){
