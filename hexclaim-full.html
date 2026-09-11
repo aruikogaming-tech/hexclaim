@@ -958,8 +958,7 @@ function showStreakPopup(){
 
 function showLuckySpin(){ return _luckySpin.apply(this,arguments); }
 function _luckySpin(){
-  if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
-  if(!gameOver&&document.getElementById('gameScreen').classList.contains('active'))return;
+  if(!gameOver&&document.getElementById('gameScreen')&&document.getElementById('gameScreen').classList.contains('active'))return;
   const popup=document.createElement('div');
   popup.id='spinPopup';
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
@@ -2495,7 +2494,7 @@ function showFreeRewards(){
   m.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
   m.onclick=function(e){ if(e.target===m)m.remove(); };
   var c=adCountLeft('coins'),g=adCountLeft('gems');
-  var canSpin=(save.freeSpinsToday==null?1:save.freeSpinsToday)>0 || (save.extraSpins||0)>0;
+  var canSpin=((save.freeSpinsToday||0)<2) || (save.extraSpins||0)>0;
   function adRow(kind,icon,title,left,cap){
     var out=left<=0;
     return '<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px">'
@@ -2520,7 +2519,7 @@ function showFreeRewards(){
 }
 function updateFreeDot(){
   var dot=document.getElementById('freeDot'); if(!dot)return;
-  var canSpin=(save.freeSpinsToday==null?1:save.freeSpinsToday)>0 || (save.extraSpins||0)>0;
+  var canSpin=((save.freeSpinsToday||0)<2) || (save.extraSpins||0)>0;
   var hasAd=adCountLeft('coins')>0||adCountLeft('gems')>0;
   dot.style.display=(canSpin||hasAd)?'block':'none';
 }
@@ -2566,20 +2565,17 @@ function showRewardedAd(rewardType,callback){
   function grant(){ if(granted)return; granted=true; if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
   var guard=setTimeout(function(){ if(!finished){done();showToast('Ad timed out — try again',2200);} },25000);
   showToast('Loading ad…',1200);
+  function addL(name,fn){ try{ var r=A.addListener(name,fn); if(r&&r.then){ r.then(function(h){ if(h)subs.push(h); }).catch(function(){}); } else if(r){ subs.push(r); } }catch(e){} }
   initAdMob().then(function(ok){
     if(ok===false){ clearTimeout(guard); done(); showToast('Ads unavailable right now',2200); return; }
-    A.addListener('onRewardedVideoAdRewarded', function(){ grant(); }).then(function(h){ if(h)subs.push(h); });
-    A.addListener('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){done();showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600);} }).then(function(h){ if(h)subs.push(h); });
+    addL('onRewardedVideoAdRewarded', function(){ grant(); });
+    addL('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){ done(); showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600); } });
     return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING})
       .then(function(){ return A.showRewardVideoAd(); })
-      .then(function(reward){
-        clearTimeout(guard);
-        grant();
-        done();
-      });
+      .then(function(reward){ clearTimeout(guard); grant(); done(); });
   }).catch(function(e){
     clearTimeout(guard);
-    if(!granted){ done(); showToast('Ad error — try again',2200); logGA('ad_failed',{reward:rewardType}); }
+    if(!granted){ done(); showToast('Ad error: '+((e&&(e.message||e.code))||'unknown'),3000); logGA('ad_failed',{reward:rewardType}); }
   });
 }
 function _adRemoved(rewardType,callback,placementKey,placementMax){
