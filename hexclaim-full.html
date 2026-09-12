@@ -957,6 +957,23 @@ function showStreakPopup(){
 }
 
 function showLuckySpin(){ return _luckySpin.apply(this,arguments); }
+var SPIN_PRIZES=[
+  {label:'50 Coins', type:'coins',   amount:50,  weight:30},
+  {label:'100 Coins',type:'coins',   amount:100, weight:22},
+  {label:'250 Coins',type:'coins',   amount:250, weight:10},
+  {label:'3 Gems',   type:'chromas', amount:3,   weight:16},
+  {label:'5 Gems',   type:'chromas', amount:5,   weight:10},
+  {label:'10 Gems',  type:'chromas', amount:10,  weight:5},
+  {label:'500 Coins',type:'coins',   amount:500, weight:5},
+  {label:'25 Gems',  type:'chromas', amount:25,  weight:2}
+];
+function getWeightedPrize(){
+  var total=0,i;
+  for(i=0;i<SPIN_PRIZES.length;i++)total+=SPIN_PRIZES[i].weight;
+  var r=Math.random()*total;
+  for(i=0;i<SPIN_PRIZES.length;i++){ r-=SPIN_PRIZES[i].weight; if(r<=0)return i; }
+  return 0;
+}
 function _luckySpin(){
   if(!gameOver&&document.getElementById('gameScreen')&&document.getElementById('gameScreen').classList.contains('active'))return;
   const popup=document.createElement('div');
@@ -2568,7 +2585,10 @@ function showRewardedAd(rewardType,callback){
   function addL(name,fn){ try{ var r=A.addListener(name,fn); if(r&&r.then){ r.then(function(h){ if(h)subs.push(h); }).catch(function(){}); } else if(r){ subs.push(r); } }catch(e){} }
   initAdMob().then(function(ok){
     if(ok===false){ clearTimeout(guard); done(); showToast('Ads unavailable right now',2200); return; }
+    addL('onRewardedVideoAdReward', function(){ grant(); });
     addL('onRewardedVideoAdRewarded', function(){ grant(); });
+    addL('onRewardedVideoAdDismissed', function(){ grant(); });
+    addL('onRewardedVideoAdClosed', function(){ grant(); });
     addL('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){ done(); showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600); } });
     return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING})
       .then(function(){ return A.showRewardVideoAd(); })
