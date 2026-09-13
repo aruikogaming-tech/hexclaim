@@ -2579,20 +2579,20 @@ function showRewardedAd(rewardType,callback){
   _admobBusy=true;
   var granted=false, finished=false, subs=[];
   function done(){ if(finished)return; finished=true; subs.forEach(function(h){ try{ if(h&&h.remove)h.remove(); }catch(e){} }); subs=[]; _admobBusy=false; }
-  function grant(){ if(granted)return; granted=true; if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
+  function grant(src){ if(granted)return; granted=true; showToast('✅ Reward granted ('+(src||'?')+')',2500); if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
   var guard=setTimeout(function(){ if(!finished){done();showToast('Ad timed out — try again',2200);} },25000);
   showToast('Loading ad…',1200);
   function addL(name,fn){ try{ var r=A.addListener(name,fn); if(r&&r.then){ r.then(function(h){ if(h)subs.push(h); }).catch(function(){}); } else if(r){ subs.push(r); } }catch(e){} }
   initAdMob().then(function(ok){
     if(ok===false){ clearTimeout(guard); done(); showToast('Ads unavailable right now',2200); return; }
-    addL('onRewardedVideoAdReward', function(){ grant(); });
-    addL('onRewardedVideoAdRewarded', function(){ grant(); });
-    addL('onRewardedVideoAdDismissed', function(){ grant(); });
-    addL('onRewardedVideoAdClosed', function(){ grant(); });
+    addL('onRewardedVideoAdReward', function(){ grant('reward-evt'); });
+    addL('onRewardedVideoAdRewarded', function(){ grant('rewarded-evt'); });
+    addL('onRewardedVideoAdDismissed', function(){ grant('dismissed'); });
+    addL('onRewardedVideoAdClosed', function(){ grant('closed'); });
     addL('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){ done(); showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600); } });
     return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING})
       .then(function(){ return A.showRewardVideoAd(); })
-      .then(function(reward){ clearTimeout(guard); grant(); done(); });
+      .then(function(reward){ clearTimeout(guard); showToast('ad promise resolved',2000); grant('promise'); done(); });
   }).catch(function(e){
     clearTimeout(guard);
     if(!granted){ done(); showToast('Ad error: '+((e&&(e.message||e.code))||'unknown'),3000); logGA('ad_failed',{reward:rewardType}); }
