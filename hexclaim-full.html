@@ -689,6 +689,7 @@ function hexPauseAll(){
   try{ if(typeof audioCtx!=='undefined'&&audioCtx&&audioCtx.state==='running')audioCtx.suspend(); }catch(e){}
 }
 function hexResumeAll(){
+  if(window._adPending){ var f=window._adPending; window._adPending=null; setTimeout(f,300); }
   try{ if(typeof audioCtx!=='undefined'&&audioCtx&&audioCtx.state==='suspended')audioCtx.resume(); }catch(e){}
   try{ if(save&&save.musicOn!==false&&typeof startMusic==='function')startMusic(); }catch(e){}
 }
@@ -2579,8 +2580,11 @@ function showRewardedAd(rewardType,callback){
   _admobBusy=true;
   var granted=false, finished=false, subs=[];
   function done(){ if(finished)return; finished=true; subs.forEach(function(h){ try{ if(h&&h.remove)h.remove(); }catch(e){} }); subs=[]; _admobBusy=false; }
-  function grant(src){ if(granted)return; granted=true; showToast('✅ Reward granted ('+(src||'?')+')',2500); if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
-  var guard=setTimeout(function(){ if(!finished){done();showToast('Ad timed out — try again',2200);} },25000);
+  function grant(src){ if(granted)return; granted=true; window._adPending=null; if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
+  // Workaround: some plugin builds never fire the reward event or resolve the promise.
+  // Register a pending grant that fires when the app returns to foreground after the ad.
+  window._adPending=function(){ grant('resume'); };
+  var guard=setTimeout(function(){ if(!finished){window._adPending=null;done();showToast('Ad timed out — try again',2200);} },25000);
   showToast('Loading ad…',1200);
   function addL(name,fn){ try{ var r=A.addListener(name,fn); if(r&&r.then){ r.then(function(h){ if(h)subs.push(h); }).catch(function(){}); } else if(r){ subs.push(r); } }catch(e){} }
   initAdMob().then(function(ok){
@@ -2592,7 +2596,7 @@ function showRewardedAd(rewardType,callback){
     addL('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){ done(); showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600); } });
     return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING})
       .then(function(){ return A.showRewardVideoAd(); })
-      .then(function(reward){ clearTimeout(guard); showToast('ad promise resolved',2000); grant('promise'); done(); });
+      .then(function(reward){ clearTimeout(guard); grant('promise'); done(); });
   }).catch(function(e){
     clearTimeout(guard);
     if(!granted){ done(); showToast('Ad error: '+((e&&(e.message||e.code))||'unknown'),3000); logGA('ad_failed',{reward:rewardType}); }
