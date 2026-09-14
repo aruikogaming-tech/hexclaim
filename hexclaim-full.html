@@ -2491,7 +2491,9 @@ function watchAdFor(kind){
     else if(kind==='gems'){ save.chromas+=3; save.adGemsToday=(save.adGemsToday||0)+1; showToast('💎 +3 diamonds!',2000); }
     else { save.adDoubleActive=true; save.adDoubleToday=(save.adDoubleToday||0)+1; showToast('2× rewards armed for your next match!',2500); }
     saveProg();
-    if(typeof renderShopTab==='function'&&document.getElementById('shopContent'))renderShopTab('freebies');
+    try{ updateAllUI(); }catch(e){}
+    var frm=document.getElementById('freeRewardsModal');
+    if(frm){ frm.remove(); if(typeof showFreeRewards==='function')showFreeRewards(); }
   });
 }
 function watchDoubleAd(){
@@ -2503,6 +2505,7 @@ function watchDoubleAd(){
     save.coins+=bonus;
     save.adDoubleToday=(save.adDoubleToday||0)+1;
     saveProg();
+    try{ updateAllUI(); }catch(e){}
     showToast('✨ Rewards doubled! +'+bonus+' coins',2500);
   });
 }
@@ -2573,53 +2576,31 @@ function initAdMob(){
     .catch(function(e){_admobInitP=null;return false;});
   return _admobInitP;
 }
-// ===== ON-SCREEN DEBUG LOG =====
-window._dbg=function(msg){
-  try{
-    var box=document.getElementById('dbgBox');
-    if(!box){
-      box=document.createElement('div');box.id='dbgBox';
-      box.style.cssText='position:fixed;left:6px;right:6px;bottom:6px;max-height:40%;overflow:auto;z-index:100000;background:rgba(0,0,0,0.9);color:#0f0;font:10px/1.4 monospace;padding:8px;border:1px solid #0f0;border-radius:6px;white-space:pre-wrap';
-      var clr=document.createElement('div');clr.textContent='✕ close log';clr.style.cssText='color:#f66;text-align:right;cursor:pointer;margin-bottom:4px';clr.onclick=function(){box.remove();};
-      box.appendChild(clr);
-      document.body.appendChild(box);
-    }
-    var line=document.createElement('div');
-    line.textContent='['+new Date().toLocaleTimeString()+'] '+msg;
-    box.appendChild(line);
-    box.scrollTop=box.scrollHeight;
-  }catch(e){}
-};
 function showRewardedAd(rewardType,callback){
   var A=_admob();
   if(!A){ if(callback)callback(); logGA('ad_watched',{reward:rewardType,fallback:1}); return; }
   if(_admobBusy){ showToast('Ad already loading…',1500); return; }
   _admobBusy=true;
-  _dbg('=== showRewardedAd start: '+rewardType+' ===');
   var granted=false, finished=false, subs=[];
   function done(){ if(finished)return; finished=true; subs.forEach(function(h){ try{ if(h&&h.remove)h.remove(); }catch(e){} }); subs=[]; _admobBusy=false; }
-  function grant(src){ _dbg('grant() called via: '+src); if(granted){_dbg('  (already granted, ignoring)');return;} granted=true; window._adPending=null; if(callback)callback(); _dbg('  reward callback fired'); logGA('ad_watched',{reward:rewardType}); }
+  function grant(src){ if(granted)return; granted=true; window._adPending=null; if(callback)callback(); logGA('ad_watched',{reward:rewardType}); }
   // Workaround: some plugin builds never fire the reward event or resolve the promise.
   // Register a pending grant that fires when the app returns to foreground after the ad.
   window._adPending=function(){ grant('resume'); };
   var guard=setTimeout(function(){ if(!finished){window._adPending=null;done();showToast('Ad timed out — try again',2200);} },25000);
   showToast('Loading ad…',1200);
   function addL(name,fn){ try{ var r=A.addListener(name,fn); if(r&&r.then){ r.then(function(h){ if(h)subs.push(h); }).catch(function(){}); } else if(r){ subs.push(r); } }catch(e){} }
-  _dbg('calling initAdMob...');
   initAdMob().then(function(ok){
-    _dbg('initAdMob resolved: '+ok);
     if(ok===false){ clearTimeout(guard); done(); showToast('Ads unavailable right now',2200); return; }
-    addL('onRewardedVideoAdReward', function(){ _dbg('EVENT: onRewardedVideoAdReward'); grant('reward-evt'); });
-    addL('onRewardedVideoAdRewarded', function(){ _dbg('EVENT: onRewardedVideoAdRewarded'); grant('rewarded-evt'); });
-    addL('onRewardedVideoAdDismissed', function(){ _dbg('EVENT: onRewardedVideoAdDismissed'); grant('dismissed'); });
-    addL('onRewardedVideoAdClosed', function(){ _dbg('EVENT: onRewardedVideoAdClosed'); grant('closed'); });
+    addL('onRewardedVideoAdReward', function(){ grant('reward-evt'); });
+    addL('onRewardedVideoAdRewarded', function(){ grant('rewarded-evt'); });
+    addL('onRewardedVideoAdDismissed', function(){ grant('dismissed'); });
+    addL('onRewardedVideoAdClosed', function(){ grant('closed'); });
     addL('onRewardedVideoAdFailedToLoad', function(err){ clearTimeout(guard); if(!granted){ done(); showToast('No ad: '+((err&&(err.message||err.code))||'no fill'),2600); } });
-    _dbg('calling prepareRewardVideoAd...');
     return A.prepareRewardVideoAd({adId:ADMOB_REWARD_ID,isTesting:ADMOB_TESTING})
-      .then(function(){ _dbg('prepare OK -> calling showRewardVideoAd...'); return A.showRewardVideoAd(); })
-      .then(function(reward){ _dbg('showRewardVideoAd RESOLVED: '+JSON.stringify(reward)); clearTimeout(guard); grant('promise'); done(); });
+      .then(function(){ return A.showRewardVideoAd(); })
+      .then(function(reward){ clearTimeout(guard); grant('promise'); done(); });
   }).catch(function(e){
-    _dbg('AD CHAIN ERROR: '+((e&&(e.message||e.code))||JSON.stringify(e)));
     clearTimeout(guard);
     if(!granted){ done(); showToast('Ad error: '+((e&&(e.message||e.code))||'unknown'),3000); logGA('ad_failed',{reward:rewardType}); }
   });
