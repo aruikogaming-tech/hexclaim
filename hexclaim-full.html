@@ -497,7 +497,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.9.4</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.9.9.8</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -874,7 +874,7 @@ function checkDailyLogin(){
   var passDay=getGameDay();
   if(save.lastPassGrantDate!==passDay){
     var granted=false;
-    if(save.foreverPass){save.chromas+=25;granted=true}
+    if(save.foreverPass){save.chromas+=20;granted=true}
     if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()){save.chromas+=40;granted=true}
     if(granted){save.lastPassGrantDate=passDay;saveProg();updateShopCurrency()}
   }
@@ -959,14 +959,14 @@ function showStreakPopup(){
 
 function showLuckySpin(){ return _luckySpin.apply(this,arguments); }
 var SPIN_PRIZES=[
-  {label:'50 Coins', type:'coins',   amount:50,  weight:30},
-  {label:'100 Coins',type:'coins',   amount:100, weight:22},
-  {label:'250 Coins',type:'coins',   amount:250, weight:10},
-  {label:'3 Gems',   type:'chromas', amount:3,   weight:16},
-  {label:'5 Gems',   type:'chromas', amount:5,   weight:10},
-  {label:'10 Gems',  type:'chromas', amount:10,  weight:5},
-  {label:'500 Coins',type:'coins',   amount:500, weight:5},
-  {label:'25 Gems',  type:'chromas', amount:25,  weight:2}
+  {label:'50',  sub:'Coins', type:'coins',   amount:50,  weight:30, color:'#3a2f5e'},
+  {label:'100', sub:'Coins', type:'coins',   amount:100, weight:22, color:'#4a3f7e'},
+  {label:'250', sub:'Coins', type:'coins',   amount:250, weight:10, color:'#3a2f5e'},
+  {label:'3',   sub:'Gems',  type:'chromas', amount:3,   weight:16, color:'#1f6f6f'},
+  {label:'5',   sub:'Gems',  type:'chromas', amount:5,   weight:10, color:'#2a8f8f'},
+  {label:'10',  sub:'Gems',  type:'chromas', amount:10,  weight:5,  color:'#1f6f6f'},
+  {label:'500', sub:'Coins', type:'coins',   amount:500, weight:5,  color:'#8f7a2a'},
+  {label:'25',  sub:'Gems',  type:'chromas', amount:25,  weight:2,  color:'#b8942f'}
 ];
 function getWeightedPrize(){
   var total=0,i;
@@ -997,14 +997,15 @@ function _luckySpin(){
   // Build wheel segments
   const wheel=document.getElementById('spinWheel');
   const segAngle=360/SPIN_PRIZES.length;
+  var stops=[];
+  SPIN_PRIZES.forEach(function(p,i){ stops.push(p.color+' '+(i*segAngle)+'deg '+((i+1)*segAngle)+'deg'); });
+  wheel.style.background='conic-gradient('+stops.join(',')+')';
   SPIN_PRIZES.forEach(function(p,i){
-    const seg=document.createElement('div');
-    seg.style.cssText='position:absolute;width:50%;height:50%;left:50%;top:50%;transform-origin:0 0;transform:rotate('+(i*segAngle-90)+'deg) skewY(-'+(90-segAngle)+'deg);background:'+p.color+';display:flex;align-items:flex-start;justify-content:flex-start;overflow:hidden';
-    const label=document.createElement('div');
-    label.style.cssText='font-size:7px;font-weight:800;color:#fff;transform:skewY('+(90-segAngle)+'deg) rotate('+(segAngle/2)+'deg);padding:8px 2px;text-shadow:0 1px 2px rgba(0,0,0,0.5)';
-    label.textContent=p.label;
-    seg.appendChild(label);
-    wheel.appendChild(seg);
+    const lab=document.createElement('div');
+    var mid=i*segAngle+segAngle/2;
+    lab.style.cssText='position:absolute;left:50%;top:50%;transform-origin:0 0;transform:rotate('+mid+'deg) translate(52px,-9px);width:44px;text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7);pointer-events:none';
+    lab.innerHTML='<div style="font-size:13px;font-weight:800;line-height:1">'+p.label+'</div><div style="font-size:7px;font-weight:700;opacity:0.85">'+p.sub+'</div>';
+    wheel.appendChild(lab);
   });
   // Arrow indicator
   const arrow=document.createElement('div');
@@ -1029,7 +1030,7 @@ function _luckySpin(){
       setTimeout(function(){
         save[prize.type]+=prize.amount;
         saveProg();updateShopCurrency();
-        document.getElementById('spinResult').innerHTML='🎉 You won <span style="color:var(--p1)">'+prize.label+'</span>!';
+        document.getElementById('spinResult').innerHTML='🎉 You won <span style="color:var(--p1)">'+prize.label+' '+prize.sub+'</span>!';
         playSfx('win');
         btn.textContent='✓ Claimed!';
         setTimeout(function(){
@@ -1374,6 +1375,7 @@ function initFirebase(){
     firebaseDB=firebase.database();
     firebaseReady=true;
     try{ initAdMob(); }catch(e){}
+    try{ initPurchases(); }catch(e){}
     try{ if(firebase.analytics) firebaseAnalytics=firebase.analytics(); }catch(e){}
     // Handle Google redirect result (Capacitor)
     firebaseAuth.getRedirectResult().then(function(result){
@@ -2657,13 +2659,14 @@ function showStarterPack(){
   document.body.appendChild(popup);
   document.getElementById('starterSkip').onclick=function(){popup.remove();playSfx('menuBack')};
   document.getElementById('starterBuy').onclick=function(){
-    // In Capacitor, this would trigger in-app purchase
-    save.starterPackBought=true;
-    save.coins+=1000;
-    save.owned['theme_neon']=true;save.owned['border_flame']=true;save.owned['effect_sparkle']=true;
-    save.freeSpinsToday=Math.max(0,save.freeSpinsToday-3);
-    saveProg();updateShopCurrency();
-    popup.remove();showToast('Starter Pack activated! 🎉');playSfx('win');
+    purchaseProduct('starter_pack',function(){
+      save.starterPackBought=true;
+      save.coins+=1000;
+      save.owned['theme_neon']=true;save.owned['border_flame']=true;save.owned['effect_sparkle']=true;
+      save.freeSpinsToday=(save.freeSpinsToday||0)+3;
+      saveProg();updateShopCurrency();
+      popup.remove();showToast('Starter Pack activated! 🎉');playSfx('win');
+    });
   };
 }
 
@@ -2772,6 +2775,11 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v1.9.9.8',date:'September 2026',title:'Real In-App Purchases',notes:[
+    '💎 Diamond bundles, Monthly Pass, Forever Pass and the Starter Pack now use real in-app purchases',
+    '↩️ Added a Restore Purchases button to the Diamonds shop tab',
+    '🐛 Fixes and polish',
+  ]},
   {version:'v1.9.4',date:'August 2026',title:'Accounts, Rewards & Ads',notes:[
     '🔐 Google sign-in now works properly on Android — your progress is backed up',
     '🎬 New Free Rewards in the Shop — watch a short ad for coins, diamonds, or 2× match rewards',
@@ -3718,11 +3726,11 @@ const SHOP_TITLES=[
 ];
 
 const CHROMA_BUNDLES=[
-  {amount:100,bonus:0,price:'$0.99',tag:null},
-  {amount:500,bonus:50,price:'$4.99',tag:null},
-  {amount:1200,bonus:100,price:'$9.99',tag:'POPULAR'},
-  {amount:2500,bonus:300,price:'$19.99',tag:'BEST VALUE'},
-  {amount:6000,bonus:1000,price:'$49.99',tag:'MEGA'},
+  {amount:100,bonus:0,price:'$0.99',tag:null,productId:'diamonds_small'},
+  {amount:500,bonus:50,price:'$4.99',tag:null,productId:'diamonds_medium'},
+  {amount:1200,bonus:100,price:'$9.99',tag:'POPULAR',productId:'diamonds_large'},
+  {amount:2500,bonus:300,price:'$19.99',tag:'BEST VALUE',productId:'diamonds_mega'},
+  {amount:6000,bonus:1000,price:'$49.99',tag:'MEGA',productId:'diamonds_ultra'},
 ];
 
 // Battle Pass tiers
@@ -4065,9 +4073,11 @@ function renderShopTab(tab){
       +'</div>'
       +(hasMonthly?'<div class="si-equipped">Active ✓</div>':'<div class="si-price" style="color:var(--p1);font-weight:800">$4.99</div>');
     if(!hasMonthly)monthlyPass.onclick=function(){
-      save.monthlyPassExpiry=Date.now()+30*24*60*60*1000;
-      save.chromas+=10;saveProg();updateShopCurrency();renderShopTab('diamonds');
-      showToast('Monthly Pass activated! 💎10/day for 30 days');playSfx('claimBig');
+      purchaseProduct('monthly_pass',function(){
+        save.monthlyPassExpiry=Date.now()+30*24*60*60*1000;
+        saveProg();updateShopCurrency();renderShopTab('diamonds');
+        showToast('Monthly Pass activated! 💎40/day for 30 days');playSfx('claimBig');
+      });
     };
     cont.appendChild(monthlyPass);
 
@@ -4077,14 +4087,16 @@ function renderShopTab(tab){
     foreverPass.style.cssText=hasForever?'border:1px solid var(--gold)':'';
     foreverPass.innerHTML='<div class="si-preview" style="background:linear-gradient(135deg,var(--gold),#ff6600);font-size:18px">♾️</div>'
       +'<div class="si-info"><div class="si-name">Forever Diamond Pass</div>'
-      +'<div class="si-desc">Earn 💎25 diamonds daily forever</div>'
+      +'<div class="si-desc">Earn 💎20 diamonds daily forever</div>'
       +(hasForever?'<div style="font-size:8px;color:var(--gold);font-weight:700;margin-top:2px">Active forever!</div>':'')
       +'</div>'
       +(hasForever?'<div class="si-equipped" style="color:var(--gold)">Owned ✓</div>':'<div class="si-price" style="color:var(--gold);font-weight:800">$9.99</div>');
     if(!hasForever)foreverPass.onclick=function(){
-      save.foreverPass=true;
-      save.chromas+=5;saveProg();updateShopCurrency();renderShopTab('diamonds');
-      showToast('Forever Pass activated! 💎25/day forever!');playSfx('win');
+      purchaseProduct('forever_pass',function(){
+        save.foreverPass=true;
+        saveProg();updateShopCurrency();renderShopTab('diamonds');
+        showToast('Forever Pass activated! 💎20/day forever!');playSfx('win');
+      });
     };
     cont.appendChild(foreverPass);
 
@@ -4104,6 +4116,12 @@ function renderShopTab(tab){
       el.onclick=function(){buyChromaBundle(b)};
       cont.appendChild(el);
     });
+
+    var restoreBtn=document.createElement('button');
+    restoreBtn.style.cssText='grid-column:span 2;padding:8px;margin-top:4px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-weight:700;cursor:pointer;font-family:Manrope,sans-serif;font-size:10px';
+    restoreBtn.textContent='Restore Purchases';
+    restoreBtn.onclick=function(){restorePurchases(false);};
+    cont.appendChild(restoreBtn);
 
     // Monthly pass card
     var nameSection=document.createElement('div');nameSection.style.cssText='grid-column:span 2;margin-top:6px';nameSection.className='card';
@@ -4256,10 +4274,62 @@ function changePlayerName(){
   playSfx('claimBig');
 }
 
+// ===== REVENUECAT IN-APP PURCHASES =====
+var RC_KEY='goog_OxKGXBRUcTQWtUdJDIFkPMUndHe';
+var _rcReady=false, _rcInitP=null;
+function _rc(){ return (typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.Purchases)?Capacitor.Plugins.Purchases:null; }
+function initPurchases(){
+  var P=_rc(); if(!P)return Promise.resolve(false);
+  if(_rcInitP)return _rcInitP;
+  _rcInitP=P.configure({apiKey:RC_KEY}).then(function(){
+    _rcReady=true;
+    try{ restorePurchases(true); }catch(e){}
+    return true;
+  }).catch(function(e){ _rcInitP=null; return false; });
+  return _rcInitP;
+}
+function purchaseProduct(productId,onSuccess){
+  var P=_rc();
+  if(!P){ showToast('Purchases are only available in the app',2500); return; }
+  if(_purchaseBusy){ return; } _purchaseBusy=true;
+  showToast('Opening purchase…',1500);
+  initPurchases().then(function(ok){
+    if(!ok){ _purchaseBusy=false; showToast('Store unavailable — try again',2500); return; }
+    return P.getProducts({productIdentifiers:[productId]}).then(function(res){
+      var prods=(res&&res.products)||[];
+      if(!prods.length){ throw new Error('Product not found: '+productId); }
+      return P.purchaseStoreProduct({product:prods[0]});
+    }).then(function(info){
+      _purchaseBusy=false;
+      if(onSuccess)onSuccess(info);
+    });
+  }).catch(function(e){
+    _purchaseBusy=false;
+    var msg=(e&&(e.message||e.code))||'';
+    if(/cancel/i.test(msg)){ showToast('Purchase cancelled',1800); }
+    else { showToast('Purchase failed: '+(msg||'try again'),2800); }
+  });
+}
+var _purchaseBusy=false;
+function restorePurchases(silent){
+  var P=_rc(); if(!P){ if(!silent)showToast('Restore only works in the app',2500); return; }
+  initPurchases().then(function(ok){
+    if(!ok)return;
+    return P.restorePurchases().then(function(info){
+      var ent=(info&&info.customerInfo&&info.customerInfo.entitlements&&info.customerInfo.entitlements.active)||{};
+      var changed=false;
+      if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
+      if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
+      if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
+      if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
+      if(!silent)showToast('Purchases restored',2000);
+    });
+  }).catch(function(e){ if(!silent)showToast('Restore failed — try again',2500); });
+}
+
 function buyChromaBundle(bundle){
-  // In a real app, this would trigger a payment flow
-  // For demo, we simulate the purchase
-  showConfirmPopup('Purchase Chromas?',(bundle.amount+bundle.bonus)+' Chromas for '+bundle.price+'<br><span style="font-size:9px;color:var(--c3)">(Demo mode: added for free)</span>','Purchase',function(){
+  if(!bundle.productId){ showToast('This bundle is unavailable',2000); return; }
+  purchaseProduct(bundle.productId,function(){
     save.chromas+=bundle.amount+bundle.bonus;
     saveProg();updateShopCurrency();renderShopTab('diamonds');
     showToast('💎 +'+(bundle.amount+bundle.bonus)+' Chromas!');playSfx('claimBig');
