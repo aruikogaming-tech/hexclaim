@@ -4284,16 +4284,15 @@ function initPurchases(){
   _rcInitP=new Promise(function(resolve){
     var settled=false;
     function finish(v){ if(settled)return; settled=true; resolve(v); }
-    setTimeout(function(){ if(!settled){ if(window._dbg)_dbg('configure TIMEOUT (no response)'); finish(false); } },12000);
+    setTimeout(function(){ if(!settled){ if(window._dbg)_dbg('configure TIMEOUT'); finish(false); } },12000);
     try{
       if(window._dbg)_dbg('calling P.configure...');
       var r=P.configure({apiKey:RC_KEY});
       if(r&&r.then){
-        r.then(function(){ _rcReady=true; if(window._dbg)_dbg('configure OK'); try{restorePurchases(true);}catch(e){} finish(true); })
+        r.then(function(){ _rcReady=true; if(window._dbg)_dbg('configure OK'); try{_applyRestore(P,true);}catch(e){} finish(true); })
          .catch(function(e){ if(window._dbg)_dbg('configure ERROR: '+((e&&(e.message||e.code))||JSON.stringify(e))); finish(false); });
       } else {
-        if(window._dbg)_dbg('configure returned non-promise, assuming ready');
-        _rcReady=true; try{restorePurchases(true);}catch(e){} finish(true);
+        _rcReady=true; try{_applyRestore(P,true);}catch(e){} finish(true);
       }
     }catch(e){
       if(window._dbg)_dbg('configure THREW: '+((e&&(e.message||e.code))||JSON.stringify(e)));
@@ -4335,20 +4334,20 @@ function purchaseProduct(productId,onSuccess){
   });
 }
 var _purchaseBusy=false;
+function _applyRestore(P,silent){
+  return P.restorePurchases().then(function(info){
+    var ent=(info&&info.customerInfo&&info.customerInfo.entitlements&&info.customerInfo.entitlements.active)||{};
+    var changed=false;
+    if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
+    if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
+    if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
+    if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
+    if(!silent)showToast('Purchases restored',2000);
+  }).catch(function(e){ if(!silent)showToast('Restore failed — try again',2500); });
+}
 function restorePurchases(silent){
   var P=_rc(); if(!P){ if(!silent)showToast('Restore only works in the app',2500); return; }
-  initPurchases().then(function(ok){
-    if(!ok)return;
-    return P.restorePurchases().then(function(info){
-      var ent=(info&&info.customerInfo&&info.customerInfo.entitlements&&info.customerInfo.entitlements.active)||{};
-      var changed=false;
-      if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
-      if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
-      if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
-      if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
-      if(!silent)showToast('Purchases restored',2000);
-    });
-  }).catch(function(e){ if(!silent)showToast('Restore failed — try again',2500); });
+  initPurchases().then(function(ok){ if(ok)_applyRestore(P,silent); });
 }
 
 function buyChromaBundle(bundle){
