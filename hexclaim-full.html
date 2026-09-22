@@ -4281,11 +4281,25 @@ function _rc(){ return (typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capac
 function initPurchases(){
   var P=_rc(); if(!P)return Promise.resolve(false);
   if(_rcInitP)return _rcInitP;
-  _rcInitP=P.configure({apiKey:RC_KEY}).then(function(){
-    _rcReady=true; if(window._dbg)_dbg('configure OK');
-    try{ restorePurchases(true); }catch(e){}
-    return true;
-  }).catch(function(e){ if(window._dbg)_dbg('configure ERROR: '+((e&&(e.message||e.code))||JSON.stringify(e))); _rcInitP=null; return false; });
+  _rcInitP=new Promise(function(resolve){
+    var settled=false;
+    function finish(v){ if(settled)return; settled=true; resolve(v); }
+    setTimeout(function(){ if(!settled){ if(window._dbg)_dbg('configure TIMEOUT (no response)'); finish(false); } },12000);
+    try{
+      if(window._dbg)_dbg('calling P.configure...');
+      var r=P.configure({apiKey:RC_KEY});
+      if(r&&r.then){
+        r.then(function(){ _rcReady=true; if(window._dbg)_dbg('configure OK'); try{restorePurchases(true);}catch(e){} finish(true); })
+         .catch(function(e){ if(window._dbg)_dbg('configure ERROR: '+((e&&(e.message||e.code))||JSON.stringify(e))); finish(false); });
+      } else {
+        if(window._dbg)_dbg('configure returned non-promise, assuming ready');
+        _rcReady=true; try{restorePurchases(true);}catch(e){} finish(true);
+      }
+    }catch(e){
+      if(window._dbg)_dbg('configure THREW: '+((e&&(e.message||e.code))||JSON.stringify(e)));
+      finish(false);
+    }
+  });
   return _rcInitP;
 }
 window._dbg=window._dbg||function(msg){try{var b=document.getElementById('dbgBox');if(!b){b=document.createElement('div');b.id='dbgBox';b.style.cssText='position:fixed;left:6px;right:6px;bottom:6px;max-height:45%;overflow:auto;z-index:100000;background:rgba(0,0,0,0.9);color:#0f0;font:10px/1.4 monospace;padding:8px;border:1px solid #0f0;border-radius:6px;white-space:pre-wrap';var c=document.createElement('div');c.textContent='✕ close log';c.style.cssText='color:#f66;text-align:right;cursor:pointer';c.onclick=function(){b.remove();};b.appendChild(c);document.body.appendChild(b);}var l=document.createElement('div');l.textContent='['+new Date().toLocaleTimeString()+'] '+msg;b.appendChild(l);b.scrollTop=b.scrollHeight;}catch(e){}};
