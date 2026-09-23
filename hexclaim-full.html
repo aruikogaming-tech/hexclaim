@@ -1002,9 +1002,12 @@ function _luckySpin(){
   wheel.style.background='conic-gradient('+stops.join(',')+')';
   SPIN_PRIZES.forEach(function(p,i){
     const lab=document.createElement('div');
-    var mid=i*segAngle+segAngle/2;
-    lab.style.cssText='position:absolute;left:50%;top:50%;transform-origin:0 0;transform:rotate('+mid+'deg) translate(52px,-9px);width:44px;text-align:center;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.7);pointer-events:none';
-    lab.innerHTML='<div style="font-size:13px;font-weight:800;line-height:1">'+p.label+'</div><div style="font-size:7px;font-weight:700;opacity:0.85">'+p.sub+'</div>';
+    var mid=(i*segAngle+segAngle/2)-90;
+    var rad=mid*Math.PI/180;
+    var R=68;
+    var dx=(Math.cos(rad)*R).toFixed(1), dy=(Math.sin(rad)*R).toFixed(1);
+    lab.style.cssText='position:absolute;left:calc(50% + '+dx+'px);top:calc(50% + '+dy+'px);transform:translate(-50%,-50%);width:46px;text-align:center;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.9);pointer-events:none';
+    lab.innerHTML='<div style="font-size:14px;font-weight:800;line-height:1">'+p.label+'</div><div style="font-size:8px;font-weight:700;opacity:0.9">'+p.sub+'</div>';
     wheel.appendChild(lab);
   });
   // Arrow indicator
