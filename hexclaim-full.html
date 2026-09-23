@@ -4352,18 +4352,26 @@ function purchaseProduct(productId,onSuccess){
 var _purchaseBusy=false;
 function _applyRestore(P,silent){
   return P.restorePurchases().then(function(info){
-    var ent=(info&&info.customerInfo&&info.customerInfo.entitlements&&info.customerInfo.entitlements.active)||{};
+    var ci=(info&&info.customerInfo)?info.customerInfo:info;
+    var ent=(ci&&ci.entitlements&&ci.entitlements.active)||{};
+    var keys=Object.keys(ent);
     var changed=false;
     if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
     if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
     if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
     if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
-    if(!silent)showToast('Purchases restored',2000);
-  }).catch(function(e){ if(!silent)showToast('Restore failed — try again',2500); });
+    // One toast only — showToast replaces any toast already on screen
+    if(!silent){
+      var entTxt='Entitlements: '+(keys.length?keys.join(', '):'NONE');
+      if(changed)showToast('Purchases restored! '+entTxt,4000);
+      else if(!keys.length)showToast('No purchases found to restore',3000);
+      else showToast(entTxt,4000);
+    }
+  }).catch(function(e){ if(!silent)showToast('Restore error: '+((e&&(e.message||e.code))||'unknown'),3000); });
 }
 function restorePurchases(silent){
   var P=_rc(); if(!P){ if(!silent)showToast('Restore only works in the app',2500); return; }
-  initPurchases().then(function(ok){ if(ok)_applyRestore(P,silent); });
+  initPurchases().then(function(ok){ if(ok)_applyRestore(P,silent); else if(!silent)showToast('Store unavailable — try again',2500); });
 }
 
 function buyChromaBundle(bundle){
