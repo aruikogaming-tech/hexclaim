@@ -1525,6 +1525,35 @@ function getDefaultSave(){
     loginPromptShown:false,testerGiftGiven:false,seasonMechanicOrder:null
   };
 }
+function deleteAccount(){
+  showConfirmPopup('⚠️ Delete Account?','This permanently deletes your account, cloud saves, and all progress. This CANNOT be undone.','Delete Forever',function(){
+    var uid=(firebaseReady&&firebaseAuth.currentUser)?firebaseAuth.currentUser.uid:save.authUid;
+    var fc=save.friendCode;
+    showToast('Deleting account…',3000);
+    var tasks=[];
+    if(firebaseReady&&uid){
+      try{ tasks.push(firebaseDB.ref('users/'+uid).remove()); }catch(e){}
+      try{ tasks.push(firebaseDB.ref('leaderboard/'+uid).remove()); }catch(e){}
+      if(fc){ try{ tasks.push(firebaseDB.ref('friendCodes/'+fc).remove()); }catch(e){} }
+    }
+    Promise.all(tasks.map(function(t){return t&&t.catch?t.catch(function(){}):t;})).then(function(){
+      function finish(){
+        try{ localStorage.removeItem('hexclaim_v4'); }catch(e){}
+        var defaultSave=getDefaultSave(); defaultSave.isGuest=true;
+        Object.assign(save,defaultSave);
+        gameLocked=false; gameOver=true;
+        showToast('Account deleted',2500);
+        showScreen('menuScreen');
+        setTimeout(function(){ try{updateAuthUI();buildAccountScreen();updateAllUI();}catch(e){} },100);
+      }
+      if(firebaseReady&&firebaseAuth.currentUser){
+        firebaseAuth.currentUser.delete().then(finish).catch(function(){
+          firebaseAuth.signOut().then(finish).catch(finish);
+        });
+      } else { finish(); }
+    });
+  });
+}
 function authSignOut(){
   function doSignOut(){
     var oldUid=save.authUid;
@@ -1777,6 +1806,11 @@ function buildAccountScreen(){
     signOutBtn.textContent='Sign Out';
     signOutBtn.onclick=function(){showConfirmPopup('Sign Out?','Local progress will be kept.','Sign Out',authSignOut)};
     cont.appendChild(signOutBtn);
+    var delBtn=document.createElement('button');
+    delBtn.style.cssText='width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,71,111,0.4);background:transparent;color:var(--c4);font-family:Manrope,sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-top:8px';
+    delBtn.textContent='Delete Account & Data';
+    delBtn.onclick=function(){deleteAccount()};
+    cont.appendChild(delBtn);
   }
 }
 
