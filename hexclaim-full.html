@@ -4392,6 +4392,10 @@ function purchaseProduct(productId,onSuccess){
     var msg=(e&&(e.message||e.code))||JSON.stringify(e);
     _dbg('PURCHASE ERROR: '+msg);
     if(/cancel/i.test(msg)){ showToast('Purchase cancelled',1800); }
+    else if(/already.?own|already.?purchas|already.?active|PRODUCT_ALREADY|ITEM_ALREADY/i.test(msg+' '+((e&&e.readableErrorCode)||''))){
+      showToast('You already own this — restoring…',2000);
+      try{ _applyRestore(P,false); }catch(e2){ showToast('Already owned — use Restore Purchases',2800); }
+    }
     else { showToast('Purchase failed: '+(msg||'try again'),2800); }
   });
 }
