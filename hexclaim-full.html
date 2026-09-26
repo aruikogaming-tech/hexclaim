@@ -1690,6 +1690,8 @@ function loadCloudSave(uid){
       showScreen('menuScreen');
       showToast('✓ Signed in!',2000);
     }
+    // Cloud data can overwrite store-owned flags (e.g. foreverPass:false) — re-apply them
+    syncOwnedPurchases();
   }).catch(function(e){
     console.log('Cloud load failed:',e.message);
     showToast('⚠️ Could not connect. Playing with local data.',3000);
@@ -4360,6 +4362,8 @@ function purchaseProduct(productId,onSuccess){
   initPurchases().then(function(ok){
     _dbg('initPurchases -> '+ok);
     if(!ok){ _purchaseBusy=false; showToast('Store unavailable — try again',2500); return; }
+    return _alreadyOwned(P,productId).then(function(owned){
+    if(owned){ _purchaseBusy=false; return; }
     _dbg('fetching offerings...');
     return P.getOfferings().then(function(off){
       var pkgs=[];
@@ -4387,6 +4391,7 @@ function purchaseProduct(productId,onSuccess){
       _purchaseBusy=false;
       if(onSuccess)onSuccess(info);
     });
+    });
   }).catch(function(e){
     _purchaseBusy=false;
     var msg=(e&&(e.message||e.code))||JSON.stringify(e);
@@ -4400,16 +4405,47 @@ function purchaseProduct(productId,onSuccess){
   });
 }
 var _purchaseBusy=false;
+// Copy active RevenueCat entitlements onto the save. Returns true if anything changed.
+function _applyEntitlements(ent){
+  var changed=false;
+  if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
+  if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
+  if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
+  if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
+  return changed;
+}
+// Silently re-apply whatever the store says this device owns (no toast, no purchase sheet).
+function syncOwnedPurchases(){
+  var P=_rc(); if(!P)return;
+  initPurchases().then(function(ok){
+    if(!ok||!P.getCustomerInfo)return;
+    return P.getCustomerInfo().then(function(info){
+      var ci=(info&&info.customerInfo)?info.customerInfo:info;
+      _applyEntitlements((ci&&ci.entitlements&&ci.entitlements.active)||{});
+    });
+  }).catch(function(){});
+}
+// For passes/starter pack: if the store account already owns it, unlock it and return true
+// so we never open Google's purchase sheet (which fails with "You already own this item").
+function _alreadyOwned(P,productId){
+  if(['forever_pass','starter_pack','monthly_pass'].indexOf(productId)<0||!P.getCustomerInfo)return Promise.resolve(false);
+  return P.getCustomerInfo().then(function(info){
+    var ci=(info&&info.customerInfo)?info.customerInfo:info;
+    var ent=(ci&&ci.entitlements&&ci.entitlements.active)||{};
+    if(!ent[productId])return false;
+    _dbg('already owns '+productId+' — skipping purchase');
+    _applyEntitlements(ent);
+    try{renderShopTab('diamonds');}catch(e){}
+    showToast('You already own this — restored ✓',2500);
+    return true;
+  }).catch(function(){ return false; });
+}
 function _applyRestore(P,silent){
   return P.restorePurchases().then(function(info){
     var ci=(info&&info.customerInfo)?info.customerInfo:info;
     var ent=(ci&&ci.entitlements&&ci.entitlements.active)||{};
     var keys=Object.keys(ent);
-    var changed=false;
-    if(ent['forever_pass']&&!save.foreverPass){ save.foreverPass=true; changed=true; }
-    if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
-    if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
-    if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
+    var changed=_applyEntitlements(ent);
     // One toast only — showToast replaces any toast already on screen
     if(!silent){
       var entTxt='Entitlements: '+(keys.length?keys.join(', '):'NONE');
