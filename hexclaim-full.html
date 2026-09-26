@@ -2573,7 +2573,7 @@ function showFreeRewards(){
     +'<div style="flex:1;text-align:left"><div style="font-size:12px;font-weight:800;color:var(--text)">Lucky Spin</div>'
     +'<div style="font-size:9px;color:'+(canSpin?'var(--gold)':'var(--muted)')+'">'+(canSpin?'Free spin ready!':'Come back tomorrow')+'</div></div>'
     +'<span style="padding:8px 14px;border-radius:8px;font-weight:800;font-size:11px;background:'+(canSpin?'var(--gold)':'var(--dim)')+';color:'+(canSpin?'#1a1a24':'var(--muted)')+'">'+(canSpin?'🎰 Spin':'—')+'</span>'
-    +'</div>'
+    +'</button>'
     +'<div style="font-size:9px;color:var(--muted);margin-top:8px">Tap outside to close</div></div>';
   document.body.appendChild(m);
 }
@@ -5225,7 +5225,7 @@ async function cancelQueue(){
 
 async function cancelRoom(){
   if(pollInterval){clearInterval(pollInterval);pollInterval=null}
-  if(myRoomCode){await pvpDB.remove('pvp-rooms/'+myRoomCode)}
+  if(myRoomCode){try{await pvpDB.remove('pvp-rooms/'+myRoomCode)}catch(e){}}
   myRoomCode=null;
   buildPVP();
 }
