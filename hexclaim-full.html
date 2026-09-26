@@ -378,6 +378,16 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:10px;color:var(--muted)">›</span>
   </div>
 
+  <!-- Guest sign-in nudge (persistent) -->
+  <div id="guestSignInBar" style="display:none;background:linear-gradient(135deg,rgba(255,209,102,0.12),rgba(6,214,160,0.12));border:1px solid rgba(255,209,102,0.4);border-radius:10px;padding:8px 12px;align-items:center;gap:8px;cursor:pointer;margin-top:8px" onclick="showScreen('accountScreen');buildAccountScreen();playSfx('menuNav')">
+    <span style="font-size:16px">☁️</span>
+    <div style="flex:1">
+      <div style="font-size:10px;font-weight:800;color:var(--gold)">SIGN IN TO SAVE</div>
+      <div style="font-size:11px;color:var(--text)">You're playing as a guest — sign in to back up your progress</div>
+    </div>
+    <span style="font-size:10px;color:var(--muted)">›</span>
+  </div>
+
   <!-- ELO badge -->
   <div class="rank-badge-big" id="menuRankBadge">
     <div class="rank-icon">⬡</div>
@@ -1730,6 +1740,8 @@ function updateAuthUI(){
     window.addEventListener('offline',function(){var b=document.getElementById('offlineBar');if(b)b.style.display='block'});
   }
   if(!navigator.onLine)offlineBar.style.display='block';
+  var gbar=document.getElementById('guestSignInBar');
+  if(gbar)gbar.style.display=(save.isGuest||!save.authUid)?'flex':'none';
   var statusEl=document.getElementById('settingsAccountStatus');
   if(!statusEl)return;
   if(save.isGuest||!save.authUid){
