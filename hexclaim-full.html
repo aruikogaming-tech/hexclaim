@@ -5030,6 +5030,8 @@ async function showCreateRoom(){
       const data=res;
       if(data.guest){
         clearInterval(pollInterval);pollInterval=null;
+        // Guest joined — room is now a live match, so stop auto-deleting it if host briefly disconnects
+        try{if(firebaseReady&&firebaseDB)firebaseDB.ref('pvp-rooms/'+code).onDisconnect().cancel();}catch(e){}
         pvpRoomData=data;
         startOnlineMatch(data);
       }
