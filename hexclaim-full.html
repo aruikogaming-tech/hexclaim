@@ -2551,7 +2551,7 @@ function watchDoubleAd(){
 function showFreeRewards(){
   if(document.getElementById('freeRewardsModal'))return;
   var m=document.createElement('div');m.id='freeRewardsModal';
-  m.style.cssText='position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
   m.onclick=function(e){ if(e.target===m)m.remove(); };
   var c=adCountLeft('coins'),g=adCountLeft('gems');
   var canSpin=((save.freeSpinsToday||0)<2) || (save.extraSpins||0)>0;
@@ -2564,7 +2564,7 @@ function showFreeRewards(){
       +'<button onclick="watchAdFor(\''+kind+'\');setTimeout(function(){var mm=document.getElementById(\'freeRewardsModal\');if(mm)mm.remove();},300)" '+(out?'disabled':'')+' style="padding:8px 14px;border:none;border-radius:8px;font-weight:800;font-size:11px;font-family:Manrope,sans-serif;cursor:'+(out?'default':'pointer')+';background:'+(out?'var(--dim)':'var(--p1)')+';color:'+(out?'var(--muted)':'#fff')+'">'+(out?'Done ✓':'▶ Watch')+'</button>'
       +'</div>';
   }
-  m.innerHTML='<div style="background:var(--bg,#12101a);border:1px solid var(--border);border-radius:16px;padding:18px;max-width:340px;width:100%;text-align:center">'
+  m.innerHTML='<div style="background:var(--bg,#12101a);border:1px solid var(--border);border-radius:16px;padding:18px;max-width:340px;width:100%;margin:auto;text-align:center">'
     +'<div style="font-size:15px;font-weight:800;color:var(--gold);margin-bottom:12px">🎁 FREE REWARDS</div>'
     +adRow('coins','🟡','25 Coins',c,AD_CAPS.coins)
     +adRow('gems','💎','3 Diamonds',g,AD_CAPS.gems)
@@ -4613,7 +4613,6 @@ function loadRealLeaderboard(container){
     var seenNames={};
     snap.forEach(function(child){
       var d=child.val();
-      if(save.isGuest&&!save.authUid)return; // Skip all entries when guest — no UID to match
       var isYou=!save.isGuest&&save.authUid&&d.uid===save.authUid;
       // Dedupe by name+elo combo to filter out stale duplicate entries from old UIDs
       var dedupeKey=d.name+'_'+d.elo;
@@ -5020,6 +5019,7 @@ async function showCreateRoom(){
     isRanked:false
   };
   await pvpDB.set('pvp-rooms/'+code,roomData)
+  try{if(firebaseReady&&firebaseDB)firebaseDB.ref('pvp-rooms/'+code).onDisconnect().remove();}catch(e){}
   window._customRoomCfg=null;
 
   // Poll for guest joining
@@ -5127,6 +5127,7 @@ async function showMatchmaking(){
   const queueId='queue:'+Date.now()+':'+Math.random().toString(36).substring(2,6);
   const queueEntry={id:queueId,elo:save.elo,name:save.playerName||'Player',time:Date.now()};
   await pvpDB.set('pvp-queue/'+queueId,queueEntry)
+  try{if(firebaseReady&&firebaseDB)firebaseDB.ref('pvp-queue/'+queueId).onDisconnect().remove();}catch(e){}
 
   // Poll for a match or find another queued player
   let matched=false;
@@ -9031,9 +9032,9 @@ updateAuthUI();
 // Show name entry on very first launch, then login screen
 if(save.playerName==='Player'&&save.totalGames===0&&!save.authUid){
   showNameEntryPopup();
-} else if(save.isGuest&&!save.authUid&&save.totalGames>0&&!save.loginPromptShown){
+} else if(save.isGuest&&!save.authUid&&save.totalGames>0&&(!save.loginPromptShown||(save.totalGames-(save.lastLoginPromptGames||0))>=10)){
   // Returning guest — offer sign-in but don't force it
-  save.loginPromptShown=true;saveProg();
+  save.loginPromptShown=true;save.lastLoginPromptGames=save.totalGames;saveProg();
   setTimeout(function(){
     var popup=document.createElement('div');
     popup.id='saveProgressPopup';
