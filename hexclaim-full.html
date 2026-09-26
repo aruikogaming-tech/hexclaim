@@ -1744,6 +1744,8 @@ function updateAuthUI(){
   if(!navigator.onLine)offlineBar.style.display='block';
   var gbar=document.getElementById('guestSignInBar');
   if(gbar)gbar.style.display=(save.isGuest||!save.authUid)?'flex':'none';
+  var ssw=document.getElementById('streakSideWidget');
+  if(ssw)ssw.style.top=(save.isGuest||!save.authUid)?'45%':'36.5%';
   var statusEl=document.getElementById('settingsAccountStatus');
   if(!statusEl)return;
   if(save.isGuest||!save.authUid){
