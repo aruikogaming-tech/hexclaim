@@ -408,6 +408,10 @@ body{display:flex;align-items:flex-start;justify-content:center;
       <div style="font-size:18px">🎁</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Free</div>
       <span id="freeDot" style="display:none;position:absolute;top:6px;right:10px;width:8px;height:8px;border-radius:50%;background:#ef476f"></span>
     </button>
+    <button onclick="showMailbox();playSfx('menuOpen')" style="flex:1;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;position:relative">
+      <div style="font-size:18px">📬</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Mail</div>
+      <span id="mailDot" style="display:none;position:absolute;top:6px;right:10px;width:8px;height:8px;border-radius:50%;background:#ef476f"></span>
+    </button>
     <button onclick="showScreen('shopScreen');buildShop();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.15s" onmouseover="this.style.borderColor='var(--diamond)'" onmouseout="this.style.borderColor='var(--border)'">
       <div style="font-size:18px">💎</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Shop</div>
     </button>
@@ -2615,6 +2619,73 @@ function adFreebiesHtml(){
     +row('gems','💎','3 Diamonds',g,AD_CAPS.gems);
 }
 
+// ===== MAILBOX =====
+// Dev sends mail by adding a node in Firebase:
+//   mailBroadcast/<id> = {subject, body, coins, chromas, ts, expires}   (everyone, incl. guests)
+//   mail/<uid>/<id>    = {subject, body, coins, chromas, ts}            (one signed-in player)
+function _mailList(cb){
+  var out=[];
+  if(!firebaseReady||!firebaseDB){ cb(out); return; }
+  var tasks=[];
+  tasks.push(firebaseDB.ref('mailBroadcast').once('value').then(function(s){
+    var v=s.val()||{}; Object.keys(v).forEach(function(k){ var m=v[k]||{};
+      if(m.expires&&m.expires<Date.now())return;
+      out.push({id:'b_'+k,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
+    });
+  }).catch(function(){}));
+  if(save.authUid&&!save.isGuest){
+    tasks.push(firebaseDB.ref('mail/'+save.authUid).once('value').then(function(s){
+      var v=s.val()||{}; Object.keys(v).forEach(function(k){ var m=v[k]||{};
+        out.push({id:'p_'+k,pkey:k,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
+      });
+    }).catch(function(){}));
+  }
+  Promise.all(tasks).then(function(){ out.sort(function(a,b){return (b.ts||0)-(a.ts||0)}); cb(out); }).catch(function(){ cb(out); });
+}
+function updateMailDot(){
+  var dot=document.getElementById('mailDot'); if(!dot)return;
+  _mailList(function(list){ var c=(save.mailClaimed||[]); var n=list.filter(function(m){return c.indexOf(m.id)<0}).length; dot.style.display=n>0?'block':'none'; });
+}
+function claimMail(m){
+  save.mailClaimed=save.mailClaimed||[];
+  if(save.mailClaimed.indexOf(m.id)>=0)return;
+  if(m.coins)save.coins=(save.coins||0)+m.coins;
+  if(m.chromas)save.chromas=(save.chromas||0)+m.chromas;
+  save.mailClaimed.push(m.id);
+  if(m.pkey&&save.authUid&&firebaseReady&&firebaseDB){ try{firebaseDB.ref('mail/'+save.authUid+'/'+m.pkey+'/claimed').set(true);}catch(e){} }
+  saveProg(); try{updateTopBar();}catch(e){} try{updateMenuStats();}catch(e){}
+  showToast('Claimed'+(m.coins?' 🟡'+m.coins:'')+(m.chromas?' 💎'+m.chromas:''),2200); try{playSfx('claimBig');}catch(e){}
+}
+function showMailbox(){
+  if(document.getElementById('mailboxModal'))return;
+  var m=document.createElement('div'); m.id='mailboxModal';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
+  m.onclick=function(e){ if(e.target===m)m.remove(); };
+  m.innerHTML='<div style="background:var(--bg,#12101a);border:1px solid var(--border);border-radius:16px;padding:18px;max-width:360px;width:100%;margin:auto;max-height:80vh;display:flex;flex-direction:column">'
+    +'<div style="font-size:15px;font-weight:800;color:var(--gold);margin-bottom:10px;text-align:center">📬 MAILBOX</div>'
+    +'<div id="mailListBox" style="overflow-y:auto;flex:1"><div style="text-align:center;color:var(--muted);font-size:12px;padding:20px">Loading…</div></div>'
+    +'<div style="font-size:9px;color:var(--muted);margin-top:8px;text-align:center">Tap outside to close</div></div>';
+  document.body.appendChild(m);
+  _mailList(function(list){
+    var cont=document.getElementById('mailListBox'); if(!cont)return;
+    if(!list.length){ cont.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:24px">No mail right now.</div>'; return; }
+    var claimed=save.mailClaimed||[]; var html='';
+    list.forEach(function(mm){
+      var isC=claimed.indexOf(mm.id)>=0; var rw=[]; if(mm.coins)rw.push('🟡 '+mm.coins); if(mm.chromas)rw.push('💎 '+mm.chromas);
+      html+='<div style="background:var(--surface);border:1px solid '+(isC?'var(--border)':'var(--p1)')+';border-radius:10px;padding:10px;margin-bottom:8px">'
+        +'<div style="font-size:12px;font-weight:800;color:var(--text)">'+mm.subject+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin:4px 0;line-height:1.4">'+mm.body+'</div>'
+        +(rw.length?'<div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:6px">'+rw.join('   ')+'</div>':'')
+        +'<button data-mid="'+mm.id+'" '+(isC?'disabled':'')+' style="width:100%;padding:8px;border:none;border-radius:8px;font-weight:800;font-size:11px;font-family:Manrope,sans-serif;cursor:'+(isC?'default':'pointer')+';background:'+(isC?'var(--dim)':'var(--p1)')+';color:'+(isC?'var(--muted)':'#fff')+'">'+(isC?'Claimed ✓':(rw.length?'Claim':'Mark read'))+'</button>'
+        +'</div>';
+    });
+    cont.innerHTML=html;
+    cont.querySelectorAll('button[data-mid]').forEach(function(btn){
+      btn.onclick=function(){ var id=btn.getAttribute('data-mid'); var mm=list.filter(function(x){return x.id===id})[0]; if(!mm)return; claimMail(mm); m.remove(); showMailbox(); try{updateMailDot();}catch(e){} };
+    });
+  });
+}
+
 // ===== ADMOB REWARDED ADS =====
 // Test ad unit id (Google's official rewarded test id). Swap for the real one before launch:
 // real: 'ca-app-pub-4470174548435236/4039214679'
@@ -2926,6 +2997,7 @@ function updateNewsBanner(){
 function updateAllUI(){
   updateMenuStats();
   try{updateFreeDot();}catch(e){}
+  try{updateMailDot();}catch(e){}
   updateTopBar();
   updateNewsBanner();
   // Update settings name display
