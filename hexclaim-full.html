@@ -884,14 +884,17 @@ const STREAK_REWARDS=[
 ];
 
 function checkDailyLogin(){
-  // Grant pass diamonds
+  // Daily pass diamonds are delivered to the Mailbox (claimed there, not auto-added)
   var passDay=getGameDay();
   if(save.lastPassGrantDate!==passDay){
     var granted=false;
-    if(save.foreverPass){save.chromas+=20;granted=true}
-    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()){save.chromas+=40;granted=true}
-    if(granted){save.lastPassGrantDate=passDay;saveProg();updateShopCurrency()}
+    if(save.foreverPass){addLocalMail({id:'pass_f_'+passDay,subject:'♾️ Forever Pass — daily diamonds',body:'Your daily diamonds from the Forever Diamond Pass.',chromas:20});granted=true}
+    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()){
+      var _dl=Math.ceil((save.monthlyPassExpiry-Date.now())/86400000);
+      addLocalMail({id:'pass_m_'+passDay,subject:'📅 Monthly Pass — daily diamonds',body:'Your daily diamonds from the Monthly Diamond Pass ('+_dl+' day'+(_dl===1?'':'s')+' left).',chromas:40});granted=true}
+    if(granted){save.lastPassGrantDate=passDay;saveProg()}
   }
+  try{updateMailDot();}catch(e){}
   const today=getGameDay();
   if(save.lastLoginDate===today){
     // Self-heal: logged in today but streak never got set (new account / cloud race) -> Day 1
@@ -2626,9 +2629,19 @@ function adFreebiesHtml(){
 // Dev sends mail by adding a node in Firebase:
 //   mailBroadcast/<id> = {subject, body, coins, chromas, ts, expires}   (everyone, incl. guests)
 //   mail/<uid>/<id>    = {subject, body, coins, chromas, ts}            (one signed-in player)
+// Local mail lives in the save (welcome gift, daily pass diamonds) — works offline, removed once claimed.
+function addLocalMail(m){
+  save.localMail=save.localMail||[];
+  for(var i=0;i<save.localMail.length;i++){ if(save.localMail[i].id===m.id)return; }
+  save.localMail.push({id:m.id,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:Date.now()});
+  if(save.localMail.length>60)save.localMail=save.localMail.slice(-60); // cap if never opened
+}
 function _mailList(cb){
   var out=[];
-  if(!firebaseReady||!firebaseDB){ cb(out); return; }
+  (save.localMail||[]).forEach(function(m){
+    out.push({id:'l_'+m.id,lkey:m.id,subject:m.subject,body:m.body,coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
+  });
+  if(!firebaseReady||!firebaseDB){ out.sort(function(a,b){return (b.ts||0)-(a.ts||0)}); cb(out); return; }
   var tasks=[];
   tasks.push(firebaseDB.ref('mailBroadcast').once('value').then(function(s){
     var v=s.val()||{}; Object.keys(v).forEach(function(k){ var m=v[k]||{};
@@ -2651,10 +2664,18 @@ function updateMailDot(){
 }
 function claimMail(m){
   save.mailClaimed=save.mailClaimed||[];
-  if(save.mailClaimed.indexOf(m.id)>=0)return;
+  if(m.lkey){
+    // Local mail: claim by removing it from the save (so it can never be claimed twice)
+    var lm=save.localMail||[], idx=-1;
+    for(var i=0;i<lm.length;i++){ if(lm[i].id===m.lkey){idx=i;break;} }
+    if(idx<0)return;
+    lm.splice(idx,1);
+  } else {
+    if(save.mailClaimed.indexOf(m.id)>=0)return;
+    save.mailClaimed.push(m.id);
+  }
   if(m.coins)save.coins=(save.coins||0)+m.coins;
   if(m.chromas)save.chromas=(save.chromas||0)+m.chromas;
-  save.mailClaimed.push(m.id);
   if(m.pkey&&save.authUid&&firebaseReady&&firebaseDB){ try{firebaseDB.ref('mail/'+save.authUid+'/'+m.pkey+'/claimed').set(true);}catch(e){} }
   saveProg(); try{updateTopBar();}catch(e){} try{updateMenuStats();}catch(e){}
   showToast('Claimed'+(m.coins?' 🟡'+m.coins:'')+(m.chromas?' 💎'+m.chromas:''),2200); try{playSfx('claimBig');}catch(e){}
@@ -4237,7 +4258,7 @@ function renderShopTab(tab){
 
     var passNote=document.createElement('div');
     passNote.style.cssText='font-size:8px;color:var(--muted);text-align:center;margin:6px 0';
-    passNote.textContent='Pass diamonds are granted each day you log in';
+    passNote.textContent='Pass diamonds arrive in your 📬 Mailbox each day you log in';
     cont.appendChild(passNote);
 
     var bundleHead=document.createElement('div');
