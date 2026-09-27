@@ -1571,11 +1571,13 @@ function deleteAccount(){
 function authSignOut(){
   function doSignOut(){
     var oldUid=save.authUid;
+    var _keepWelcome=save.welcomeClaimed;
     // Reset ALL save data so next account starts fresh
     var defaultSave=getDefaultSave();
     defaultSave.isGuest=true;
     defaultSave.loginPromptShown=false;
     Object.assign(save,defaultSave);
+    save.welcomeClaimed=_keepWelcome;
     // Always unlock game before navigating away
     gameLocked=false;
     animatingMove=false;
@@ -1585,6 +1587,7 @@ function authSignOut(){
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
     setTimeout(function(){updateAuthUI();buildAccountScreen();updateAllUI();},100);
+    setTimeout(function(){showNameEntryPopup();},450);
   }
   if(firebaseReady&&firebaseAuth.currentUser){
     firebaseAuth.signOut().then(doSignOut).catch(doSignOut);
@@ -1824,7 +1827,7 @@ function buildAccountScreen(){
     var signOutBtn=document.createElement('button');
     signOutBtn.style.cssText='width:100%;padding:10px;border-radius:8px;border:none;background:rgba(239,71,111,0.1);color:var(--c4);font-family:Manrope,sans-serif;font-size:12px;font-weight:700;cursor:pointer;margin-top:10px';
     signOutBtn.textContent='Sign Out';
-    signOutBtn.onclick=function(){showConfirmPopup('Sign Out?','Local progress will be kept.','Sign Out',authSignOut)};
+    signOutBtn.onclick=function(){showConfirmPopup('Sign Out?','Your account is saved — sign back in anytime to restore it. You will start fresh as a guest.','Sign Out',authSignOut)};
     cont.appendChild(signOutBtn);
     var delBtn=document.createElement('button');
     delBtn.style.cssText='width:100%;padding:9px;border-radius:8px;border:1px solid rgba(239,71,111,0.4);background:transparent;color:var(--c4);font-family:Manrope,sans-serif;font-size:11px;font-weight:700;cursor:pointer;margin-top:8px';
