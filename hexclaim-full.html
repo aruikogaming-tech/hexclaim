@@ -1582,8 +1582,10 @@ function authSignOut(){
     gameLocked=false;
     animatingMove=false;
     gameOver=true;
-    // Do NOT call saveProg() here — it would save the reset guest data to localStorage
-    // and cause name entry popup on next launch
+    // Persist the signed-out guest save now (local only — authUid is null, so no cloud write).
+    // Otherwise closing the app before picking a name reloads the old account's local save.
+    // Next launch then shows the name entry popup, which is what we want after sign-out.
+    saveProg();
     showScreen('menuScreen');
     showToast('Signed out successfully',2000);
     setTimeout(function(){updateAuthUI();buildAccountScreen();updateAllUI();},100);
