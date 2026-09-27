@@ -2713,8 +2713,8 @@ function showMailbox(){
 // ===== ADMOB REWARDED ADS =====
 // Test ad unit id (Google's official rewarded test id). Swap for the real one before launch:
 // real: 'ca-app-pub-4470174548435236/4039214679'
-var ADMOB_REWARD_ID='ca-app-pub-3940256099942544/5224354917';
-var ADMOB_TESTING=true; // set false when using the real ad unit id in production
+var ADMOB_REWARD_ID='ca-app-pub-4470174548435236/4039214679';
+var ADMOB_TESTING=false; // LIVE — real rewarded ad unit
 var _admobReady=false, _admobBusy=false;
 function _admob(){ return (typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.AdMob)?Capacitor.Plugins.AdMob:null; }
 var _admobInitP=null;
