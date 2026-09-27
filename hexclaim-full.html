@@ -1571,13 +1571,11 @@ function deleteAccount(){
 function authSignOut(){
   function doSignOut(){
     var oldUid=save.authUid;
-    var _keepWelcome=save.welcomeClaimed;
     // Reset ALL save data so next account starts fresh
     var defaultSave=getDefaultSave();
     defaultSave.isGuest=true;
     defaultSave.loginPromptShown=false;
     Object.assign(save,defaultSave);
-    save.welcomeClaimed=_keepWelcome;
     // Always unlock game before navigating away
     gameLocked=false;
     animatingMove=false;
