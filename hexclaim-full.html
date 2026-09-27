@@ -885,15 +885,7 @@ const STREAK_REWARDS=[
 
 function checkDailyLogin(){
   // Daily pass diamonds are delivered to the Mailbox (claimed there, not auto-added)
-  var passDay=getGameDay();
-  if(save.lastPassGrantDate!==passDay){
-    var granted=false;
-    if(save.foreverPass){addLocalMail({id:'pass_f_'+passDay,subject:'♾️ Forever Pass — daily diamonds',body:'Your daily diamonds from the Forever Diamond Pass.',chromas:20});granted=true}
-    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()){
-      var _dl=Math.ceil((save.monthlyPassExpiry-Date.now())/86400000);
-      addLocalMail({id:'pass_m_'+passDay,subject:'📅 Monthly Pass — daily diamonds',body:'Your daily diamonds from the Monthly Diamond Pass ('+_dl+' day'+(_dl===1?'':'s')+' left).',chromas:40});granted=true}
-    if(granted){save.lastPassGrantDate=passDay;saveProg()}
-  }
+  if(save.foreverPass||(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now())) _grantPassMailToday();
   try{updateMailDot();}catch(e){}
   const today=getGameDay();
   if(save.lastLoginDate===today){
@@ -2636,6 +2628,20 @@ function addLocalMail(m){
   save.localMail.push({id:m.id,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:Date.now()});
   if(save.localMail.length>60)save.localMail=save.localMail.slice(-60); // cap if never opened
 }
+// Queue today's pass diamonds in the Mailbox. Safe to call any number of times:
+// each pass pays out at most once per game day (tracked in save.passMailDay), so
+// claiming and then restoring purchases can't create a second copy.
+function _grantPassMailToday(){
+  try{
+    var _pd=getGameDay();
+    var pm=save.passMailDay=save.passMailDay||{};
+    // Upgrade from the old single-date tracking: whatever was granted today stays granted
+    if(pm.f===undefined&&pm.m===undefined&&save.lastPassGrantDate===_pd){ pm.f=_pd; pm.m=_pd; }
+    if(save.foreverPass&&pm.f!==_pd){ addLocalMail({id:'pass_f_'+_pd,subject:'♾️ Forever Pass — daily diamonds',body:'Your daily diamonds from the Forever Diamond Pass.',chromas:20}); pm.f=_pd; }
+    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()&&pm.m!==_pd){ addLocalMail({id:'pass_m_'+_pd,subject:'📅 Monthly Pass — daily diamonds',body:'Your daily diamonds from the Monthly Diamond Pass.',chromas:40}); pm.m=_pd; }
+    save.lastPassGrantDate=_pd; saveProg(); try{updateMailDot();}catch(e){}
+  }catch(e){}
+}
 function _mailList(cb){
   var out=[];
   (save.localMail||[]).forEach(function(m){
@@ -4232,6 +4238,7 @@ function renderShopTab(tab){
       purchaseProduct('monthly_pass',function(){
         save.monthlyPassExpiry=Date.now()+30*24*60*60*1000;
         saveProg();updateShopCurrency();renderShopTab('diamonds');
+        _grantPassMailToday();
         showToast('Monthly Pass activated! 💎40/day for 30 days');playSfx('claimBig');
       });
     };
@@ -4251,6 +4258,7 @@ function renderShopTab(tab){
       purchaseProduct('forever_pass',function(){
         save.foreverPass=true;
         saveProg();updateShopCurrency();renderShopTab('diamonds');
+        _grantPassMailToday();
         showToast('Forever Pass activated! 💎20/day forever!');playSfx('win');
       });
     };
@@ -4517,6 +4525,7 @@ function _applyEntitlements(ent){
   if(ent['starter_pack']&&!save.starterPackBought){ save.starterPackBought=true; changed=true; }
   if(ent['monthly_pass']){ if(!save.monthlyPassExpiry||save.monthlyPassExpiry<Date.now()){ save.monthlyPassExpiry=Date.now()+30*24*60*60*1000; changed=true; } }
   if(changed){ saveProg(); try{updateShopCurrency();}catch(e){} try{renderShopTab('diamonds');}catch(e){} }
+  if(save.foreverPass||(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now())) _grantPassMailToday();
   return changed;
 }
 // Silently re-apply whatever the store says this device owns (no toast, no purchase sheet).
