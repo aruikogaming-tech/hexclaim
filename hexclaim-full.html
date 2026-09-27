@@ -511,7 +511,7 @@ body{display:flex;align-items:flex-start;justify-content:center;
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v1.9.9.9</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v2.3</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -2638,7 +2638,9 @@ function _grantPassMailToday(){
     // Upgrade from the old single-date tracking: whatever was granted today stays granted
     if(pm.f===undefined&&pm.m===undefined&&save.lastPassGrantDate===_pd){ pm.f=_pd; pm.m=_pd; }
     if(save.foreverPass&&pm.f!==_pd){ addLocalMail({id:'pass_f_'+_pd,subject:'♾️ Forever Pass — daily diamonds',body:'Your daily diamonds from the Forever Diamond Pass.',chromas:20}); pm.f=_pd; }
-    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()&&pm.m!==_pd){ addLocalMail({id:'pass_m_'+_pd,subject:'📅 Monthly Pass — daily diamonds',body:'Your daily diamonds from the Monthly Diamond Pass.',chromas:40}); pm.m=_pd; }
+    if(save.monthlyPassExpiry&&save.monthlyPassExpiry>Date.now()&&pm.m!==_pd){
+      var _dl=Math.ceil((save.monthlyPassExpiry-Date.now())/86400000);
+      addLocalMail({id:'pass_m_'+_pd,subject:'📅 Monthly Pass — daily diamonds',body:'Your daily diamonds from the Monthly Diamond Pass ('+_dl+' day'+(_dl===1?'':'s')+' left).',chromas:40}); pm.m=_pd; }
     save.lastPassGrantDate=_pd; saveProg(); try{updateMailDot();}catch(e){}
   }catch(e){}
 }
@@ -2929,7 +2931,7 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
-  {version:'v2.2',date:'September 2026',title:'Mailbox, Purchases & Polish',notes:[
+  {version:'v2.3',date:'September 2026',title:'Mailbox, Purchases & Polish',notes:[
     '📬 New Mailbox — claim gifts, rewards, and your daily Pass diamonds',
     '💎 Real in-app purchases for diamonds and passes, with Restore Purchases',
     '🏅 Leaderboard now shows real players even when you play as a guest',
