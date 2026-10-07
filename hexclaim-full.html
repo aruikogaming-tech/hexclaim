@@ -1666,6 +1666,11 @@ function loadCloudSave(uid){
       // login progress (keep the more-recent date and the higher streak).
       var _ls=save.loginStreak,_ld=save.lastLoginDate,_lc=save.lastStreakClaimDate;
       Object.assign(save,cloudData);
+      // Mail/claim state belongs to THIS account — never inherit the guest's
+      // (prevents a guest-claimed welcome gift leaking into an account that never got it).
+      save.mailClaimed = Array.isArray(cloudData.mailClaimed) ? cloudData.mailClaimed : [];
+      save.localMail   = Array.isArray(cloudData.localMail)   ? cloudData.localMail   : [];
+      save.passMailDay = (cloudData.passMailDay && typeof cloudData.passMailDay==='object') ? cloudData.passMailDay : {};
       if(_ld&&(!save.lastLoginDate||new Date(_ld)>=new Date(save.lastLoginDate))){
         save.lastLoginDate=_ld;
         save.loginStreak=Math.max(save.loginStreak||0,_ls||0);
