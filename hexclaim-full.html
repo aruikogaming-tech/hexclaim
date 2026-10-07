@@ -1846,7 +1846,30 @@ function generateFriendCode(){
   return save.friendCode;
 }
 
+function loadFriendRequests(){
+  if(!save.authUid||!firebaseReady||!firebaseDB)return;
+  firebaseDB.ref('friendRequests/'+save.authUid).once('value').then(function(snap){
+    var v=snap.val()||{};
+    save.friendRequests=save.friendRequests||[];
+    var changed=false;
+    Object.keys(v).forEach(function(fromUid){
+      var r=v[fromUid]||{};
+      if(r.status==='accepted'){
+        if(!save.friends.some(function(f){return f.uid===fromUid})){
+          save.friends.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:r.elo||0,level:r.level||1,icon:'⬡',lastOnline:Date.now()});
+        }
+        try{firebaseDB.ref('friendRequests/'+save.authUid+'/'+fromUid).remove();}catch(e){}
+        changed=true;
+      } else if(!save.friends.some(function(f){return f.uid===fromUid}) && !save.friendRequests.some(function(x){return x.uid===fromUid})){
+        save.friendRequests.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:r.elo||0,level:r.level||1,icon:'⬡'});
+        changed=true;
+      }
+    });
+    if(changed){ saveProg(); try{renderFriendsTab('requests');}catch(e){} }
+  }).catch(function(){});
+}
 function buildFriendsScreen(){
+  loadFriendRequests();
   var tabs=document.getElementById('friendsTabs');tabs.innerHTML='';
   ['Friends','Add','Requests'].forEach(function(t,i){
     var btn=document.createElement('button');btn.className='tab'+(i===0?' active':'');
@@ -2030,25 +2053,31 @@ function addFriendByCode(){
     return;
   }
   // Firebase: look up code in database
+  if(!save.authUid){status.textContent='Sign in to add friends.';status.style.color='var(--c4)';return}
   status.textContent='Searching...';
   firebaseDB.ref('friendCodes/'+code).once('value').then(function(snap){
     var uid=snap.val();
     if(!uid){status.textContent='Friend code not found';status.style.color='var(--c4)';return}
+    if(uid===save.authUid){status.textContent='You cannot add yourself!';status.style.color='var(--c4)';return}
+    if(save.friends.some(function(f){return f.uid===uid})){status.textContent='Already friends!';status.style.color='var(--c4)';return}
     firebaseDB.ref('users/'+uid+'/public').once('value').then(function(userSnap){
       var userData=userSnap.val();
       if(!userData){status.textContent='Player not found';status.style.color='var(--c4)';return}
-      var newFriend={
-        name:userData.name||'Player',
-        code:code,uid:uid,
-        elo:userData.elo||0,
-        level:userData.level||1,
-        icon:'⬡',
-        lastOnline:Date.now()
-      };
-      save.friends.push(newFriend);
-      saveProg();
-      status.textContent='Friend added: '+newFriend.name+'!';status.style.color='var(--p1)';
-      input.value='';playSfx('claimBig');
+      var myUid=save.authUid;
+      firebaseDB.ref('friendRequests/'+uid+'/'+myUid).set({
+        name:save.playerName||'Player',
+        code:save.friendCode||'',
+        uid:myUid,
+        elo:save.elo||0,
+        level:save.profileLevel||1,
+        ts:Date.now(),
+        status:'pending'
+      }).then(function(){
+        status.textContent='Friend request sent to '+(userData.name||'Player')+'!';status.style.color='var(--p1)';
+        input.value='';playSfx('claimBig');
+      }).catch(function(e){
+        status.textContent='Could not send request. Try again.';status.style.color='var(--c4)';
+      });
     }).catch(function(e){
       status.textContent='Error finding player. Try again.';status.style.color='var(--c4)';
     });
@@ -2108,14 +2137,22 @@ function removeFriend(idx){
 
 function acceptFriendRequest(idx){
   var req=save.friendRequests[idx];
-  save.friends.push(req);
+  save.friends.push({name:req.name,uid:req.uid,code:req.code||'',elo:req.elo||0,level:req.level||1,icon:'⬡',lastOnline:Date.now()});
   save.friendRequests.splice(idx,1);
+  if(save.authUid&&req.uid&&firebaseReady&&firebaseDB){
+    try{
+      firebaseDB.ref('friendRequests/'+req.uid+'/'+save.authUid).set({name:save.playerName||'Player',code:save.friendCode||'',uid:save.authUid,elo:save.elo||0,level:save.profileLevel||1,ts:Date.now(),status:'accepted'});
+      firebaseDB.ref('friendRequests/'+save.authUid+'/'+req.uid).remove();
+    }catch(e){}
+  }
   saveProg();renderFriendsTab('requests');
   showToast('Accepted '+req.name+'!');playSfx('claimBig');
 }
 
 function declineFriendRequest(idx){
+  var req=save.friendRequests[idx];
   save.friendRequests.splice(idx,1);
+  if(req&&req.uid&&save.authUid&&firebaseReady&&firebaseDB){ try{ firebaseDB.ref('friendRequests/'+save.authUid+'/'+req.uid).remove(); }catch(e){} }
   saveProg();renderFriendsTab('requests');playSfx('click');
 }
 
