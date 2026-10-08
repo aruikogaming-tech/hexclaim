@@ -444,11 +444,13 @@ button:active,.tab:active,.shop-item:active,.chapter-card:active,.pvp-mode-card:
     <button onclick="showScreen('questScreen');buildQuests();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid var(--c3);cursor:pointer;text-align:center;transition:all 0.15s">
       <div style="font-size:18px">📜</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Quests</div>
     </button>
-    <button onclick="showScreen('friendsScreen');buildFriendsScreen();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid var(--c2);cursor:pointer;text-align:center;transition:all 0.15s">
+    <button onclick="showScreen('friendsScreen');buildFriendsScreen();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid var(--c2);cursor:pointer;text-align:center;transition:all 0.15s;position:relative">
       <div style="font-size:18px">👥</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Friends</div>
+      <span id="friendsDot" style="display:none;position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ef476f"></span>
     </button>
-    <button onclick="showScreen('bpScreen');buildBattlePass();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid #ff9f43;cursor:pointer;text-align:center;transition:all 0.15s">
+    <button onclick="showScreen('bpScreen');buildBattlePass();playSfx('menuOpen')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid #ff9f43;cursor:pointer;text-align:center;transition:all 0.15s;position:relative">
       <div style="font-size:18px">🔥</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Pass</div>
+      <span id="bpDot" style="display:none;position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:#ef476f"></span>
     </button>
     <button onclick="showScreen('settingsScreen');updateAuthUI();updateAllUI();playSfx('menuNav')" style="flex:1;padding:10px;border-radius:10px;background:var(--surface);border:1.5px solid var(--muted);cursor:pointer;text-align:center;transition:all 0.15s">
       <div style="font-size:18px">⚙️</div><div style="font-size:8px;color:var(--muted);margin-top:2px">Settings</div>
@@ -531,6 +533,10 @@ button:active,.tab:active,.shop-item:active,.chapter-card:active,.pvp-mode-card:
       <input type="range" min="0" max="100" value="100" id="volMusic" oninput="setVolume('music',this.value)" style="width:100%;accent-color:var(--gold)"></div>
     <div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px"><span>Sound Effects</span><span id="volSfxPct">100%</span></div>
       <input type="range" min="0" max="100" value="100" id="volSfx" oninput="setVolume('sfx',this.value)" style="width:100%;accent-color:var(--c4)"></div>
+  </div>
+  <div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+    <div><div style="font-size:12px;font-weight:800">📳 Vibration</div><div style="font-size:9px;color:var(--muted);margin-top:2px">Buzz on captures and wins</div></div>
+    <button id="hapticsToggle" onclick="toggleHaptics()" style="padding:6px 16px;border-radius:999px;border:1.5px solid var(--p1);background:rgba(6,214,160,0.1);color:var(--p1);font-family:Manrope,sans-serif;font-size:11px;font-weight:800;cursor:pointer">On</button>
   </div>
   <button onclick="resetAllProgress()" style="margin-top:12px;padding:10px 24px;background:none;border:1px solid var(--c4);border-radius:10px;color:var(--c4);font-family:'Manrope',sans-serif;font-size:12px;font-weight:800;cursor:pointer;display:block;margin-left:auto;margin-right:auto">Reset Progress</button>
   <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
@@ -729,6 +735,30 @@ window._bootUnsynced=!!save.unsyncedAt;
 function saveProg(){save.unsyncedAt=Date.now();try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
 // Show text from other players (names etc.) as plain text, never as HTML/code
 function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+// Haptics: short vibration on captures and wins (Settings → Vibration). Uses the Capacitor Haptics plugin
+// in the app, falls back to the browser's vibrate() on the web. Works even when sound is muted.
+function hexHaptic(kind){
+  if(save.hapticsOff)return;
+  try{
+    var H=(typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.Haptics)?Capacitor.Plugins.Haptics:null;
+    if(H){
+      if(kind==='win')H.notification({type:'SUCCESS'});
+      else if(kind==='lose')H.notification({type:'WARNING'});
+      else H.impact({style:kind==='big'?'MEDIUM':'LIGHT'});
+    } else if(navigator.vibrate){
+      navigator.vibrate(kind==='win'?[30,60,30]:kind==='lose'?60:kind==='big'?25:12);
+    }
+  }catch(e){}
+}
+function toggleHaptics(){ save.hapticsOff=!save.hapticsOff; saveProg(); updateHapticsToggle(); if(!save.hapticsOff)hexHaptic('big'); }
+function updateHapticsToggle(){
+  var b=document.getElementById('hapticsToggle'); if(!b)return;
+  var on=!save.hapticsOff;
+  b.textContent=on?'On':'Off';
+  b.style.borderColor=on?'var(--p1)':'var(--border)';
+  b.style.color=on?'var(--p1)':'var(--muted)';
+  b.style.background=on?'rgba(6,214,160,0.1)':'var(--dim)';
+}
 function enforceSeasonReset(){
   if(save.seasonResetS1)return;
   save.season=1;
@@ -2227,7 +2257,7 @@ function acceptFriendRequest(idx){
       firebaseDB.ref('friendRequests/'+save.authUid+'/'+req.uid).remove();
     }catch(e){}
   }
-  saveProg();renderFriendsTab('requests');
+  saveProg();renderFriendsTab('requests');try{updateFriendDot();}catch(e){}
   showToast('Accepted '+req.name+'!');playSfx('claimBig');
 }
 
@@ -2235,7 +2265,7 @@ function declineFriendRequest(idx){
   var req=save.friendRequests[idx];
   save.friendRequests.splice(idx,1);
   if(req&&req.uid&&save.authUid&&firebaseReady&&firebaseDB){ try{ firebaseDB.ref('friendRequests/'+save.authUid+'/'+req.uid).remove(); }catch(e){} }
-  saveProg();renderFriendsTab('requests');playSfx('click');
+  saveProg();renderFriendsTab('requests');try{updateFriendDot();}catch(e){}playSfx('click');
 }
 
 function challengeFriend(friend){
@@ -2362,7 +2392,7 @@ function renderProfileTab(tab,externalCont){
         +(equipped?'<div style="font-size:9px;color:var(--p1);margin-top:3px;font-weight:700">Equipped ✓</div>'
         :owned?'<div style="font-size:9px;color:var(--muted);margin-top:3px">Tap to equip</div>'
         :'<div style="font-size:9px;color:var(--c4);margin-top:4px;line-height:1.4;font-weight:600">'+icon.achievement+'</div>');
-      if(owned)el.onclick=function(){save.equipped.icon=icon.id;saveProg();updateTopBar();renderProfileTab('equipped');playSfx('click')};
+      if(owned)el.onclick=function(){save.equipped.icon=icon.id;saveProg();updateTopBar();renderProfileTab('equipped',externalCont);playSfx('click')};
       iconGrid.appendChild(el);
     });
     cont.appendChild(iconGrid);
@@ -2382,7 +2412,7 @@ function renderProfileTab(tab,externalCont){
         +(owned?'':'<div style="font-size:8px;color:var(--c4);margin-top:2px">🔒 '+item.achievement+'</div>')
         +'</div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div style="font-size:9px;color:var(--muted)">🔒</div>');
-      if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();updateTopBar();renderProfileTab('equipped');playSfx('click')};})(item.id);}
+      if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();updateTopBar();renderProfileTab('equipped',externalCont);playSfx('click')};})(item.id);}
       cont.appendChild(el);
     });
   }
@@ -2411,7 +2441,10 @@ function renderProfileTab(tab,externalCont){
     ownedBordersList.forEach(function(item){
       var equipped=save.equipped.border===item.id;
       var el=document.createElement('div');el.className='shop-item';
-      el.innerHTML='<div class="si-preview" style="background:var(--dim)">'+item.preview+'</div><div class="si-info"><div class="si-name">'+item.name+'</div></div>'
+      var _sb=save.equipped.border;save.equipped.border=item.id;
+      var _bStyle=getBorderStyle(item.id);var _bDeco=getBorderDecoHTML(30);
+      save.equipped.border=_sb;
+      el.innerHTML='<div class="si-preview" style="background:var(--surface);position:relative;overflow:visible;'+_bStyle.replace(/'/g,'"')+'">'+(save.equipped.icon||'⬡')+'<div style="position:absolute;inset:0;pointer-events:none;overflow:visible">'+_bDeco+'</div></div><div class="si-info"><div class="si-name">'+item.name+'</div></div>'
         +(equipped?'<div class="si-equipped">Equipped ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
       (function(id,container){el.onclick=function(){if(save.equipped.border===id)return;save.equipped.border=id;saveProg();updateTopBar();renderProfileTab('owned',container);playSfx('click')};})(item.id,externalCont||document.getElementById('profileContent'));
       cont.appendChild(el);
@@ -2793,7 +2826,26 @@ function updateMailDot(){
   var dot=document.getElementById('mailDot'); if(!dot)return;
   _mailList(function(list){ var c=(save.mailClaimed||[]); var n=list.filter(function(m){return c.indexOf(m.id)<0}).length; dot.style.display=n>0?'block':'none'; });
 }
-function claimMail(m){
+// Red dot on Friends: incoming requests (local list or still waiting in Firebase) or a request someone accepted
+function updateFriendDot(){
+  var dot=document.getElementById('friendsDot'); if(!dot)return;
+  var localPending=(save.friendRequests||[]).length>0;
+  dot.style.display=localPending?'block':'none';
+  if(!save.authUid||save.isGuest||!firebaseReady||!firebaseDB)return;
+  firebaseDB.ref('friendRequests/'+save.authUid).once('value').then(function(snap){
+    var v=snap.val()||{};
+    var n=Object.keys(v).filter(function(k){var r=v[k]||{};return r.status==='accepted'||!(save.friends||[]).some(function(f){return f.uid===k});}).length;
+    dot.style.display=(n>0||(save.friendRequests||[]).length>0)?'block':'none';
+  }).catch(function(){});
+}
+// Red dot on Pass: any reached tier with an unclaimed free reward (or premium reward, if owned)
+function updateBPDot(){
+  var dot=document.getElementById('bpDot'); if(!dot||typeof BP_TIERS==='undefined')return;
+  var lvl=Math.floor((save.bpXP||0)/BP_XP_PER_LEVEL), c=save.bpClaimed||{};
+  var ready=BP_TIERS.some(function(t){return lvl>=t.level&&(!c['free_'+t.level]||(save.bpPremium&&!c['prem_'+t.level]));});
+  dot.style.display=ready?'block':'none';
+}
+function claimMail(m,silent){
   save.mailClaimed=save.mailClaimed||[];
   if(m.lkey){
     // Local mail: claim by removing it from the save (so it can never be claimed twice)
@@ -2809,7 +2861,7 @@ function claimMail(m){
   if(m.chromas)save.chromas=(save.chromas||0)+m.chromas;
   if(m.pkey&&save.authUid&&firebaseReady&&firebaseDB){ try{firebaseDB.ref('mail/'+save.authUid+'/'+m.pkey+'/claimed').set(true);}catch(e){} }
   saveProg(); try{updateTopBar();}catch(e){} try{updateMenuStats();}catch(e){}
-  showToast('Claimed'+(m.coins?' 🟡'+m.coins:'')+(m.chromas?' 💎'+m.chromas:''),2200); try{playSfx('claimBig');}catch(e){}
+  if(!silent){ showToast('Claimed'+(m.coins?' 🟡'+m.coins:'')+(m.chromas?' 💎'+m.chromas:''),2200); try{playSfx('claimBig');}catch(e){} }
 }
 function showMailbox(){
   if(document.getElementById('mailboxModal'))return;
@@ -2825,6 +2877,11 @@ function showMailbox(){
     var cont=document.getElementById('mailListBox'); if(!cont)return;
     if(!list.length){ cont.innerHTML='<div style="text-align:center;color:var(--muted);font-size:12px;padding:24px">No mail right now.</div>'; return; }
     var claimed=save.mailClaimed||[]; var html='';
+    // "Claim all" when 2+ messages still have rewards waiting (daily Pass mail piles up)
+    var unclaimedRewards=list.filter(function(x){return claimed.indexOf(x.id)<0&&(x.coins||x.chromas);});
+    if(unclaimedRewards.length>=2){
+      html+='<button id="mailClaimAll" style="width:100%;padding:10px;margin-bottom:10px;border:none;border-radius:10px;background:var(--gold);color:#1a1a24;font-weight:800;font-size:12px;font-family:Manrope,sans-serif;cursor:pointer">🎁 Claim all ('+unclaimedRewards.length+')</button>';
+    }
     list.forEach(function(mm){
       var isC=claimed.indexOf(mm.id)>=0; var rw=[]; if(mm.coins)rw.push('🟡 '+mm.coins); if(mm.chromas)rw.push('💎 '+mm.chromas);
       html+='<div style="background:var(--surface);border:1px solid '+(isC?'var(--border)':'var(--p1)')+';border-radius:10px;padding:10px;margin-bottom:8px">'
@@ -2835,6 +2892,14 @@ function showMailbox(){
         +'</div>';
     });
     cont.innerHTML=html;
+    var claimAllBtn=document.getElementById('mailClaimAll');
+    if(claimAllBtn)claimAllBtn.onclick=function(){
+      var c0=save.coins||0,d0=save.chromas||0;
+      unclaimedRewards.forEach(function(x){claimMail(x,true);});
+      var gc=(save.coins||0)-c0,gd=(save.chromas||0)-d0;
+      showToast('Claimed all'+(gc?' 🟡'+gc:'')+(gd?' 💎'+gd:''),2500); try{playSfx('claimBig');}catch(e){}
+      m.remove(); showMailbox(); try{updateMailDot();}catch(e){}
+    };
     cont.querySelectorAll('button[data-mid]').forEach(function(btn){
       btn.onclick=function(){ var id=btn.getAttribute('data-mid'); var mm=list.filter(function(x){return x.id===id})[0]; if(!mm)return; claimMail(mm); m.remove(); showMailbox(); try{updateMailDot();}catch(e){} };
     });
@@ -3186,6 +3251,8 @@ function updateAllUI(){
   updateMenuStats();
   try{updateFreeDot();}catch(e){}
   try{updateMailDot();}catch(e){}
+  try{updateFriendDot();}catch(e){}
+  try{updateHapticsToggle();}catch(e){}
   updateTopBar();
   updateNewsBanner();
   // Update settings name display
@@ -3194,7 +3261,10 @@ function updateAllUI(){
   // Ranked PVP enabled
   const pvpBtn=document.getElementById('pvpBtn');
   if(pvpBtn){
-    pvpBtn.style.opacity='1';pvpBtn.style.pointerEvents='auto';pvpBtn.innerHTML='⚔ Ranked PVP';
+    // Show the Level-5 lock on the button itself (tapping still explains it)
+    var _lv=save.profileLevel||1;
+    pvpBtn.style.opacity=_lv<5?'0.8':'1';pvpBtn.style.pointerEvents='auto';
+    pvpBtn.innerHTML=_lv<5?'🔒 Ranked PVP · Lv '+_lv+'/5':'⚔ Ranked PVP';
   }
 }
 
@@ -5073,6 +5143,7 @@ var shieldTiles=[];
 var infectionTimer=0;
 let darkZones=[]; // Dark Zone patches — hidden areas only revealed when claimed (Chromancer)
 let previewColor=-1; // Which color is being previewed on hover
+let previewCount=0;  // How many tiles that colour would actually capture (respects the per-move cap)
 
 let canvas,ctx,W,H,cellW,cellH;
 
@@ -5107,7 +5178,9 @@ function updateMenuStats(){
     <div class="rank-icon">${r.icon}</div>
     <div class="rank-name" style="color:${r.color}">${r.name}</div>
     <div class="rank-elo">${save.elo} ELO</div>
-    <div class="rank-bar"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>`;
+    <div class="rank-bar"><div class="rank-fill" style="width:${prog*100}%;background:${r.color}"></div></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:5px;font-weight:700">🗓️ Season ${save.season||1} · ${seasonDaysLeft()} day${seasonDaysLeft()===1?'':'s'} left</div>`;
+  try{updateBPDot();}catch(e){}
   // Top bar
   updateTopBar();
 }
@@ -6867,6 +6940,11 @@ function initGame(){
 
   turn=1;gameOver=false;totalCells=ROWS*COLS;
   p1LastColor=-1;p2LastColor=-1;decayTimer=0;previewColor=-1;
+  // One-time tip so players discover hold-to-preview (skipped during the tutorial)
+  if(!save.tipHoldPreview&&!(curConfig&&curConfig.isTutorial)){
+    save.tipHoldPreview=true;saveProg();
+    setTimeout(function(){try{showToast('💡 Tip: hold any tile to preview your move',4000);}catch(e){}},1200);
+  }
   window._clinchPrompted=false;window._clinchFinish=false;
   stalemateTurns=0;lastP1Count=0;lastP2Count=0;comboCount=0;bestCombo=0;
 
@@ -7290,7 +7368,7 @@ function showCellsGained(count,player){
   }
 
   // Sound scales with capture size
-  if(player===1)playSfx(count>=5?'claimBig':'claim');
+  if(player===1){playSfx(count>=5?'claimBig':'claim');hexHaptic(count>=5?'big':'small');}
   else playSfx('enemyClaim');
 
   // Screen shake — intensity scales with capture size
@@ -7506,18 +7584,18 @@ function draw(){
 
     // Preview highlight — show which cells would be claimed
     if(previewColor>=0&&owner[r][c]===0&&grid[r][c]===previewColor){
-      // Check if adjacent to player territory
-      let adjToPlayer=false;
-      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
-        const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&owner[nr][nc]===1)adjToPlayer=true;
-      });
-      // Also check if reachable through chain of same-color cells from player territory
-      if(!adjToPlayer&&previewReachable&&previewReachable.has(r+','+c))adjToPlayer=true;
-      if(adjToPlayer){
+      // Only tiles this move could actually take (computePreview applies the per-move cap + Colour Lock)
+      if(previewReachable&&previewReachable.has(r+','+c)){
         ctx.fillStyle='rgba(255,255,255,0.25)';ctx.fill();
         ctx.strokeStyle='rgba(255,255,255,0.7)';ctx.lineWidth=2;ctx.setLineDash([4,3]);ctx.stroke();ctx.setLineDash([]);
       }
+    }
+
+    // Playable-frontier hint — steady border on neutral tiles you could capture this turn
+    if(previewColor<0 && typeof turn!=='undefined' && turn===1 && owner[r][c]===0 && fogRevealed[r][c] && !(typeof animatingMove!=='undefined' && animatingMove)){
+      let _adjP=false;
+      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr2=r+dr,nc2=c+dc;if(nr2>=0&&nr2<ROWS&&nc2>=0&&nc2<COLS&&owner[nr2][nc2]===1)_adjP=true;});
+      if(_adjP){ ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=2; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); }
     }
 
     // Newly claimed pulse effect — FLASHY equipped effects
@@ -8135,6 +8213,19 @@ function draw(){
   ctx.fillStyle='rgba(239,71,111,0.9)';ctx.fillText('⬡',(COLS-1)*cellW+cellW/2,cellH/2);ctx.restore();
   drawSeasonalOverlays();
 
+  // Capture-count badge while a colour is previewed (hold a tile / hover a colour button)
+  if(previewColor>=0){
+    ctx.save();
+    var _pl=previewCount>0?('+'+previewCount+(previewCount===1?' tile':' tiles')):'No capture';
+    ctx.font='bold 13px Manrope, sans-serif';
+    var _pw=ctx.measureText(_pl).width+22,_px=(W-_pw)/2,_py=6;
+    ctx.fillStyle='rgba(10,12,25,0.88)';ctx.beginPath();ctx.roundRect(_px,_py,_pw,24,12);ctx.fill();
+    ctx.strokeStyle=previewCount>0?'#06d6a0':'rgba(255,255,255,0.3)';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=previewCount>0?'#06d6a0':'#cfd6ea';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(_pl,W/2,_py+12);
+    ctx.restore();
+  }
+
   }
 
 // Preview system — compute which cells a color pick would claim
@@ -8290,25 +8381,35 @@ function drawSeasonalOverlays(){
 
 
 function computePreview(colorIdx){
-  if(colorIdx<0){previewColor=-1;previewReachable=null;draw();return}
+  if(colorIdx<0){previewColor=-1;previewReachable=null;previewCount=0;draw();return}
   previewColor=colorIdx;
-  // Simulate expand to find all reachable cells
+  // Mirror expandTerritory: at most 2 captures per move (6 with Surge), taken wave by wave, Colour Lock respected.
+  // When a wave has more candidates than slots left, the game picks among them (random tie-break), so every
+  // candidate in that wave is highlighted as "could be taken" and previewCount says exactly how many will be.
+  const cap=window._scoutActive?6:2;
   const simOwner=owner.map(r=>[...r]);
-  const simGrid=grid.map(r=>[...r]);
-  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(simOwner[r][c]===1)simGrid[r][c]=colorIdx}
   previewReachable=new Set();
-  let changed=true;
-  while(changed){changed=false;
+  let taken=0;
+  while(taken<cap){
+    const frontier=[];
     for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
       if(simOwner[r][c]!==1)continue;
       [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{
         const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&simOwner[nr][nc]===0&&simGrid[nr][nc]===colorIdx){
-          simOwner[nr][nc]=1;changed=true;previewReachable.add(nr+','+nc);
+        if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&simOwner[nr][nc]===0&&grid[nr][nc]===colorIdx){
+          var lk=colorLockTiles.find(function(cl){return cl.r===nr&&cl.c===nc});
+          if(lk&&lk.color!==colorIdx)return;
+          if(!frontier.some(f=>f.r===nr&&f.c===nc))frontier.push({r:nr,c:nc});
         }
       });
     }
+    if(!frontier.length)break;
+    frontier.forEach(f=>previewReachable.add(f.r+','+f.c));
+    if(frontier.length>=cap-taken){taken=cap;break;}
+    frontier.forEach(f=>{simOwner[f.r][f.c]=1;});
+    taken+=frontier.length;
   }
+  previewCount=taken;
   draw();
 }
 
@@ -8644,7 +8745,7 @@ function forceGameEnd(won,reason){
   nextBtn.onclick=nextLevel;
   var replayBtn2=document.getElementById('olReplay');
   if(replayBtn2)replayBtn2.style.display=(curConfig.isRanked||curConfig.isOnline||isPVP)?'none':'inline-block';
-  playSfx(won?'win':'lose');
+  playSfx(won?'win':'lose');hexHaptic(won?'win':'lose');
   document.getElementById('overlay').classList.add('active');
 }
 
@@ -9297,7 +9398,7 @@ if(dBonus>0)setTimeout(function(){showToast('💎 '+dBonus+' Diamond'+(dBonus>1?
     else if(won&&curConfig.challengeIdx!==undefined){reward.textContent='🏆 Challenge Complete!';nextBtn.style.display='none'}
     else{reward.textContent=won?'':'Try again!';nextBtn.textContent=won?'Continue':'Retry';nextBtn.style.display='block';nextBtn.onclick=won?nextLevel:function(){startCampaignLevel(curChapter,curLevel)}}
   }
-  playSfx(won?'win':'lose');
+  playSfx(won?'win':'lose');hexHaptic(won?'win':'lose');
   // Clear any leftover spin/ad divs from previous game
   var oldExtras=reward.parentElement.querySelectorAll('.overlay-extra');
   oldExtras.forEach(function(el){el.remove()});
@@ -9358,6 +9459,24 @@ canvas.addEventListener('touchend',function(e){
     else if(scoutTargetMode)fireScout(row,col);
   }
 },{passive:false});
+// ===== HOLD-TO-PREVIEW: long-press a board tile to see what that colour would claim =====
+(function(){
+  var _pvT=null,_pvActive=false,_lx=0,_ly=0;
+  function _cell(x,y){var rect=canvas.getBoundingClientRect();var col=Math.floor((x-rect.left)/cellW),row=Math.floor((y-rect.top)/cellH);if(row<0||row>=ROWS||col<0||col>=COLS)return null;return{row:row,col:col};}
+  function _canPreview(){return document.getElementById('gameScreen').classList.contains('active')&&!bombTargetMode&&!scoutTargetMode&&(typeof animatingMove==='undefined'||!animatingMove)&&typeof turn!=='undefined'&&turn===1;}
+  function _previewAt(x,y){var cell=_cell(x,y);if(!cell||!fogRevealed[cell.row][cell.col]){if(_pvActive){_pvActive=false;computePreview(-1);}return;}_pvActive=true;computePreview(grid[cell.row][cell.col]);}
+  function _start(x,y){if(!_canPreview())return;_lx=x;_ly=y;_pvT=setTimeout(function(){_pvT=null;_previewAt(_lx,_ly);},300);}
+  function _move(x,y){_lx=x;_ly=y;if(_pvActive)_previewAt(x,y);}
+  function _end(){if(_pvT){clearTimeout(_pvT);_pvT=null;}if(_pvActive){_pvActive=false;computePreview(-1);}}
+  canvas.addEventListener('touchstart',function(e){var t=e.touches[0];if(t)_start(t.clientX,t.clientY);},{passive:true});
+  canvas.addEventListener('touchmove',function(e){var t=e.touches[0];if(t)_move(t.clientX,t.clientY);},{passive:true});
+  canvas.addEventListener('touchend',_end);
+  canvas.addEventListener('touchcancel',_end);
+  canvas.addEventListener('mousedown',function(e){_start(e.clientX,e.clientY);});
+  canvas.addEventListener('mousemove',function(e){if(_pvActive||_pvT)_move(e.clientX,e.clientY);});
+  canvas.addEventListener('mouseup',_end);
+  canvas.addEventListener('mouseleave',_end);
+})();
 window.addEventListener('resize',()=>{if(document.getElementById('gameScreen').classList.contains('active')){resize();draw()}});
 updateAllUI();
 initFirebase();
