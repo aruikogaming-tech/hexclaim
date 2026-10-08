@@ -727,6 +727,8 @@ try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse
 window._bootUnsynced=!!save.unsyncedAt;
 // Every local save marks the save as not-yet-uploaded; saveToCloud clears the mark once the upload succeeds.
 function saveProg(){save.unsyncedAt=Date.now();try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
+// Show text from other players (names etc.) as plain text, never as HTML/code
+function escHtml(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
 function enforceSeasonReset(){
   if(save.seasonResetS1)return;
   save.season=1;
@@ -1555,12 +1557,12 @@ function getDefaultSave(){
   return {
     cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:[],
     elo:0,pvpWins:0,pvpLosses:0,pvpStreak:0,pvpLossStreak:0,bestStreak:0,winStreak:0,winStreak:0,
-    matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:[],
+    matchHistory:[],season:1,seasonStart:Date.now(),seasonHighElo:0,seasonClaimed:false,
     playerName:'Player',profileLevel:1,profileXP:0,portrait:'⬡',
     tutorialDone:false,isAdmin:false,adminCode:'',nameChangesFree:2,activeSkin:'default',
     chromas:0,coins:0,owned:{themes:['default'],borders:['default'],effects:['none'],titles:['Newcomer']},
     equipped:{theme:'default',border:'default',effect:'none',title:'Newcomer',icon:'⬡'},
-    bpPremium:false,bpLevel:1,bpXP:0,bpClaimed:[],
+    bpPremium:false,bpLevel:1,bpXP:0,bpClaimed:{},
     powerStock:{bomb:0,scout:0,double:0},
     dailyReward:0,loginStreak:0,lastLoginDate:null,streakClaimed:{},
     lastSpinTime:0,freeSpinsToday:0,masteryStars:{},totalSpins:0,
@@ -1750,8 +1752,12 @@ function loadCloudSave(uid){
       }
       save.authUid=uid;
       save.isGuest=false;
+      // Friend code first, so it's included in the upload below (same code on every device)
+      try{ generateFriendCode(); }catch(e){}
       saveProg._lastCloud=0;
       saveProg();
+      // Register on the leaderboard + friend-code lookup right away, not only after a ranked match
+      try{ pushPublicProfile(); }catch(e){}
       updateAllUI();updateTopBar();buildAccountScreen();updateAuthUI();
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
@@ -1762,8 +1768,12 @@ function loadCloudSave(uid){
       // New account — save current progress to cloud
       save.authUid=uid;
       save.isGuest=false;
+      // Friend code first, so it's included in the upload below (same code on every device)
+      try{ generateFriendCode(); }catch(e){}
       saveProg._lastCloud=0;
       saveProg();
+      // Register on the leaderboard + friend-code lookup right away, not only after a ranked match
+      try{ pushPublicProfile(); }catch(e){}
       saveToCloud();
       updateAllUI();updateTopBar();buildAccountScreen();updateAuthUI();
       showScreen('menuScreen');
@@ -1928,12 +1938,12 @@ function loadFriendRequests(){
       var r=v[fromUid]||{};
       if(r.status==='accepted'){
         if(!save.friends.some(function(f){return f.uid===fromUid})){
-          save.friends.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:r.elo||0,level:r.level||1,icon:'⬡',lastOnline:Date.now()});
+          save.friends.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:Number(r.elo)||0,level:Number(r.level)||1,icon:'⬡',lastOnline:Date.now()});
         }
         try{firebaseDB.ref('friendRequests/'+save.authUid+'/'+fromUid).remove();}catch(e){}
         changed=true;
       } else if(!save.friends.some(function(f){return f.uid===fromUid}) && !save.friendRequests.some(function(x){return x.uid===fromUid})){
-        save.friendRequests.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:r.elo||0,level:r.level||1,icon:'⬡'});
+        save.friendRequests.push({name:r.name||'Player',uid:fromUid,code:r.code||'',elo:Number(r.elo)||0,level:Number(r.level)||1,icon:'⬡'});
         changed=true;
       }
     });
@@ -1978,7 +1988,7 @@ function renderFriendsTab(tab){
         var el=document.createElement('div');el.className='shop-item';
         var rankObj=getRank(friend.elo||0);
         el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+(friend.icon||'⬡')+'</div>'
-          +'<div class="si-info"><div class="si-name">'+friend.name+'</div>'
+          +'<div class="si-info"><div class="si-name">'+escHtml(friend.name)+'</div>'
           +'<div style="font-size:9px;color:'+rankObj.color+'">'+rankObj.icon+' '+rankObj.name+' — '+(friend.elo||0)+' ELO</div>'
           +'<div style="font-size:8px;color:var(--muted);margin-top:1px">Level '+(friend.level||1)+'</div></div>'
           +'<div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">'
@@ -2040,7 +2050,7 @@ function renderFriendsTab(tab){
       save.friendRequests.forEach(function(req,idx){
         var el=document.createElement('div');el.className='shop-item';
         el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+(req.icon||'⬡')+'</div>'
-          +'<div class="si-info"><div class="si-name">'+req.name+'</div><div style="font-size:9px;color:var(--muted)">Level '+(req.level||1)+'</div></div>'
+          +'<div class="si-info"><div class="si-name">'+escHtml(req.name)+'</div><div style="font-size:9px;color:var(--muted)">Level '+escHtml(req.level||1)+'</div></div>'
           +'<div style="display:flex;gap:4px">'
           +'<button class="accept-btn" style="padding:4px 10px;background:var(--p1);border:none;border-radius:6px;color:#fff;font-weight:800;cursor:pointer;font-size:9px">Accept</button>'
           +'<button class="decline-btn" style="padding:4px 10px;background:var(--dim);border:1px solid var(--border);border-radius:6px;color:var(--text);font-weight:700;cursor:pointer;font-size:9px">Decline</button></div>';
@@ -2057,7 +2067,7 @@ function renderFriendsTab(tab){
       save.sentRequests.forEach(function(req){
         var el=document.createElement('div');el.className='shop-item';el.style.opacity='0.6';
         el.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:18px">'+(req.icon||'⬡')+'</div>'
-          +'<div class="si-info"><div class="si-name">'+req.name+'</div></div>'
+          +'<div class="si-info"><div class="si-name">'+escHtml(req.name)+'</div></div>'
           +'<div style="font-size:9px;color:var(--muted)">Pending...</div>';
         cont.appendChild(el);
       });
@@ -2194,7 +2204,7 @@ function removeFriend(idx){
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--c4);border-radius:16px;padding:20px;text-align:center;max-width:280px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:14px;font-weight:800;color:var(--c4)">Remove Friend?</div>'
-    +'<div style="font-size:11px;color:var(--muted);margin:8px 0">Remove '+friend.name+' from your friends list?</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin:8px 0">Remove '+escHtml(friend.name)+' from your friends list?</div>'
     +'<div style="display:flex;gap:8px;justify-content:center;margin-top:12px">'
     +'<button id="removeFriendYes" style="padding:8px 20px;background:var(--c4);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-size:12px">Remove</button>'
     +'<button id="removeFriendNo" style="padding:8px 20px;background:var(--dim);border:1px solid var(--border);border-radius:8px;color:var(--text);font-weight:700;cursor:pointer;font-size:12px">Cancel</button>'
@@ -2234,7 +2244,7 @@ function challengeFriend(friend){
   popup.style.cssText='position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85)';
   popup.innerHTML='<div style="background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:24px;text-align:center;max-width:300px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:28px;margin-bottom:8px">⚔️</div>'
-    +'<div style="font-size:16px;font-weight:800;color:var(--p1)">Challenge '+friend.name+'</div>'
+    +'<div style="font-size:16px;font-weight:800;color:var(--p1)">Challenge '+escHtml(friend.name)+'</div>'
     +'<div style="font-size:10px;color:var(--muted);margin:8px 0">Start a local match — pass the device to take turns!</div>'
     +'<div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">'
     +'<button id="challengeQuick" style="padding:10px;background:var(--p1);border:none;border-radius:8px;color:#fff;font-weight:800;cursor:pointer;font-size:12px">Quick Match (12×14, 5 colors)</button>'
@@ -2832,8 +2842,8 @@ function showMailbox(){
 }
 
 // ===== ADMOB REWARDED ADS =====
-// Test ad unit id (Google's official rewarded test id). Swap for the real one before launch:
-// real: 'ca-app-pub-4470174548435236/4039214679'
+// Live rewarded ad unit (test unit was ca-app-pub-3940256099942544/5224354917).
+// To test safely, register your phone under AdMob > Settings > Test devices — never tap your own live ads.
 var ADMOB_REWARD_ID='ca-app-pub-4470174548435236/4039214679';
 var ADMOB_TESTING=false; // LIVE — real rewarded ad unit
 var _admobReady=false, _admobBusy=false;
@@ -3054,6 +3064,9 @@ const GAME_NEWS=[
     '🔒 Ranked PVP unlocks at Level 5 — play Campaign and Quick Matchmaking to level up',
     '💾 Battle Pass rewards save to your account the moment you claim them',
     '☁️ Safer cloud saves — progress and purchases made right before closing the game are never lost',
+    '🏆 Signed-in players now appear on the leaderboard and can be found by friend code right away',
+    '👀 Guests can see where they would rank on the leaderboard',
+    '🛡️ Leaderboard and Friends safety fixes',
     '🛠️ Fixes for cloud sync and season timing',
   ]},
   {version:'v2.4',date:'October 2026',title:'Friends & Smoother Menus',notes:[
@@ -4927,13 +4940,19 @@ function loadRealLeaderboard(container){
       var dedupeKey=d.name+'_'+d.elo;
       if(seenNames[dedupeKey])return;
       seenNames[dedupeKey]=true;
-      lb.push({name:d.name,elo:d.elo,rank:getRank(d.elo),isYou:isYou});
+      var _elo=Number(d.elo)||0;
+      lb.push({name:d.name,elo:_elo,rank:getRank(_elo),isYou:isYou});
     });
     lb.sort(function(a,b){return b.elo-a.elo});
     // Always show player even if not in top 20
     var inList=lb.some(function(x){return x.isYou});
     // Only add player to leaderboard if they have a UID (signed in) and ELO > 0
     if(!inList&&!save.isGuest&&save.authUid&&save.elo>0)lb.push({name:save.playerName,elo:save.elo,rank:getRank(save.elo),isYou:true,outsideTop:true});
+    // Guests aren't listed (no account) — show where they'd rank and nudge them to sign in
+    if(save.isGuest||!save.authUid){
+      var _myElo=save.elo||0, _pos=lb.filter(function(x){return x.elo>_myElo}).length+1;
+      lb.push({guestHint:true,elo:_myElo,pos:_pos});
+    }
     renderLeaderboardList(container,lb);
   }).catch(function(){
     renderLeaderboardList(container,generateLeaderboard());
@@ -4944,10 +4963,17 @@ function renderLeaderboardList(container,lb){
   var html='<div class="leaderboard" style="margin-top:6px">';
   lb.forEach(function(p,i){
     var medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    var outside=p.outsideTop?'<span style="font-size:9px;color:var(--muted)"> (not in top 20)</span>':'';
+    if(p.guestHint){
+      html+='<div onclick="showScreen(\'accountScreen\');buildAccountScreen();playSfx(\'menuNav\')" style="display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:8px;background:rgba(255,209,102,0.1);border:1px dashed var(--gold);cursor:pointer;margin-top:4px">'
+        +'<div style="font-size:14px">☁️</div>'
+        +'<div style="flex:1;font-size:11px;font-weight:700;color:var(--gold)">'+(p.elo>0?'You\'d be #'+p.pos+' — sign in to claim your spot':'Sign in to appear on the leaderboard')+'</div>'
+        +'<div style="font-size:10px;color:var(--muted)">›</div></div>';
+      return;
+    }
+    var outside=p.outsideTop?'<span style="font-size:9px;color:var(--muted)"> (not in top 100)</span>':'';
     html+='<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:'+(p.isYou?'rgba(6,214,160,0.1)':'var(--dim)')+';border:1px solid '+(p.isYou?'var(--p1)':'var(--border)')+';">'
       +'<div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:var(--muted);width:18px">'+(medal||'#'+(i+1))+'</div>'
-      +'<div style="flex:1;font-size:12px;font-weight:700;color:'+(p.isYou?'var(--p1)':'var(--text)')+'">'+p.name+outside+'</div>'
+      +'<div style="flex:1;font-size:12px;font-weight:700;color:'+(p.isYou?'var(--p1)':'var(--text)')+'">'+escHtml(p.name)+outside+'</div>'
       +'<div style="font-size:10px;color:'+p.rank.color+'">'+p.rank.icon+' '+p.rank.name+'</div>'
       +'<div style="font-family:IBM Plex Mono,monospace;font-size:11px;font-weight:700;color:var(--gold)">'+p.elo+'</div>'
       +'</div>';
