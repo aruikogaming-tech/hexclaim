@@ -537,7 +537,7 @@ button:active,.tab:active,.shop-item:active,.chapter-card:active,.pvp-mode-card:
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v2.4</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v2.5</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -721,7 +721,12 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
   friends:[],friendRequests:[],sentRequests:[],friendCode:null,localPvpWins:0,localPvpLosses:0,seasonTempCosmetics:[],loginPromptShown:false,testerGiftGiven:false,seasonMechanicOrder:null,seasonMechanicOrder:null
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
-function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
+// Did the last session end with changes the cloud never received? (e.g. bought something, then closed
+// the app before the 15s cloud upload). Captured now, before launch code saves anything.
+// loadCloudSave uses it to keep this phone's newer save instead of the stale cloud copy.
+window._bootUnsynced=!!save.unsyncedAt;
+// Every local save marks the save as not-yet-uploaded; saveToCloud clears the mark once the upload succeeds.
+function saveProg(){save.unsyncedAt=Date.now();try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
 function enforceSeasonReset(){
   if(save.seasonResetS1)return;
   save.season=1;
@@ -1659,8 +1664,13 @@ function saveToCloud(){
   if(!firebaseReady||save.isGuest)return;
   if(!firebaseAuth.currentUser)return;              // session dropped: keep localStorage only
   var uid=firebaseAuth.currentUser.uid;             // use the LIVE session, not stale save.authUid
+  var t=Date.now();
   var data=JSON.parse(JSON.stringify(save));
-  firebaseDB.ref('users/'+uid+'/save').set(data).catch(function(e){
+  delete data.unsyncedAt;                           // sync state is per-device, never stored in the cloud
+  firebaseDB.ref('users/'+uid+'/save').set(data).then(function(){
+    // Upload done: clear the "not uploaded" mark, unless something changed after this snapshot
+    if((save.unsyncedAt||0)<=t){ delete save.unsyncedAt; try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){} }
+  }).catch(function(e){
     console.log('Cloud save failed:',e.message);
   });
 }
@@ -1705,21 +1715,34 @@ function loadCloudSave(uid){
       // Cloud data exists — restore it, but never let a STALE cloud copy roll back
       // login progress (keep the more-recent date and the higher streak).
       var _ls=save.loginStreak,_ld=save.lastLoginDate,_lc=save.lastStreakClaimDate;
-      var _lCoins=save.coins,_lChromas=save.chromas,_lBpXP=save.bpXP,_lProfXP=save.profileXP,_lProfLvl=save.profileLevel,_lBpClaimed=save.bpClaimed,_lOwned=save.owned;
-      Object.assign(save,cloudData);
-      save.coins=Math.max(save.coins||0,_lCoins||0);
-      save.chromas=Math.max(save.chromas||0,_lChromas||0);
-      save.bpXP=Math.max(save.bpXP||0,_lBpXP||0);
-      save.profileXP=Math.max(save.profileXP||0,_lProfXP||0);
-      save.profileLevel=Math.max(save.profileLevel||1,_lProfLvl||1);
-      save.bpClaimed=Object.assign({},(_lBpClaimed&&typeof _lBpClaimed==='object')?_lBpClaimed:{},(save.bpClaimed&&typeof save.bpClaimed==='object')?save.bpClaimed:{});
-      save.owned=Object.assign({},(_lOwned&&typeof _lOwned==='object')?_lOwned:{},(save.owned&&typeof save.owned==='object')?save.owned:{});
+      // Same account on this phone? A guest's (or another account's) data is never merged in.
+      var _sameAcct=(save.authUid===uid);
+      // This phone has changes for this account that never reached the cloud (e.g. bought something,
+      // then closed the app before the 15s upload) -> the phone's save is newer: keep it whole.
+      // Taking the cloud (or the higher of the two balances) here would refund the purchase.
+      var _keepLocal=_sameAcct&&window._bootUnsynced;
+      window._bootUnsynced=false; // only the save loaded at launch can be ahead of the cloud
+      if(!_keepLocal){
+        // Cloud is up to date -> take it, including its exact coin/diamond balance (no max = no refund).
+        var _lBpXP=save.bpXP,_lProfXP=save.profileXP,_lProfLvl=save.profileLevel,_lBpClaimed=save.bpClaimed,_lOwned=save.owned;
+        Object.assign(save,cloudData);
+        if(_sameAcct){
+          // Safe merges (nothing here can be spent, so keeping the higher/combined value can't refund anything)
+          save.bpXP=Math.max(save.bpXP||0,_lBpXP||0);
+          save.profileXP=Math.max(save.profileXP||0,_lProfXP||0);
+          save.profileLevel=Math.max(save.profileLevel||1,_lProfLvl||1);
+          save.bpClaimed=Object.assign({},(_lBpClaimed&&typeof _lBpClaimed==='object')?_lBpClaimed:{},(save.bpClaimed&&typeof save.bpClaimed==='object')?save.bpClaimed:{});
+          save.owned=Object.assign({},(_lOwned&&typeof _lOwned==='object')?_lOwned:{},(save.owned&&typeof save.owned==='object')?save.owned:{});
+        }
+        // Mail/claim state belongs to THIS account — never inherit the guest's
+        // (prevents a guest-claimed welcome gift leaking into an account that never got it).
+        save.mailClaimed = Array.isArray(cloudData.mailClaimed) ? cloudData.mailClaimed : [];
+        save.localMail   = Array.isArray(cloudData.localMail)   ? cloudData.localMail   : [];
+        save.passMailDay = (cloudData.passMailDay && typeof cloudData.passMailDay==='object') ? cloudData.passMailDay : {};
+        // The season-1 reset flag must come from the account, not this phone, or the reset never runs for it
+        save.seasonResetS1=!!cloudData.seasonResetS1;
+      }
       try{enforceSeasonReset();}catch(e){}
-      // Mail/claim state belongs to THIS account — never inherit the guest's
-      // (prevents a guest-claimed welcome gift leaking into an account that never got it).
-      save.mailClaimed = Array.isArray(cloudData.mailClaimed) ? cloudData.mailClaimed : [];
-      save.localMail   = Array.isArray(cloudData.localMail)   ? cloudData.localMail   : [];
-      save.passMailDay = (cloudData.passMailDay && typeof cloudData.passMailDay==='object') ? cloudData.passMailDay : {};
       if(_ld&&(!save.lastLoginDate||new Date(_ld)>=new Date(save.lastLoginDate))){
         save.lastLoginDate=_ld;
         save.loginStreak=Math.max(save.loginStreak||0,_ls||0);
@@ -3025,6 +3048,14 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v2.5',date:'October 2026',title:'Season 1 Fresh Start',notes:[
+    '🏁 Season 1 fresh start — everyone begins the new season on equal footing',
+    '📅 Seasons now end on fixed dates — Season 1 ends January 1, 2027, then every two months',
+    '🔒 Ranked PVP unlocks at Level 5 — play Campaign and Quick Matchmaking to level up',
+    '💾 Battle Pass rewards save to your account the moment you claim them',
+    '☁️ Safer cloud saves — progress and purchases made right before closing the game are never lost',
+    '🛠️ Fixes for cloud sync and season timing',
+  ]},
   {version:'v2.4',date:'October 2026',title:'Friends & Smoother Menus',notes:[
     '🤝 Friend requests — add a friend code to send a request, and they accept to connect',
     '✨ Smoother menus — screens fade in and every button animates when you tap it',
