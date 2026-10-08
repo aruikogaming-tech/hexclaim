@@ -722,6 +722,20 @@ let save={cleared:{},stars:{},totalWins:0,totalGames:0,challengesDone:{},
 };
 try{const s=localStorage.getItem('hexclaim_v4');if(s)save={...save,...JSON.parse(s)}}catch(e){}
 function saveProg(){try{localStorage.setItem('hexclaim_v4',JSON.stringify(save))}catch(e){}}
+function enforceSeasonReset(){
+  if(save.seasonResetS1)return;
+  save.season=1;
+  save.seasonStart=Date.now();
+  save.seasonClaimed=false;
+  save.seasonHighElo=save.elo||0;
+  if(Array.isArray(save.seasonTempCosmetics)){save.seasonTempCosmetics.forEach(function(id){delete save.owned[id];});}
+  save.seasonTempCosmetics=[];
+  save.seasonMechanicOrder=null;
+  save.seasonMechDeterministic=false;
+  save.seasonResetS1=true;
+  try{saveProg();}catch(e){}
+}
+try{enforceSeasonReset();}catch(e){}
 
 // ===== APP LIFECYCLE: pause audio when backgrounded =====
 function hexPauseAll(){
@@ -1691,7 +1705,16 @@ function loadCloudSave(uid){
       // Cloud data exists — restore it, but never let a STALE cloud copy roll back
       // login progress (keep the more-recent date and the higher streak).
       var _ls=save.loginStreak,_ld=save.lastLoginDate,_lc=save.lastStreakClaimDate;
+      var _lCoins=save.coins,_lChromas=save.chromas,_lBpXP=save.bpXP,_lProfXP=save.profileXP,_lProfLvl=save.profileLevel,_lBpClaimed=save.bpClaimed,_lOwned=save.owned;
       Object.assign(save,cloudData);
+      save.coins=Math.max(save.coins||0,_lCoins||0);
+      save.chromas=Math.max(save.chromas||0,_lChromas||0);
+      save.bpXP=Math.max(save.bpXP||0,_lBpXP||0);
+      save.profileXP=Math.max(save.profileXP||0,_lProfXP||0);
+      save.profileLevel=Math.max(save.profileLevel||1,_lProfLvl||1);
+      save.bpClaimed=Object.assign({},(_lBpClaimed&&typeof _lBpClaimed==='object')?_lBpClaimed:{},(save.bpClaimed&&typeof save.bpClaimed==='object')?save.bpClaimed:{});
+      save.owned=Object.assign({},(_lOwned&&typeof _lOwned==='object')?_lOwned:{},(save.owned&&typeof save.owned==='object')?save.owned:{});
+      try{enforceSeasonReset();}catch(e){}
       // Mail/claim state belongs to THIS account — never inherit the guest's
       // (prevents a guest-claimed welcome gift leaking into an account that never got it).
       save.mailClaimed = Array.isArray(cloudData.mailClaimed) ? cloudData.mailClaimed : [];
@@ -2376,7 +2399,7 @@ function renderProfileTab(tab,externalCont){
 
   else if(tab==='season'){
     // Current season rewards
-    var daysLeft=Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))));
+    var daysLeft=seasonDaysLeft();
     var highElo=save.seasonHighElo||save.elo;
     var highRank=getRank(highElo);
     // Season mechanics panel
@@ -2499,16 +2522,15 @@ function getSeasonMechanicId(slot){
   return SEASON_MECHANICS[mechs[slot]].id;
 }
 
-function checkSeasonRotation(){
-  var elapsed=Date.now()-save.seasonStart;
-  if(elapsed>=30*24*60*60*1000&&save.seasonClaimed){
-    save.season++;
-    save.seasonStart=Date.now();
-    save.seasonHighElo=save.elo;
-    save.seasonClaimed=false;
-    saveProg();
-  }
-}
+// ===== SEASON CALENDAR (fixed end dates, same for every player) =====
+// Season 1 ends 2027-01-01; each later season lasts 2 calendar months (Mar 1, May 1, Jul 1, ...).
+// Ends at 00:00 UTC (= 7 PM ET in winter, 8 PM ET in summer). Date.UTC rolls months over into years.
+function getSeasonEnd(n){ return Date.UTC(2027, 2*(Math.max(1,n||1)-1), 1); }
+function getCalendarSeason(t){ t=t||Date.now(); var n=1; while(t>=getSeasonEnd(n)&&n<1000)n++; return n; }
+function seasonDaysLeft(){ return Math.max(0,Math.ceil((getSeasonEnd(save.season||1)-Date.now())/86400000)); }
+
+// Kept for existing callers — season changes are handled only by checkSeasonEnd so the two can't conflict.
+function checkSeasonRotation(){ checkSeasonEnd(); }
 
 // ===== STATISTICS SCREEN =====
 function buildStatsScreen(){
@@ -2994,6 +3016,10 @@ function tryRankedPVP(){
     showToast('Complete the tutorial first! Play Campaign → Chapter 1 → Level 1.');
     showScreen('chapterScreen');buildChapters();return;
   }
+  if((save.profileLevel||1)<5){
+    showToast('\u{1f512} Ranked unlocks at Level 5 — you\'re Level '+(save.profileLevel||1)+'. Keep playing Campaign & Quick Match to level up!',2800);
+    return;
+  }
   showScreen('pvpScreen');showMatchmaking();
 }
 
@@ -3328,9 +3354,12 @@ function adminRecoverSeasonRewards(targetUid){
   });
 }
 function checkSeasonEnd(){
-  const SEASON_DURATION=60*24*60*60*1000;
-  const elapsed=Date.now()-save.seasonStart;
-  if(elapsed>=SEASON_DURATION&&!save.seasonClaimed){
+  // Fixed calendar seasons (see getSeasonEnd). Guard against a bad/missing or future season number.
+  var calSeason=getCalendarSeason();
+  if(typeof save.season!=='number'||!(save.season>=1)||save.season>calSeason){
+    save.season=calSeason;save.seasonStart=Date.now();save.seasonClaimed=false;saveProg();return;
+  }
+  if(Date.now()>=getSeasonEnd(save.season)){
     const highestElo=save.seasonHighElo||save.elo;
     const playerRank=getRank(highestElo);
     const seasonNum=save.season||1;
@@ -3392,7 +3421,9 @@ function checkSeasonEnd(){
     const oldElo=save.elo;
     save.elo=Math.round(oldElo+(1000-oldElo)*0.5);
     save.elo=Math.max(0,save.elo);
-    save.season=nextSeasonNum;
+    // Jump to the current calendar season (if the player was away for several seasons,
+    // they get rewards once, for the season they actually played)
+    save.season=Math.max(nextSeasonNum,getCalendarSeason());
     save.seasonStart=Date.now();
     save.seasonClaimed=false;
     save.seasonHighElo=save.elo;
@@ -4730,7 +4761,7 @@ function claimBPReward(track,level){
   else if(reward.type==='icon')save.owned['icon_'+reward.id]=true;
   else if(reward.type==='title')save.owned['title_'+reward.id]=true;
   save.bpClaimed[track+'_'+level]=true;
-  saveProg();updateShopCurrency();buildBattlePass();
+  saveProg._lastCloud=0;saveProg();updateShopCurrency();buildBattlePass();
 }
 
 // Grant XP after matches
@@ -5825,7 +5856,7 @@ function buildRankScreen(){
     <div class="season-card">
       <div class="sc-title">🏆 Season ${save.season}</div>
       <div class="sc-desc">Climb the ranks and earn your title.</div>
-      <div class="sc-time">Season ends in ${Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))))} days</div>
+      <div class="sc-time">Season ends in ${seasonDaysLeft()} days</div>
     </div>
     <div class="tabs" style="margin-top:4px">
       <button class="tab active" onclick="showRankTab('lb',this)" style="font-size:9px;padding:6px 8px">Leaderboard</button>
@@ -5912,7 +5943,7 @@ function showRankTab(tab,btn){
     // Skins section
     cont.innerHTML='';cont.appendChild(wrap);
   } else if(tab==='rewards'){
-    const daysLeft=Math.max(0,Math.floor(60-((Date.now()-save.seasonStart)/(1000*60*60*24))));
+    const daysLeft=seasonDaysLeft();
     const highElo=save.seasonHighElo||save.elo;
     const highRank=getRank(highElo);
     const highRankIdx=RANKS.indexOf(highRank);
