@@ -63,6 +63,10 @@ ABSOLUTE RULES:
   --bronze:#cd7f32;--silver:#c0c0c0;--platinum:#e5e4e2;--diamond:#b9f2ff;--master:#c084fc;--chroma:#ffd166;
 }
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;touch-action:manipulation}
+/* Game UI: holding a finger anywhere must not select text or pop up Copy/Share/Select all.
+   Typing boxes (name, friend code, room code) stay selectable so players can still type and paste. */
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 body{display:flex;align-items:flex-start;justify-content:center;
   background-image:radial-gradient(ellipse 70% 50% at 20% 0%,rgba(6,214,160,0.1),transparent),
   radial-gradient(ellipse 60% 50% at 80% 100%,rgba(131,56,236,0.1),transparent),
