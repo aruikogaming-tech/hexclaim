@@ -7602,12 +7602,6 @@ function draw(){
       }
     }
 
-    // Playable-frontier hint — steady border on neutral tiles you could capture this turn
-    if(previewColor<0 && typeof turn!=='undefined' && turn===1 && owner[r][c]===0 && fogRevealed[r][c] && !(typeof animatingMove!=='undefined' && animatingMove)){
-      let _adjP=false;
-      [[0,1],[0,-1],[1,0],[-1,0]].forEach(([dr,dc])=>{const nr2=r+dr,nc2=c+dc;if(nr2>=0&&nr2<ROWS&&nc2>=0&&nc2<COLS&&owner[nr2][nc2]===1)_adjP=true;});
-      if(_adjP){ ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=2; ctx.setLineDash([3,2]); ctx.stroke(); ctx.setLineDash([]); ctx.restore(); }
-    }
 
     // Newly claimed pulse effect — FLASHY equipped effects
     const isNew=claimAnim>0&&newlyClaimed.some(n=>n.r===r&&n.c===c);
@@ -9047,7 +9041,7 @@ function p2Move(colorIdx){
     }
     turn=1;updateFog();updateUI();buildColorPicker();draw();
     animatingMove=false;
-    try{buildColorPicker();}catch(e){} // rebuild now that the player can move, so playable colours light up
+    try{buildColorPicker();draw();}catch(e){} // rebuild/redraw now that the player can move, so playable colours light up
     checkEnd();
   });
 }
@@ -9186,7 +9180,7 @@ function aiMove(){
     // Brief cooldown — prevent instant player clicks after AI
     setTimeout(function(){
       animatingMove=false;
-      try{buildColorPicker();}catch(e){} // rebuild now that the player can move, so playable colours light up
+      try{buildColorPicker();draw();}catch(e){} // rebuild/redraw now that the player can move, so playable colours light up
       window._checkEndRunning=false;
       checkEnd();
     },400);
