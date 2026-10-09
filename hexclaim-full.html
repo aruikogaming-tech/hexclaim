@@ -258,13 +258,12 @@ body{display:flex;align-items:flex-start;justify-content:center;
 .color-btn:hover{transform:scale(1.1);border-color:rgba(255,255,255,0.3)}
 .color-btn.disabled{opacity:0.5;pointer-events:none;transform:scale(0.85)}
 .color-btn.selectable:not(.disabled){animation:colorBtnGlow 1.5s ease infinite}
-/* Colours that capture tiles this turn: solid white border, stronger pulse, "+N" count */
+/* Colours that capture tiles this turn: solid white border, stronger pulse */
 .color-btn.playable{border-color:#fff}
 .color-btn.selectable.playable:not(.disabled){animation:colorBtnPlayable 1.2s ease infinite}
 @keyframes colorBtnPlayable{0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 8px rgba(255,255,255,0.35)}50%{box-shadow:0 0 0 2px rgba(255,255,255,0.95),0 0 18px rgba(255,255,255,0.6)}}
 .color-btn.power-cap{animation:none!important} /* keep the gold power-tile glow visible */
 .color-btn.no-capture{opacity:0.7;animation:none!important}
-.cb-count{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;color:#fff;background:rgba(0,0,0,0.6);border-radius:6px;padding:0 4px;line-height:13px;z-index:2;pointer-events:none;font-family:Manrope,sans-serif}
 @keyframes colorBtnGlow{0%,100%{box-shadow:0 0 0 2px rgba(255,255,255,0.15),0 0 8px rgba(255,255,255,0.1)}50%{box-shadow:0 0 0 2px rgba(255,255,255,0.45),0 0 14px rgba(255,255,255,0.25)}}
 .mech-chip{padding:6px 10px;background:var(--dim);border:1px solid var(--border);border-radius:16px;color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;user-select:none;transition:all .15s}
 .mech-chip.active{background:rgba(6,214,160,0.18);border-color:var(--p1);color:var(--p1)}
@@ -3140,7 +3139,7 @@ const GAME_NEWS=[
     '👀 Guests can see where they would rank on the leaderboard',
     '🛡️ Leaderboard and Friends safety fixes',
     '👆 Hold any tile to preview your move — see exactly how many tiles you\'ll capture',
-    '🎯 Colour buttons now light up when they capture tiles this turn, with a +N tile count',
+    '🎯 Colour buttons now light up every turn when they can capture tiles',
     '📬 Claim all mail at once, plus red dots for new friend requests and Battle Pass rewards',
     '📳 Vibration on captures and wins (switch it off in Settings)',
     '🖼️ Profile fixes — equipped icons and titles update instantly, owned borders show their real frame',
@@ -8471,6 +8470,7 @@ function fireBomb(row,col){
   // Brief delay before AI fires so board renders first
   turn=2;
   animatingMove=true;
+  try{buildColorPicker();}catch(e){} // clear the "playable" highlights while it's not your turn
   setTimeout(function(){
     animatingMove=false;
     if(!checkEnd())setTimeout(aiMove,800);
@@ -8503,14 +8503,12 @@ function buildColorPicker(){
     const isSelectable=!isOwn&&!isCooldown&&turn===1&&!gameOver&&!animatingMove;
     if(isOwn||isCooldown)b.classList.add('disabled');
     if(isSelectable)b.classList.add('selectable');
-    // Make it obvious which colours are worth pressing this turn: white border + glow + "+N" capture count.
+    // Make it obvious which colours are worth pressing this turn: white border + glow.
     // Pressable colours that would capture nothing are dimmed (still pressable).
+    // (No "+N" count here — it's almost always +1/+2 and nudges greedy picks; hold a tile for the exact count.)
     if(isSelectable){
       var _cap=0;try{_cap=previewCapture(i).count;}catch(e){}
-      if(_cap>0){
-        b.classList.add('playable');
-        const cnt=document.createElement('span');cnt.className='cb-count';cnt.textContent='+'+_cap;b.appendChild(cnt);
-      } else b.classList.add('no-capture');
+      b.classList.add(_cap>0?'playable':'no-capture');
     }
 
     if(isCooldown){
@@ -8964,6 +8962,7 @@ async function playerMove(colorIdx){
 
     // Pause before switching to AI
     turn=2;updateUI();
+    try{buildColorPicker();}catch(e){} // clear the "playable" highlights while it's not your turn
     if(isLocalPVP){animatingMove=false;}
     else {
       window._checkEndRunning=false;
@@ -9048,6 +9047,7 @@ function p2Move(colorIdx){
     }
     turn=1;updateFog();updateUI();buildColorPicker();draw();
     animatingMove=false;
+    try{buildColorPicker();}catch(e){} // rebuild now that the player can move, so playable colours light up
     checkEnd();
   });
 }
@@ -9186,6 +9186,7 @@ function aiMove(){
     // Brief cooldown — prevent instant player clicks after AI
     setTimeout(function(){
       animatingMove=false;
+      try{buildColorPicker();}catch(e){} // rebuild now that the player can move, so playable colours light up
       window._checkEndRunning=false;
       checkEnd();
     },400);
