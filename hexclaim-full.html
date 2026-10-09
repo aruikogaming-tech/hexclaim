@@ -527,6 +527,13 @@ button:active,.tab:active,.shop-item:active,.chapter-card:active,.pvp-mode-card:
       <div style="font-size:14px;color:var(--muted)">→</div>
     </div>
   </div>
+  <!-- Community: a plain link — in the Android app Capacitor hands it to the Discord app / browser -->
+  <a class="card" href="https://discord.gg/XAeXT9UxwQ" target="_blank" rel="noopener" onclick="claimDiscordReward();playSfx('menuNav')" style="display:block;margin-bottom:8px;cursor:pointer;text-decoration:none;color:inherit;border:1.5px solid #5865F2;background:linear-gradient(135deg,rgba(88,101,242,0.18),rgba(88,101,242,0.06))">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:12px;font-weight:800;color:#a5adff">💬 Join our Discord</div><div id="discordSub" style="font-size:9px;color:var(--muted);margin-top:2px">Get 💎 50 free — chat with players, report bugs, get news first</div></div>
+      <div style="font-size:14px;color:#a5adff">↗</div>
+    </div>
+  </a>
   <div class="card" style="margin-bottom:8px">
     <div style="font-size:12px;font-weight:800;margin-bottom:8px">Player Name</div>
     <div style="display:flex;align-items:center;gap:8px">
@@ -548,12 +555,16 @@ button:active,.tab:active,.shop-item:active,.chapter-card:active,.pvp-mode-card:
     <div><div style="font-size:12px;font-weight:800">📳 Vibration</div><div style="font-size:9px;color:var(--muted);margin-top:2px">Buzz on captures and wins</div></div>
     <button id="hapticsToggle" onclick="toggleHaptics()" style="padding:6px 16px;border-radius:999px;border:1.5px solid var(--p1);background:rgba(6,214,160,0.1);color:var(--p1);font-family:Manrope,sans-serif;font-size:11px;font-weight:800;cursor:pointer">On</button>
   </div>
+  <div class="card" style="margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+    <div><div style="font-size:12px;font-weight:800">🔔 Daily Reminders</div><div style="font-size:9px;color:var(--muted);margin-top:2px">When your daily reward is ready</div></div>
+    <button id="notifToggle" onclick="toggleNotifs()" style="padding:6px 16px;border-radius:999px;border:1.5px solid var(--p1);background:rgba(6,214,160,0.1);color:var(--p1);font-family:Manrope,sans-serif;font-size:11px;font-weight:800;cursor:pointer">On</button>
+  </div>
   <button onclick="resetAllProgress()" style="margin-top:12px;padding:10px 24px;background:none;border:1px solid var(--c4);border-radius:10px;color:var(--c4);font-family:'Manrope',sans-serif;font-size:12px;font-weight:800;cursor:pointer;display:block;margin-left:auto;margin-right:auto">Reset Progress</button>
   <div style="display:flex;gap:12px;justify-content:center;margin-top:8px">
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Privacy Policy</span>
     <span style="font-size:9px;color:var(--muted);cursor:pointer;text-decoration:underline" onclick="showPrivacyPolicy()">Terms of Service</span>
   </div>
-  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v2.5</div>
+  <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px">HexClaim v2.6</div>
 </div>
 
 <!-- TUTORIAL SCREEN -->
@@ -760,6 +771,121 @@ function hexHaptic(kind){
     }
   }catch(e){}
 }
+// ===== RETENTION REMINDERS (local notifications — Android app only, no-op on the web) =====
+// Three one-shot reminders, rescheduled every time the game opens (so they never stack up):
+//   701 daily reward ready (just after the 7 PM ET game-day reset), 702 a day later (streak at risk),
+//   703 a week later ("we miss you" — pairs with the welcome-back gift in checkDailyLogin).
+// Welcome-back gift: after WELCOME_BACK_DAYS+ away, at most once per WELCOME_BACK_COOLDOWN_DAYS.
+var WELCOME_BACK_DAYS=7, WELCOME_BACK_COOLDOWN_DAYS=30;
+function welcomeBackAvailableAt(t){ return !save.lastWelcomeBackAt||(t-save.lastWelcomeBackAt)>=WELCOME_BACK_COOLDOWN_DAYS*86400000; }
+function _LN(){ return (typeof Capacitor!=='undefined'&&Capacitor.Plugins&&Capacitor.Plugins.LocalNotifications)?Capacitor.Plugins.LocalNotifications:null; }
+var _REMINDER_IDS=[{id:701},{id:702},{id:703}];
+function _msToNextGameDay(){
+  var et=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  var t=new Date(et.getTime()); t.setHours(19,0,0,0); if(et>=t)t.setDate(t.getDate()+1);
+  return t-et;
+}
+function scheduleReminders(){
+  var LN=_LN(); if(!LN)return;
+  LN.cancel({notifications:_REMINDER_IDS}).catch(function(){}).then(function(){
+    if(save.notifOff)return;
+    return LN.checkPermissions().then(function(p){
+      if(!p||p.display!=='granted')return;
+      var DAY=86400000, next=Date.now()+_msToNextGameDay()+60000; // 1 min after the daily reset
+      return LN.schedule({notifications:[
+        {id:701,title:'🎁 Your daily reward is ready!',body:'Claim it and keep your streak going in HexClaim.',schedule:{at:new Date(next),allowWhileIdle:true}},
+        {id:702,title:'🔥 Don\'t lose your streak!',body:'Your daily reward is still waiting — come claim it.',schedule:{at:new Date(next+DAY),allowWhileIdle:true}},
+        // Only promise the gift if it will really be there (respects the 30-day cooldown)
+        {id:703,title:'💎 We miss you!',body:welcomeBackAvailableAt(next+WELCOME_BACK_DAYS*DAY)?'Come back — there\'s a welcome-back gift waiting for you.':'Your daily rewards and quests are waiting — come back and play!',schedule:{at:new Date(next+WELCOME_BACK_DAYS*DAY),allowWhileIdle:true}}
+      ]});
+    });
+  }).catch(function(){});
+}
+// Ask for notification permission once, at a good moment (right after claiming a daily reward)
+function askForReminders(){
+  var LN=_LN(); if(!LN||save.notifAsked||save.notifOff)return;
+  save.notifAsked=true; saveProg();
+  LN.requestPermissions().then(function(){scheduleReminders();}).catch(function(){});
+}
+function toggleNotifs(){
+  save.notifOff=!save.notifOff; saveProg(); updateNotifToggle();
+  var LN=_LN(); if(!LN)return;
+  if(save.notifOff) LN.cancel({notifications:_REMINDER_IDS}).catch(function(){});
+  else LN.requestPermissions().then(function(){scheduleReminders();}).catch(function(){});
+}
+function updateNotifToggle(){
+  var b=document.getElementById('notifToggle'); if(!b)return;
+  var on=!save.notifOff;
+  b.textContent=on?'On':'Off';
+  b.style.borderColor=on?'var(--p1)':'var(--border)';
+  b.style.color=on?'var(--p1)':'var(--muted)';
+  b.style.background=on?'rgba(6,214,160,0.1)':'var(--dim)';
+}
+// ===== DISCORD =====
+// We can't verify a join, so the reward is one-time per account on tap (industry standard), sent to the Mailbox.
+var DISCORD_REWARD=50;
+function claimDiscordReward(){
+  if(save.discordRewardSent)return;
+  save.discordRewardSent=true;
+  addLocalMail({id:'discord_join',subject:'💬 Thanks for joining our Discord!',body:'Here are '+DISCORD_REWARD+' diamonds as a thank-you. See you in the server!',chromas:DISCORD_REWARD});
+  saveProg(); try{updateMailDot();}catch(e){} updateDiscordCard();
+  showToast('💎 '+DISCORD_REWARD+' diamonds sent to your Mailbox!',2800);
+}
+function updateDiscordCard(){
+  var s=document.getElementById('discordSub'); if(!s)return;
+  s.textContent=save.discordRewardSent?'Thanks for joining! Chat with players and get news first':'Get 💎 '+DISCORD_REWARD+' free — chat with players, report bugs, get news first';
+}
+// ===== 2× BOOSTER (bought with diamonds) =====
+// Doubles match coins and Battle Pass XP from matches for 7 days. Never stacks: with catch-up XP or the
+// "2× next match" ad, the highest multiplier wins (always ×2, never ×4). Quests and login rewards are untouched.
+var BOOSTER_PRICE=300, BOOSTER_DAYS=7;
+function boosterActive(){ return (save.boosterUntil||0)>Date.now(); }
+function boosterDaysLeft(){ return Math.max(0,Math.ceil(((save.boosterUntil||0)-Date.now())/86400000)); }
+function buyBooster(){
+  if((save.chromas||0)<BOOSTER_PRICE){showToast('Not enough Diamonds! Need 💎 '+BOOSTER_PRICE);return;}
+  showConfirmPopup('Buy 2× Booster?','Double match coins and Battle Pass XP from matches for '+BOOSTER_DAYS+' days — 💎 '+BOOSTER_PRICE+'.'+(boosterActive()?' This adds '+BOOSTER_DAYS+' more days.':''),'Buy',function(){
+    if((save.chromas||0)<BOOSTER_PRICE){showToast('Not enough Diamonds! Need 💎 '+BOOSTER_PRICE);return;}
+    save.chromas-=BOOSTER_PRICE;
+    save.boosterUntil=Math.max(Date.now(),save.boosterUntil||0)+BOOSTER_DAYS*86400000;
+    saveProg._lastCloud=0;saveProg();updateShopCurrency();try{buildBattlePass();}catch(e){}
+    showToast('⚡ 2× Booster active for '+boosterDaysLeft()+' days!',2600);try{playSfx('claimBig');hexHaptic('big');}catch(e){}
+  });
+}
+// ===== BATTLE PASS XP FROM ADS =====
+var AD_BP_XP=50, AD_BP_CAP=2; // per day; catch-up does NOT apply to ad XP
+function watchAdBP(){
+  checkAdReset();
+  if((save.adBpToday||0)>=AD_BP_CAP){showToast('Come back tomorrow for more!',2000);return;}
+  showRewardedAd('Battle Pass XP',function(){
+    checkAdReset();
+    if((save.adBpToday||0)>=AD_BP_CAP)return;
+    save.bpXP=(save.bpXP||0)+AD_BP_XP; save.adBpToday=(save.adBpToday||0)+1;
+    saveProg();try{buildBattlePass();}catch(e){}
+    showToast('🏅 +'+AD_BP_XP+' Battle Pass XP!',2200);
+  });
+}
+// ===== +3 MOVES AD (move-limited challenges, once per attempt) =====
+function showExtraMovesOffer(){
+  if(document.getElementById('extraMovesModal'))return;
+  window._extraMovesPending=true;
+  var m=document.createElement('div');m.id='extraMovesModal';
+  m.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);padding:16px';
+  m.innerHTML='<div style="background:var(--surface);border:2px solid var(--gold);border-radius:16px;padding:20px;max-width:300px;width:100%;margin:auto;text-align:center">'
+    +'<div style="font-size:30px">⏳</div>'
+    +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:16px;color:var(--gold);margin:4px 0 6px">Out of moves!</div>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5">Watch a short ad for <b style="color:var(--text)">+3 moves</b> and keep fighting.</div>'
+    +'<button id="extraMovesYes" style="width:100%;padding:11px;border:none;border-radius:10px;background:var(--gold);color:#1a1a24;font-weight:800;font-size:13px;font-family:Manrope,sans-serif;cursor:pointer;margin-bottom:8px">▶ Watch ad: +3 moves</button>'
+    +'<button id="extraMovesNo" style="width:100%;padding:9px;border:none;background:none;color:var(--muted);font-size:11px;font-family:Manrope,sans-serif;cursor:pointer">Give up</button></div>';
+  document.body.appendChild(m);
+  document.getElementById('extraMovesYes').onclick=function(){
+    showRewardedAd('+3 moves',function(){
+      m.remove(); window._extraMovesPending=false;
+      movesLeft=(movesLeft||0)+3; try{updateUI();updateObjBar();}catch(e){}
+      showToast('⏳ +3 moves!',1800);
+    });
+  };
+  document.getElementById('extraMovesNo').onclick=function(){ m.remove(); window._extraMovesPending=false; window._checkEndRunning=false; checkEnd(); };
+}
 function toggleHaptics(){ save.hapticsOff=!save.hapticsOff; saveProg(); updateHapticsToggle(); if(!save.hapticsOff)hexHaptic('big'); }
 function updateHapticsToggle(){
   var b=document.getElementById('hapticsToggle'); if(!b)return;
@@ -938,36 +1064,37 @@ function resetAllProgress(){
 
 // ===== DAILY LOGIN STREAK =====
 const STREAK_REWARDS=[
-  {day:1,coins:40,chromas:15,label:'Day 1'},
-  {day:2,coins:50,chromas:20,label:'Day 2'},
-  {day:3,coins:75,chromas:30,label:'Day 3'},
-  {day:4,coins:100,chromas:40,label:'Day 4'},
-  {day:5,coins:130,chromas:50,label:'Day 5'},
-  {day:6,coins:175,chromas:75,label:'Day 6'},
-  {day:7,coins:350,chromas:150,label:'Day 7 🎉'},
-  {day:8,coins:60,chromas:25,label:'Day 8'},
-  {day:9,coins:75,chromas:30,label:'Day 9'},
-  {day:10,coins:100,chromas:50,label:'Day 10'},
-  {day:11,coins:75,chromas:30,label:'Day 11'},
-  {day:12,coins:80,chromas:35,label:'Day 12'},
-  {day:13,coins:90,chromas:40,label:'Day 13'},
-  {day:14,coins:400,chromas:175,label:'Day 14 🎉'},
-  {day:15,coins:80,chromas:35,label:'Day 15'},
-  {day:16,coins:90,chromas:40,label:'Day 16'},
-  {day:17,coins:100,chromas:45,label:'Day 17'},
-  {day:18,coins:110,chromas:50,label:'Day 18'},
-  {day:19,coins:120,chromas:55,label:'Day 19'},
-  {day:20,coins:150,chromas:75,label:'Day 20'},
-  {day:21,coins:450,chromas:200,label:'Day 21 🎉'},
-  {day:22,coins:100,chromas:50,label:'Day 22'},
-  {day:23,coins:110,chromas:55,label:'Day 23'},
-  {day:24,coins:125,chromas:60,label:'Day 24'},
-  {day:25,coins:150,chromas:75,label:'Day 25'},
-  {day:26,coins:175,chromas:80,label:'Day 26'},
-  {day:27,coins:200,chromas:90,label:'Day 27'},
-  {day:28,coins:225,chromas:100,label:'Day 28'},
-  {day:29,coins:250,chromas:110,label:'Day 29'},
-  {day:30,coins:600,chromas:300,label:'Day 30 🏆'},
+  // Rebalanced before launch: ~400 diamonds per 30-day cycle (was ~2,185), coins ~30% lower.
+  {day:1,coins:30,chromas:3,label:'Day 1'},
+  {day:2,coins:35,chromas:3,label:'Day 2'},
+  {day:3,coins:55,chromas:5,label:'Day 3'},
+  {day:4,coins:70,chromas:5,label:'Day 4'},
+  {day:5,coins:90,chromas:6,label:'Day 5'},
+  {day:6,coins:125,chromas:10,label:'Day 6'},
+  {day:7,coins:250,chromas:30,label:'Day 7 🎉'},
+  {day:8,coins:40,chromas:5,label:'Day 8'},
+  {day:9,coins:55,chromas:5,label:'Day 9'},
+  {day:10,coins:70,chromas:6,label:'Day 10'},
+  {day:11,coins:55,chromas:6,label:'Day 11'},
+  {day:12,coins:55,chromas:8,label:'Day 12'},
+  {day:13,coins:65,chromas:8,label:'Day 13'},
+  {day:14,coins:280,chromas:40,label:'Day 14 🎉'},
+  {day:15,coins:55,chromas:6,label:'Day 15'},
+  {day:16,coins:65,chromas:6,label:'Day 16'},
+  {day:17,coins:70,chromas:8,label:'Day 17'},
+  {day:18,coins:75,chromas:8,label:'Day 18'},
+  {day:19,coins:85,chromas:10,label:'Day 19'},
+  {day:20,coins:105,chromas:10,label:'Day 20'},
+  {day:21,coins:320,chromas:50,label:'Day 21 🎉'},
+  {day:22,coins:70,chromas:8,label:'Day 22'},
+  {day:23,coins:75,chromas:8,label:'Day 23'},
+  {day:24,coins:90,chromas:10,label:'Day 24'},
+  {day:25,coins:105,chromas:10,label:'Day 25'},
+  {day:26,coins:120,chromas:12,label:'Day 26'},
+  {day:27,coins:140,chromas:12,label:'Day 27'},
+  {day:28,coins:160,chromas:13,label:'Day 28'},
+  {day:29,coins:175,chromas:13,label:'Day 29'},
+  {day:30,coins:420,chromas:80,label:'Day 30 🏆'},
 ];
 
 function checkDailyLogin(){
@@ -987,10 +1114,20 @@ function checkDailyLogin(){
   if(et.getHours()<19){et.setDate(et.getDate()-1);}
   et.setDate(et.getDate()-1);
   var yesterday=et.toDateString();
+  save.restorableStreak=null;
   if(save.lastLoginDate===yesterday){
     save.loginStreak=save.loginStreak+1;
   } else if(save.lastLoginDate){
+    // Broken streak of 3+ days: offer to restore it with an ad today (at most once every 30 days)
+    if((save.loginStreak||0)>=3&&(!save.lastStreakRestoreAt||Date.now()-save.lastStreakRestoreAt>=30*86400000)){save.restorableStreak=save.loginStreak;save.restorableDate=today;}
     save.loginStreak=1; // Streak broken
+    // Welcome-back gift after 7+ game days away, at most once per 30 days (pairs with the "we miss you" reminder)
+    var _away=Math.round((Date.parse(today)-Date.parse(save.lastLoginDate))/86400000);
+    if(_away>=WELCOME_BACK_DAYS&&welcomeBackAvailableAt(Date.now())){
+      save.lastWelcomeBackAt=Date.now();
+      addLocalMail({id:'welcomeback_'+today,subject:'💎 Welcome back!',body:'We missed you! Here\'s a gift to get you back in the game.',coins:100,chromas:25});
+      setTimeout(function(){try{showToast('💎 Welcome back! A gift is waiting in your Mailbox',3000);updateMailDot();}catch(e){}},1600);
+    }
   } else {
     save.loginStreak=1; // First ever login
   }
@@ -1027,6 +1164,13 @@ function showStreakPopup(){
   });
   popup.onclick=function(e){if(e.target===popup)popup.remove();};
   var alreadyClaimed=claimedToday;
+  // Optional ad buttons: restore a broken streak (today only) / double today's reward (once per day, after claiming)
+  var _gd=getGameDay(), _restore=(save.restorableStreak&&save.restorableDate===_gd)?save.restorableStreak:0;
+  var _canDouble=claimedToday&&save.loginDoubleDate!==_gd&&(reward.coins||reward.chromas);
+  var _adBtn='display:block;margin:8px auto 0;padding:9px 16px;background:rgba(255,209,102,0.12);border:1.5px solid var(--gold);border-radius:8px;color:var(--gold);font-weight:800;font-size:11px;cursor:pointer;font-family:Manrope,sans-serif';
+  var _extra='';
+  if(_restore)_extra+='<button id="streakRestoreBtn" style="'+_adBtn+'">▶ Restore your '+_restore+'-day streak (watch ad)</button>';
+  if(_canDouble)_extra+='<button id="streakDoubleBtn" style="'+_adBtn+'">▶ Double today\'s reward (watch ad)</button>';
   popup.innerHTML='<div style="position:relative;background:var(--surface);border:2px solid var(--p1);border-radius:16px;padding:20px;text-align:center;max-width:340px;width:90%;animation:popIn 0.3s ease">'
     +'<div style="font-size:28px;margin-bottom:4px">🔥</div>'
     +'<div style="font-family:\'Archivo Black\',sans-serif;font-size:16px;color:var(--p1)">'+day+'-Day Streak!</div>'
@@ -1036,6 +1180,22 @@ function showStreakPopup(){
     +'<button onclick="document.getElementById(\'streakPopup\').remove();playSfx(\'menuBack\')" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px">✕</button>'
     +'</div>';
   document.body.appendChild(popup);
+  if(_extra){var _box=document.createElement('div');_box.innerHTML=_extra;var _cb=document.getElementById('streakClaimBtn');_cb.parentNode.insertBefore(_box,_cb.nextSibling);}
+  var _rb=document.getElementById('streakRestoreBtn');
+  if(_rb)_rb.onclick=function(){showRewardedAd('Restore streak',function(){
+    if(!save.restorableStreak)return;
+    save.loginStreak=save.restorableStreak+1; save.restorableStreak=null; save.lastStreakRestoreAt=Date.now();
+    saveProg(); popup.remove(); try{updateMenuStats();}catch(e){}
+    showToast('🔥 Streak restored — Day '+save.loginStreak+'!',2600); try{playSfx('claimBig');}catch(e){}
+    showStreakPopup();
+  });};
+  var _db=document.getElementById('streakDoubleBtn');
+  if(_db)_db.onclick=function(){showRewardedAd('Double login reward',function(){
+    if(save.loginDoubleDate===getGameDay())return;
+    if(reward.coins)save.coins+=reward.coins; if(reward.chromas)save.chromas+=reward.chromas;
+    save.loginDoubleDate=getGameDay(); saveProg(); updateShopCurrency(); popup.remove();
+    showToast('🎁 Doubled! '+(reward.coins?'+'+reward.coins+' 🟡 ':'')+(reward.chromas?'+'+reward.chromas+' 💎':''),2600); try{playSfx('claimBig');}catch(e){}
+  });};
   var claimBtn=document.getElementById('streakClaimBtn');
   if(!alreadyClaimed){
     claimBtn.onclick=function(){
@@ -1049,19 +1209,32 @@ function showStreakPopup(){
       saveProg();updateShopCurrency();
       popup.remove();
       playSfx('claimBig');
+      // Login-loyalty titles: count every claimed daily reward (30/90/180/365)
+      save.totalDailyClaims=(save.totalDailyClaims||0)+1;saveProg();
+      try{
+        var _ladder=['30-Day Devotee','Seasoned Chromancer','Half-Year Hero','HexClaim Legend'];
+        var _had=_ladder.filter(function(t){return save.owned['title_'+t]});
+        checkTitleUnlocks();
+        var _new=_ladder.filter(function(t){return save.owned['title_'+t]&&_had.indexOf(t)<0});
+        if(_new.length){saveProg();setTimeout(function(){showToast('🏷️ Title unlocked: '+_new[_new.length-1]+'!',3500);try{playSfx('win');hexHaptic('win');}catch(e){}},900);}
+      }catch(e){}
+      // Good moment to offer daily reminders (asked once), then refresh tomorrow's reminders
+      try{askForReminders();scheduleReminders();}catch(e){}
+      // Reopen in its claimed state so the optional "double today's reward" ad is right there
+      setTimeout(function(){try{if(!document.getElementById('streakPopup'))showStreakPopup();}catch(e){}},400);
     };
   }
 }
 
 function showLuckySpin(){ return _luckySpin.apply(this,arguments); }
 var SPIN_PRIZES=[
-  {label:'50',  sub:'Coins', type:'coins',   amount:50,  weight:30, color:'#3a2f5e'},
-  {label:'100', sub:'Coins', type:'coins',   amount:100, weight:22, color:'#4a3f7e'},
-  {label:'250', sub:'Coins', type:'coins',   amount:250, weight:10, color:'#3a2f5e'},
+  {label:'25',  sub:'Coins', type:'coins',   amount:25,  weight:30, color:'#3a2f5e'},
+  {label:'50',  sub:'Coins', type:'coins',   amount:50,  weight:22, color:'#4a3f7e'},
+  {label:'125', sub:'Coins', type:'coins',   amount:125, weight:10, color:'#3a2f5e'},
   {label:'3',   sub:'Gems',  type:'chromas', amount:3,   weight:16, color:'#1f6f6f'},
   {label:'5',   sub:'Gems',  type:'chromas', amount:5,   weight:10, color:'#2a8f8f'},
   {label:'10',  sub:'Gems',  type:'chromas', amount:10,  weight:5,  color:'#1f6f6f'},
-  {label:'500', sub:'Coins', type:'coins',   amount:500, weight:5,  color:'#8f7a2a'},
+  {label:'250', sub:'Coins', type:'coins',   amount:250, weight:5,  color:'#8f7a2a'},
   {label:'25',  sub:'Gems',  type:'chromas', amount:25,  weight:2,  color:'#b8942f'}
 ];
 function getWeightedPrize(){
@@ -1215,29 +1388,29 @@ function formatCountdown(ms){
 
 // ===== QUEST SYSTEM =====
 const DAILY_QUESTS=[
-  {id:'d_play3',name:'Play 3 Games',desc:'Play any 3 games today',target:3,track:'dailyGamesPlayed',reward:{coins:50,bpXP:30},icon:'🎮'},
-  {id:'d_win1',name:'First Victory',desc:'Win 1 game today',target:1,track:'dailyWins',reward:{coins:35,bpXP:25},icon:'🏆'},
-  {id:'d_win3',name:'Triple Threat',desc:'Win 3 games today',target:3,track:'dailyWins',reward:{coins:100,chromas:5,bpXP:50},icon:'⚔️'},
-  {id:'d_campaign',name:'Campaign Run',desc:'Complete 1 campaign level',target:1,track:'dailyCampaign',reward:{coins:65,bpXP:20},icon:'📖'},
-  {id:'d_vsai',name:'AI Challenger',desc:'Play 2 VS AI matches',target:2,track:'dailyVsAi',reward:{coins:40,bpXP:20},icon:'🤖'},
-  {id:'d_combo',name:'Combo Hunter',desc:'Get a 3× combo in any game',target:1,track:'dailyCombo',reward:{coins:65,chromas:5,bpXP:35},icon:'🔥'},
+  {id:'d_play3',name:'Play 3 Games',desc:'Play any 3 games today',target:3,track:'dailyGamesPlayed',reward:{coins:25,bpXP:30},icon:'🎮'},
+  {id:'d_win1',name:'First Victory',desc:'Win 1 game today',target:1,track:'dailyWins',reward:{coins:20,bpXP:25},icon:'🏆'},
+  {id:'d_win3',name:'Triple Threat',desc:'Win 3 games today',target:3,track:'dailyWins',reward:{coins:50,chromas:3,bpXP:50},icon:'⚔️'},
+  {id:'d_campaign',name:'Campaign Run',desc:'Complete 1 campaign level',target:1,track:'dailyCampaign',reward:{coins:35,bpXP:20},icon:'📖'},
+  {id:'d_vsai',name:'AI Challenger',desc:'Play 2 VS AI matches',target:2,track:'dailyVsAi',reward:{coins:20,bpXP:20},icon:'🤖'},
+  {id:'d_combo',name:'Combo Hunter',desc:'Get a 3× combo in any game',target:1,track:'dailyCombo',reward:{coins:35,chromas:2,bpXP:35},icon:'🔥'},
 ];
 
 const WEEKLY_QUESTS=[
-  {id:'w_play15',name:'Dedicated Player',desc:'Play 15 games this week',target:15,track:'weeklyGames',reward:{coins:250,bpXP:100},icon:'💪'},
-  {id:'w_win10',name:'Win Streak Week',desc:'Win 10 games this week',target:10,track:'weeklyWins',reward:{coins:350,bpXP:150},icon:'🔥'},
-  {id:'w_campaign5',name:'Story Progress',desc:'Clear 5 campaign levels',target:5,track:'weeklyCampaign',reward:{coins:250,bpXP:80},icon:'📖'},
-  {id:'w_stars',name:'Star Collector',desc:'Earn 10 stars total this week',target:10,track:'weeklyStars',reward:{coins:175,bpXP:75},icon:'⭐'},
-  {id:'w_vsai5',name:'AI Dominator',desc:'Win 5 VS AI matches',target:5,track:'weeklyVsAiWins',reward:{coins:250,bpXP:100},icon:'🤖'},
-  {id:'w_75pct',name:'Territory King',desc:'Win a game with 80%+ territory',target:1,track:'weekly80pct',reward:{coins:175,bpXP:60},icon:'👑'},
+  {id:'w_play15',name:'Dedicated Player',desc:'Play 15 games this week',target:15,track:'weeklyGames',reward:{coins:125,bpXP:100},icon:'💪'},
+  {id:'w_win10',name:'Win Streak Week',desc:'Win 10 games this week',target:10,track:'weeklyWins',reward:{coins:175,bpXP:150},icon:'🔥'},
+  {id:'w_campaign5',name:'Story Progress',desc:'Clear 5 campaign levels',target:5,track:'weeklyCampaign',reward:{coins:125,bpXP:80},icon:'📖'},
+  {id:'w_stars',name:'Star Collector',desc:'Earn 10 stars total this week',target:10,track:'weeklyStars',reward:{coins:90,bpXP:75},icon:'⭐'},
+  {id:'w_vsai5',name:'AI Dominator',desc:'Win 5 VS AI matches',target:5,track:'weeklyVsAiWins',reward:{coins:125,bpXP:100},icon:'🤖'},
+  {id:'w_75pct',name:'Territory King',desc:'Win a game with 80%+ territory',target:1,track:'weekly80pct',reward:{coins:90,bpXP:60},icon:'👑'},
 ];
 
 const MONTHLY_QUESTS=[
-  {id:'m_play50',name:'Monthly Warrior',desc:'Play 50 games this month',target:50,track:'monthlyGames',reward:{coins:600,bpXP:300},icon:'⚔️'},
-  {id:'m_win30',name:'Champion',desc:'Win 30 games this month',target:30,track:'monthlyWins',reward:{coins:800,bpXP:400},icon:'🏆'},
-  {id:'m_campaign15',name:'Story Master',desc:'Clear 15 campaign levels',target:15,track:'monthlyCampaign',reward:{coins:650,bpXP:200},icon:'📖'},
-  {id:'m_rankup',name:'Rank Climber',desc:'Gain 200 ELO this month',target:200,track:'monthlyElo',reward:{coins:650,bpXP:350},icon:'📈'},
-  {id:'m_combo5',name:'Win Streak',desc:'Win 15 games in a row this month',target:1,track:'monthlyWinStreak',reward:{coins:500,bpXP:250},icon:'🔥'},
+  {id:'m_play50',name:'Monthly Warrior',desc:'Play 50 games this month',target:50,track:'monthlyGames',reward:{coins:300,bpXP:300},icon:'⚔️'},
+  {id:'m_win30',name:'Champion',desc:'Win 30 games this month',target:30,track:'monthlyWins',reward:{coins:400,bpXP:400},icon:'🏆'},
+  {id:'m_campaign15',name:'Story Master',desc:'Clear 15 campaign levels',target:15,track:'monthlyCampaign',reward:{coins:325,bpXP:200},icon:'📖'},
+  {id:'m_rankup',name:'Rank Climber',desc:'Gain 200 ELO this month',target:200,track:'monthlyElo',reward:{coins:325,bpXP:350},icon:'📈'},
+  {id:'m_combo5',name:'Win Streak',desc:'Win 15 games in a row this month',target:1,track:'monthlyWinStreak',reward:{coins:250,bpXP:250},icon:'🔥'},
 ];
 
 // Daily BP tasks — small repeatable tasks that give BP XP
@@ -1319,7 +1492,7 @@ function trackGameEnd(won,p1pct,isRanked,isCampaign,isVsAi){
     if(save.questClaimed[task.id])return;
     var prog=getQuestProgress(task);
     if(prog>=task.target){
-      save.bpXP+=task.bpXP;
+      addBPXP(task.bpXP);
       save.questClaimed[task.id]=true;
     }
   });
@@ -1358,6 +1531,29 @@ function buildQuests(){
   renderQuestTab('daily');
 }
 
+// ===== "ALL DONE" QUEST BONUS CHESTS =====
+// Claim once per period (game day / game week / game month). Tracked by period key, so it resets on its own.
+var QUEST_BONUS={daily:{chromas:5,bpXP:50},weekly:{chromas:20,bpXP:150},monthly:{chromas:50,title:true}};
+function questBonusKey(tab){ return tab==='daily'?getGameDay():tab==='weekly'?getGameWeekStart():getGameMonth(); }
+function monthlyChampionTitle(){
+  var k=getGameMonth().split('-'); // "YYYY-M" (month is 0-based)
+  return new Date(+k[0],+k[1],1).toLocaleString('en-US',{month:'long'})+' '+k[0]+' Champion';
+}
+function claimQuestBonus(tab){
+  var quests=tab==='daily'?DAILY_QUESTS:tab==='weekly'?WEEKLY_QUESTS:MONTHLY_QUESTS;
+  if(!quests.every(function(q){return save.questClaimed[q.id]}))return;
+  save.questBonusClaimed=save.questBonusClaimed||{};
+  var key=questBonusKey(tab); if(save.questBonusClaimed[tab]===key)return;
+  var b=QUEST_BONUS[tab], parts=[];
+  save.questBonusClaimed[tab]=key;
+  if(b.chromas){save.chromas=(save.chromas||0)+b.chromas;parts.push('💎'+b.chromas);}
+  if(b.bpXP){var _g=addBPXP(b.bpXP);parts.push('🏅'+_g+' BP');}
+  if(b.title){var t=monthlyChampionTitle();save.owned['title_'+t]=true;parts.push('🏷️ "'+t+'"');}
+  saveProg();updateShopCurrency();
+  showToast('🎁 Bonus claimed! '+parts.join(' · '),3000);
+  try{playSfx('win');hexHaptic('win');}catch(e){}
+  renderQuestTab(tab);
+}
 function renderQuestTab(tab){
   var cont=document.getElementById('questContent');
   cont.innerHTML='';
@@ -1376,6 +1572,19 @@ function renderQuestTab(tab){
     +'<div style="font-size:10px;color:var(--muted);margin-top:2px">'+completed+'/'+quests.length+' completed</div>'
     +'<div id="'+timerSpanId+'" style="font-size:10px;color:var(--c3);margin-top:3px;font-weight:700;font-family:\'IBM Plex Mono\',monospace">⏳ '+resetLabel+'</div>';
   cont.appendChild(header);
+
+  // "All done" bonus chest — finish every quest in this tab
+  var _bk=questBonusKey(tab), _bb=QUEST_BONUS[tab], _bClaimed=(save.questBonusClaimed||{})[tab]===_bk, _bReady=completed===quests.length&&!_bClaimed;
+  var _bTxt='💎'+_bb.chromas+(_bb.bpXP?' · 🏅'+_bb.bpXP+' BP':'')+(_bb.title?' · 🏷️ "'+monthlyChampionTitle()+'" title':'');
+  var bonus=document.createElement('div');bonus.className='shop-item';
+  bonus.style.cssText='margin-bottom:6px;border:1.5px solid '+(_bReady?'var(--gold)':'var(--border)')+';background:'+(_bReady?'rgba(255,209,102,0.12)':'var(--surface)')+(_bClaimed?';opacity:0.5':'');
+  bonus.innerHTML='<div class="si-preview" style="background:var(--dim);font-size:20px">🎁</div>'
+    +'<div class="si-info"><div class="si-name">Bonus Chest</div><div class="si-desc">Complete all '+quests.length+' '+tab+' quests — '+_bTxt+'</div></div>'
+    +(_bClaimed?'<div style="font-size:9px;color:var(--p1);font-weight:800">✓ Claimed</div>'
+     :_bReady?'<div style="cursor:pointer;font-size:9px;color:#1a1a24;font-weight:800;padding:6px 10px;background:var(--gold);border-radius:6px">Claim!</div>'
+     :'<div style="font-size:9px;color:var(--muted);font-weight:700">'+completed+'/'+quests.length+'</div>');
+  if(_bReady)bonus.onclick=function(){claimQuestBonus(tab);};
+  cont.appendChild(bonus);
 
   // Live countdown timer
   if(window._questTimerInterval)clearInterval(window._questTimerInterval);
@@ -1431,7 +1640,7 @@ function renderQuestTab(tab){
       el.onclick=function(){
         if(quest.reward.coins)save.coins+=quest.reward.coins;
         if(quest.reward.chromas)save.chromas=(save.chromas||0)+quest.reward.chromas;
-        if(quest.reward.bpXP)save.bpXP+=quest.reward.bpXP;
+        if(quest.reward.bpXP)addBPXP(quest.reward.bpXP);
         save.questClaimed[quest.id]=true;
         saveProg();updateShopCurrency();
         renderQuestTab(tab);
@@ -1766,8 +1975,13 @@ function loadCloudSave(uid){
       window._bootUnsynced=false; // only the save loaded at launch can be ahead of the cloud
       if(!_keepLocal){
         // Cloud is up to date -> take it, including its exact coin/diamond balance (no max = no refund).
-        var _lBpXP=save.bpXP,_lProfXP=save.profileXP,_lProfLvl=save.profileLevel,_lBpClaimed=save.bpClaimed,_lOwned=save.owned;
+        var _lBpXP=save.bpXP,_lProfXP=save.profileXP,_lProfLvl=save.profileLevel,_lBpClaimed=save.bpClaimed,_lOwned=save.owned,_lMail=save.localMail,_lPace=save.bpPace200,_lPace250=save.bpPace250,_lBpSeason=save.bpSeason;
         Object.assign(save,cloudData);
+        // Battle Pass bookkeeping belongs to the account: the 100→200 XP migration must run exactly once
+        // per account (never twice, never skipped), and the pass season comes from the account too.
+        save.bpPace200=_sameAcct?(!!cloudData.bpPace200||!!_lPace):!!cloudData.bpPace200;
+        save.bpPace250=_sameAcct?(!!cloudData.bpPace250||!!_lPace250):!!cloudData.bpPace250;
+        save.bpSeason=(cloudData.bpSeason!==undefined&&cloudData.bpSeason!==null)?cloudData.bpSeason:(_sameAcct?_lBpSeason:undefined);
         if(_sameAcct){
           // Safe merges (nothing here can be spent, so keeping the higher/combined value can't refund anything)
           save.bpXP=Math.max(save.bpXP||0,_lBpXP||0);
@@ -1781,6 +1995,9 @@ function loadCloudSave(uid){
         save.mailClaimed = Array.isArray(cloudData.mailClaimed) ? cloudData.mailClaimed : [];
         save.localMail   = Array.isArray(cloudData.localMail)   ? cloudData.localMail   : [];
         save.passMailDay = (cloudData.passMailDay && typeof cloudData.passMailDay==='object') ? cloudData.passMailDay : {};
+        // Keep a welcome-back gift created at launch for THIS account (the daily check won't run again
+        // after the cloud load, because today's login date is kept below).
+        if(_sameAcct)(_lMail||[]).forEach(function(m){ if(m&&/^welcomeback_/.test(m.id)){ addLocalMail(m); save.lastWelcomeBackAt=Math.max(save.lastWelcomeBackAt||0,m.ts||Date.now()); } });
         // The season-1 reset flag must come from the account, not this phone, or the reset never runs for it
         save.seasonResetS1=!!cloudData.seasonResetS1;
       }
@@ -1802,6 +2019,7 @@ function loadCloudSave(uid){
       showScreen('menuScreen');
       showToast('✓ Welcome back, '+save.playerName+'!',2000);
       // Run daily login check after cloud restore — cloud data may have yesterday's date
+      try{syncBattlePassSeason();}catch(e){} // account's pass: migration / new-season reset
       window._dailyLoginChecked=false;
       checkDailyLogin();
     } else {
@@ -2425,6 +2643,21 @@ function renderProfileTab(tab,externalCont){
       if(owned){(function(itemId){el.onclick=function(){save.equipped.title=itemId;saveProg();updateTopBar();renderProfileTab('equipped',externalCont);playSfx('click')};})(item.id);}
       cont.appendChild(el);
     });
+    // Earned titles that aren't in the shop list (season rewards, "Month YYYY Champion", ...) — equip them here too
+    var _shopIds={};SHOP_TITLES.forEach(function(t){_shopIds[t.id]=1;});
+    var _earned=Object.keys(save.owned).filter(function(k){return k.indexOf('title_')===0&&save.owned[k]&&!_shopIds[k.slice(6)];}).map(function(k){return k.slice(6);});
+    if(_earned.length){
+      var earnedHead=document.createElement('div');earnedHead.style.cssText='font-size:11px;font-weight:800;color:var(--gold);margin:14px 0 6px;text-transform:uppercase;letter-spacing:1px';
+      earnedHead.textContent='🏆 Earned Titles';cont.appendChild(earnedHead);
+      _earned.forEach(function(tid){
+        var eq=save.equipped.title===tid;
+        var el=document.createElement('div');el.className='shop-item';
+        el.innerHTML='<div class="si-preview" style="background:var(--dim)"><div style="font-size:18px">🏆</div></div><div class="si-info"><div class="si-name" style="color:var(--gold);font-weight:800">'+escHtml(tid)+'</div></div>'
+          +(eq?'<div class="si-equipped">Equipped ✓</div>':'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>');
+        (function(id){el.onclick=function(){save.equipped.title=id;saveProg();updateTopBar();renderProfileTab('equipped',externalCont);playSfx('click')};})(tid);
+        cont.appendChild(el);
+      });
+    }
   }
 
   else if(tab==='owned'){
@@ -2694,7 +2927,7 @@ function checkAdReset(){
   var today=getGameDay();
   if(save.lastAdDate!==today){
     save.lastAdDate=today;
-    save.adCoinsToday=0; save.adGemsToday=0; save.adDoubleToday=0;
+    save.adCoinsToday=0; save.adGemsToday=0; save.adDoubleToday=0; save.adBpToday=0;
     saveProg();
   }
 }
@@ -2707,11 +2940,11 @@ function adCountLeft(kind){
 }
 function watchAdFor(kind){
   if(adCountLeft(kind)<=0){ showToast('Come back tomorrow for more!',2000); return; }
-  var label=kind==='coins'?'🟡 25 Coins':kind==='gems'?'💎 3 Diamonds':'2× Next Match Rewards';
+  var label=kind==='coins'?'🟡 15 Coins':kind==='gems'?'💎 2 Diamonds':'2× Next Match Rewards';
   showRewardedAd(label,function(){
     checkAdReset();
-    if(kind==='coins'){ save.coins+=25; save.adCoinsToday=(save.adCoinsToday||0)+1; showToast('🟡 +25 coins!',2000); }
-    else if(kind==='gems'){ save.chromas+=3; save.adGemsToday=(save.adGemsToday||0)+1; showToast('💎 +3 diamonds!',2000); }
+    if(kind==='coins'){ save.coins+=15; save.adCoinsToday=(save.adCoinsToday||0)+1; showToast('🟡 +15 coins!',2000); }
+    else if(kind==='gems'){ save.chromas+=2; save.adGemsToday=(save.adGemsToday||0)+1; showToast('💎 +2 diamonds!',2000); }
     else { save.adDoubleActive=true; save.adDoubleToday=(save.adDoubleToday||0)+1; showToast('2× rewards armed for your next match!',2500); }
     saveProg();
     try{ updateAllUI(); }catch(e){}
@@ -2750,8 +2983,8 @@ function showFreeRewards(){
   }
   m.innerHTML='<div style="background:var(--bg,#12101a);border:1px solid var(--border);border-radius:16px;padding:18px;max-width:340px;width:100%;margin:auto;text-align:center">'
     +'<div style="font-size:15px;font-weight:800;color:var(--gold);margin-bottom:12px">🎁 FREE REWARDS</div>'
-    +adRow('coins','🟡','25 Coins',c,AD_CAPS.coins)
-    +adRow('gems','💎','3 Diamonds',g,AD_CAPS.gems)
+    +adRow('coins','🟡','15 Coins',c,AD_CAPS.coins)
+    +adRow('gems','💎','2 Diamonds',g,AD_CAPS.gems)
     +'<button onclick="document.getElementById(\'freeRewardsModal\').remove();showLuckySpin()" style="width:100%;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid '+(canSpin?'var(--gold)':'var(--border)')+';border-radius:10px;padding:10px;margin-bottom:8px;cursor:pointer;font-family:Manrope,sans-serif">'
     +'<div style="font-size:22px">🎰</div>'
     +'<div style="flex:1;text-align:left"><div style="font-size:12px;font-weight:800;color:var(--text)">Lucky Spin</div>'
@@ -2779,8 +3012,8 @@ function adFreebiesHtml(){
       +'</div>';
   }
   return '<div style="font-size:11px;font-weight:800;color:var(--gold);margin:2px 0 6px">🎬 FREE REWARDS — WATCH & EARN</div>'
-    +row('coins','🟡','25 Coins',c,AD_CAPS.coins)
-    +row('gems','💎','3 Diamonds',g,AD_CAPS.gems);
+    +row('coins','🟡','15 Coins',c,AD_CAPS.coins)
+    +row('gems','💎','2 Diamonds',g,AD_CAPS.gems);
 }
 
 // ===== MAILBOX =====
@@ -2810,8 +3043,11 @@ function _grantPassMailToday(){
     save.lastPassGrantDate=_pd; saveProg(); try{updateMailDot();}catch(e){}
   }catch(e){}
 }
+var MAIL_EXPIRE_MS=30*86400000; // unclaimed mail disappears after 30 days
 function _mailList(cb){
-  var out=[];
+  var out=[], _now=Date.now(), _claimed=save.mailClaimed||[];
+  // Drop expired local mail from the save
+  if(save.localMail&&save.localMail.length){var _keep=save.localMail.filter(function(m){return !m.ts||_now-m.ts<MAIL_EXPIRE_MS;});if(_keep.length!==save.localMail.length){save.localMail=_keep;saveProg();}}
   (save.localMail||[]).forEach(function(m){
     out.push({id:'l_'+m.id,lkey:m.id,subject:m.subject,body:m.body,coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
   });
@@ -2820,12 +3056,16 @@ function _mailList(cb){
   tasks.push(firebaseDB.ref('mailBroadcast').once('value').then(function(s){
     var v=s.val()||{}; Object.keys(v).forEach(function(k){ var m=v[k]||{};
       if(m.expires&&m.expires<Date.now())return;
+      if(_claimed.indexOf('b_'+k)>=0)return;                 // claimed → hidden automatically
+      if(m.ts&&_now-m.ts>=MAIL_EXPIRE_MS)return;             // older than 30 days → expired
       out.push({id:'b_'+k,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
     });
   }).catch(function(){}));
   if(save.authUid&&!save.isGuest){
     tasks.push(firebaseDB.ref('mail/'+save.authUid).once('value').then(function(s){
       var v=s.val()||{}; Object.keys(v).forEach(function(k){ var m=v[k]||{};
+        if(m.claimed||_claimed.indexOf('p_'+k)>=0)return;      // claimed → hidden automatically
+        if(m.ts&&_now-m.ts>=MAIL_EXPIRE_MS)return;             // older than 30 days → expired
         out.push({id:'p_'+k,pkey:k,subject:m.subject||'Message',body:m.body||'',coins:m.coins||0,chromas:m.chromas||0,ts:m.ts||0});
       });
     }).catch(function(){}));
@@ -3070,10 +3310,10 @@ function getRewardForLevel(lv){
   if(lv===50)return{type:'milestone',desc:'💚 DEDICATED! Title: Dedicated!'};
   if(lv%100===0)return{type:'chromas',amount:1000,desc:'1000 💎 Century Bonus!'};
   if(lv%50===0)return{type:'portrait',id:['🐲','⚡','🌟','💠','🔥','🌊','☠️','👾','🦅','🎭','💫','🌙','🗡️','🛡️','🏴‍☠️','🦊','🐺','🦁','🎪','🃏'][Math.floor(lv/50)%20],desc:'Rare Portrait!'};
-  if(lv%25===0)return{type:'chromas',amount:200,desc:'200 💎'};
-  if(lv%10===0)return{type:'chromas',amount:75,desc:'75 💎'};
-  if(lv%5===0)return{type:'coins',amount:200+lv*5,desc:(200+lv*5)+' 🟡'};
-  return{type:'coins',amount:75+lv*2,desc:(75+lv*2)+' 🟡'};
+  if(lv%25===0)return{type:'chromas',amount:120,desc:'120 💎'};
+  if(lv%10===0)return{type:'chromas',amount:40,desc:'40 💎'};
+  if(lv%5===0)return{type:'coins',amount:100+Math.round(lv*2.5),desc:(100+Math.round(lv*2.5))+' 🟡'};
+  return{type:'coins',amount:40+lv,desc:(40+lv)+' 🟡'};
 }
 
 function addProfileXP(amount){
@@ -3133,6 +3373,26 @@ function tryRankedPVP(){
 
 // ===== UPDATE ALL UI =====
 const GAME_NEWS=[
+  {version:'v2.6',date:'October 2026',title:'Seasons, Rewards & Rebalance',notes:[
+    '🔥 Battle Pass is now seasonal — a fresh 100 levels every season, unclaimed rewards are added for you automatically',
+    '⚡ Catch-up XP ×2 when you\'re behind the season\'s pace, plus buy levels with diamonds (+1 or +10)',
+    '🎁 Keep going past level 100 — earn repeatable Bonus Chests',
+    '⚡ 2× Booster — double match coins and Battle Pass XP for 7 days',
+    '⏰ Limited shop: one exclusive theme, border and effect every 2 weeks — the same drop for every player',
+    '🛍️ New coin-shop skins arrive every season, starting Season 2',
+    '👑 Crowns now show a pie timer — one slice disappears each turn until they move',
+    '🎁 Bonus Chest for completing all your Daily, Weekly or Monthly quests',
+    '🏷️ New loyalty titles for claiming daily rewards — 30-Day Devotee up to HexClaim Legend',
+    '🏆 Season and monthly titles can now be re-equipped from your Profile',
+    '📺 New optional ads — +3 moves in challenges, restore a broken streak, double your daily reward, and +50 Battle Pass XP',
+    '🔔 Daily reminders when your reward is ready (switch off in Settings)',
+    '💎 Welcome-back gift if you\'ve been away for a week or more',
+    '💬 Join our Discord from Settings — get 💎 50 as a thank-you',
+    '📬 Claimed mail now clears itself, and old mail expires after 30 days',
+    '⭐ Campaign stars rebalanced — every win earns at least 1 star, and 3 stars is now equally fair in every chapter',
+    '⚖️ Coin and diamond rewards and shop prices rebalanced ahead of launch — login milestones 7, 14, 21 and 30 still give the biggest rewards',
+    '🛠️ Battle Pass effect rewards are now granted correctly',
+  ]},
   {version:'v2.5',date:'October 2026',title:'Season 1 Fresh Start',notes:[
     '🏁 Season 1 fresh start — everyone begins the new season on equal footing',
     '📅 Seasons now end on fixed dates — Season 1 ends January 1, 2027, then every two months',
@@ -3268,6 +3528,8 @@ function updateAllUI(){
   try{updateMailDot();}catch(e){}
   try{updateFriendDot();}catch(e){}
   try{updateHapticsToggle();}catch(e){}
+  try{updateNotifToggle();}catch(e){}
+  try{updateDiscordCard();}catch(e){}
   updateTopBar();
   updateNewsBanner();
   // Update settings name display
@@ -3368,11 +3630,11 @@ function setVolume(type,val){
 // ===== END SKIN REFERENCE =====
 const SHOP_THEMES=[
   {tier:0,id:'default',name:'Default',desc:'Classic chromatic tiles',price:0,currency:'free',preview:'🎨',colors:['#3a3660','#06d6a0','#118ab2','#ffd166','#ef476f','#8338ec','#ff8c42','#2ec4b6'],symbols:['◆','●','▲','✦','✚','⬡','◐','◈']},
-  {tier:0,id:'ocean',name:'Deep Sea',desc:'Calm underwater blues',price:500,currency:'coins',preview:'🌊',colors:['#020c1b','#00ccaa','#0066dd','#33dd88','#dd3366','#6622ee','#ff6622','#22ccff'],symbols:['〰','◎','▽','≋','◇','⌇','≈','◌']},
-  {tier:1,id:'neon',name:'Neon Rush',desc:'Blazing electric glow',price:1000,currency:'coins',preview:'💜',colors:['#0a0020','#00ff87','#00bbdd','#ffee55','#ff0066','#bb11aa','#ff7722','#22ffcc'],symbols:['⚡','◉','▶','◈','✧','⬟','◆','◎']},
-  {tier:1,id:'fire',name:'Hellfire',desc:'Molten lava and brimstone',price:1500,currency:'coins',preview:'🔥',colors:['#1a0000','#ff3300','#ff8800','#ffcc00','#ff0066','#880000','#ff44aa','#cc6600'],symbols:['⬥','▲','◆','☠','✖','◥','◣','▼']},
-  {tier:2,id:'galaxy',name:'Galaxy Nebula',desc:'Cosmic stardust swirl',price:2500,currency:'coins',preview:'🌌',colors:['#000010','#cc44ff','#4488ff','#ff44aa','#44ffcc','#ffaa22','#ff6644','#44ff88'],symbols:['✦','⊹','✵','⋆','✷','⊛','⊕','✶']},
-  {tier:2,id:'blood',name:'Bloodmoon',desc:'Dark crimson shadow ritual',price:3500,currency:'coins',preview:'🩸',colors:['#0a0000','#cc0022','#ff6699','#660000','#ff0044','#330033','#990000','#ff3366'],symbols:['☽','✠','◆','❖','✟','◇','☾','✝']},
+  {tier:0,id:'ocean',name:'Deep Sea',desc:'Calm underwater blues',price:800,currency:'coins',preview:'🌊',colors:['#020c1b','#00ccaa','#0066dd','#33dd88','#dd3366','#6622ee','#ff6622','#22ccff'],symbols:['〰','◎','▽','≋','◇','⌇','≈','◌']},
+  {tier:1,id:'neon',name:'Neon Rush',desc:'Blazing electric glow',price:1500,currency:'coins',preview:'💜',colors:['#0a0020','#00ff87','#00bbdd','#ffee55','#ff0066','#bb11aa','#ff7722','#22ffcc'],symbols:['⚡','◉','▶','◈','✧','⬟','◆','◎']},
+  {tier:1,id:'fire',name:'Hellfire',desc:'Molten lava and brimstone',price:3000,currency:'coins',preview:'🔥',colors:['#1a0000','#ff3300','#ff8800','#ffcc00','#ff0066','#880000','#ff44aa','#cc6600'],symbols:['⬥','▲','◆','☠','✖','◥','◣','▼']},
+  {tier:2,id:'galaxy',name:'Galaxy Nebula',desc:'Cosmic stardust swirl',price:6000,currency:'coins',preview:'🌌',colors:['#000010','#cc44ff','#4488ff','#ff44aa','#44ffcc','#ffaa22','#ff6644','#44ff88'],symbols:['✦','⊹','✵','⋆','✷','⊛','⊕','✶']},
+  {tier:2,id:'blood',name:'Bloodmoon',desc:'Dark crimson shadow ritual',price:10000,currency:'coins',preview:'🩸',colors:['#0a0000','#cc0022','#ff6699','#660000','#ff0044','#330033','#990000','#ff3366'],symbols:['☽','✠','◆','❖','✟','◇','☾','✝']},
   {tier:3,id:'hologram',name:'Holographic',desc:'Iridescent shifting chrome',price:0,currency:'free',achievement:true,hidden:true,shopLocked:true,preview:'🪩',colors:['#0a0a1a','#dd66aa','#44cccc','#ccaa44','#6688dd','#cc6633','#8866dd','#44aa66'],symbols:['◈','⬡','✧','⬢','◇','⬟','⬣','◆']},
   {tier:3,id:'aurora',name:'Aurora Borealis',desc:'Shimmering northern lights dance',price:0,currency:'free',achievement:true,hidden:true,shopLocked:true,preview:'🌌',colors:['#000a10','#00ffaa','#44aaff','#88ff44','#ff44ff','#ffaa00','#ff4444','#44ffff'],symbols:['❋','✺','◎','✹','⊕','✵','✷','⊛']},
   {tier:3,id:'stormcaller',name:'Stormcaller',desc:'Thunder and lightning crackling energy',price:0,currency:'free',achievement:true,hidden:true,shopLocked:true,preview:'⛈️',colors:['#000a05','#44dd00','#00aaff','#ffee00','#00ff88','#ff6600','#4444ff','#aaffaa'],symbols:['⚡','☇','◈','✧','⊛','◆','⊕','✦']},
@@ -3559,6 +3821,8 @@ function checkSeasonEnd(){
     saveProg();
     updateShopCurrency();
     showSeasonRewardPopup(playerRank,reward,seasonNum,oldElo);
+    // New season → new Battle Pass (auto-claims anything left from the old one first)
+    try{syncBattlePassSeason();}catch(e){}
   }
   if(!save.seasonHighElo||save.elo>save.seasonHighElo){save.seasonHighElo=save.elo;saveProg();}
 }
@@ -3599,10 +3863,10 @@ function showSeasonRewardPopup(rank,reward,seasonNum,oldElo){
 
 const SHOP_BORDERS=[
   {id:'default',name:'Standard',price:0,currency:'free',preview:'⬜'},
-  {id:'flame',name:'Flame Border',price:500,currency:'coins',preview:'🔥'},
-  {id:'electric',name:'Electric Spark',price:800,currency:'coins',preview:'⚡'},
-  {id:'frost',name:'Frostbite',price:1200,currency:'coins',preview:'❄️'},
-  {id:'shadow',name:'Shadow Pulse',price:1800,currency:'coins',preview:'🌑'},
+  {id:'flame',name:'Flame Border',price:600,currency:'coins',preview:'🔥'},
+  {id:'electric',name:'Electric Spark',price:1500,currency:'coins',preview:'⚡'},
+  {id:'frost',name:'Frostbite',price:3000,currency:'coins',preview:'❄️'},
+  {id:'shadow',name:'Shadow Pulse',price:5000,currency:'coins',preview:'🌑'},
   {id:'neon_pulse',name:'Neon Pulse',price:0,currency:'free',preview:'💜',achievement:true,shopLocked:true},
   {id:'galaxy_border',name:'Galaxy Swirl',price:0,currency:'free',preview:'🌌',achievement:true,shopLocked:true},
   {id:'storm_border',name:'Storm Ring',price:0,currency:'free',preview:'⛈️',achievement:true,shopLocked:true},
@@ -3634,13 +3898,54 @@ const SHOP_BORDERS=[
   {id:'season_chroma_border',name:'Chromancer Season Frame',price:0,currency:'free',preview:'🔮',seasonal:true,season:1},
 ];
 
+// ===== SEASONAL COIN-SHOP DROPS (automatic) =====
+// A year of pre-made coin items. Each one appears in the coin shop by itself when its season starts
+// (seasons change on fixed dates — see getSeasonEnd), tagged "Season N drop". No game update needed.
+// 3 per season (2 themes + 1 border) ≈ 17,000 coins — about what a typical player earns in a 2-month season.
+// To add more later: append entries with the next season number.
+const SEASON_DROPS=[
+  // Season 2 — winter (from Jan 1 2027)
+  {kind:'theme',dropSeason:2,tier:1,id:'sd2_frozen',name:'Frozen Tundra',desc:'Glacier blues and frost',price:5000,currency:'coins',preview:'❄️',colors:['#0b1a2e','#5ce1e6','#3a86ff','#e0f7ff','#ff6b9d','#9b5de5','#ffd166','#2ec4b6'],symbols:['❄','◇','△','✧','✕','⬡','◌','✦']},
+  {kind:'theme',dropSeason:2,tier:2,id:'sd2_lunar',name:'Lunar Festival',desc:'Lanterns, red and gold',price:8000,currency:'coins',preview:'🏮',colors:['#2a0a0a','#ff3b3b','#ffb703','#06d6a0','#ff70a6','#8338ec','#fb8500','#3a86ff'],symbols:['☯','◉','▲','✦','✚','⬡','◐','◈']},
+  {kind:'border',dropSeason:2,id:'sd2_frost_crown',name:'Frost Halo',price:4000,currency:'coins',preview:'❄️',style:'border:3px solid #7fd8ff;box-shadow:0 0 12px rgba(127,216,255,0.6);animation:borderBreathe 3s ease infinite'},
+  // Season 3 — spring
+  {kind:'theme',dropSeason:3,tier:1,id:'sd3_bloom',name:'Spring Bloom',desc:'Petals and fresh greens',price:5000,currency:'coins',preview:'🌸',colors:['#1e1b2e','#ff8fab','#80ed99','#ffd6a5','#c77dff','#48cae4','#f15bb5','#fee440'],symbols:['✿','●','▲','❀','✚','⬡','◐','✦']},
+  {kind:'theme',dropSeason:3,tier:2,id:'sd3_storm',name:'Thunderstorm',desc:'Lightning over dark skies',price:8000,currency:'coins',preview:'⛈️',colors:['#0d1321','#ffd60a','#4895ef','#adb5bd','#ef233c','#7209b7','#4cc9f0','#f77f00'],symbols:['ϟ','◉','▼','✧','✖','⬟','◒','◈']},
+  {kind:'border',dropSeason:3,id:'sd3_petal_ring',name:'Petal Ring',price:4000,currency:'coins',preview:'🌸',style:'border:3px solid #ff8fab;box-shadow:0 0 12px rgba(255,143,171,0.6);animation:borderPulse 2.5s ease infinite;--bc:255,143,171'},
+  // Season 4 — early summer
+  {kind:'theme',dropSeason:4,tier:1,id:'sd4_reef',name:'Tropical Reef',desc:'Coral and turquoise water',price:5000,currency:'coins',preview:'🐠',colors:['#03203c','#00f5d4','#00bbf9','#fee440','#f15bb5','#9b5de5','#ff8500','#80ffdb'],symbols:['〰','◎','▽','✦','◇','⬡','≈','◌']},
+  {kind:'theme',dropSeason:4,tier:2,id:'sd4_desert',name:'Desert Mirage',desc:'Sun-baked sand and oasis',price:8000,currency:'coins',preview:'🏜️',colors:['#2b1d0e','#e9c46a','#f4a261','#e76f51','#2a9d8f','#9d4edd','#ffe8d6','#d00000'],symbols:['☀','◉','▲','✧','✚','⬟','◐','◈']},
+  {kind:'border',dropSeason:4,id:'sd4_coral_halo',name:'Coral Halo',price:4000,currency:'coins',preview:'🪸',style:'border:3px solid #00f5d4;box-shadow:0 0 12px rgba(0,245,212,0.55);animation:borderBreathe 3.5s ease infinite'},
+  // Season 5 — summer
+  {kind:'theme',dropSeason:5,tier:1,id:'sd5_sunset',name:'Sunset Boulevard',desc:'Warm neon dusk',price:5000,currency:'coins',preview:'🌇',colors:['#1a0b2e','#ff6d00','#ff006e','#ffbe0b','#8338ec','#3a86ff','#fb5607','#06d6a0'],symbols:['◆','●','▲','✦','✚','⬡','◐','◈']},
+  {kind:'theme',dropSeason:5,tier:2,id:'sd5_fireworks',name:'Fireworks Night',desc:'Bursting colour in the dark',price:8000,currency:'coins',preview:'🎆',colors:['#0a0a1a','#ff0054','#00f5ff','#ffea00','#7cff00','#bf00ff','#ff8800','#ffffff'],symbols:['✸','✺','✷','✹','✶','✴','✳','❋']},
+  {kind:'border',dropSeason:5,id:'sd5_solar_ring',name:'Solar Ring',price:4000,currency:'coins',preview:'☀️',style:'border:3px solid #ffbe0b;box-shadow:0 0 14px rgba(255,190,11,0.6);animation:borderOrbit 2.5s linear infinite;--bc:255,190,11'},
+  // Season 6 — autumn
+  {kind:'theme',dropSeason:6,tier:1,id:'sd6_harvest',name:'Harvest Moon',desc:'Amber fields and falling leaves',price:5000,currency:'coins',preview:'🍂',colors:['#1f140a','#d4a373','#e76f51','#ffb703','#606c38','#9c6644','#bc4749','#f2e8cf'],symbols:['❦','●','▲','✦','✚','⬡','◐','◈']},
+  {kind:'theme',dropSeason:6,tier:2,id:'sd6_haunted',name:'Haunted Hollow',desc:'Spooky glow in the dark woods',price:8000,currency:'coins',preview:'👻',colors:['#0b0b12','#7cff4f','#9d4edd','#ff7b00','#3a0ca3','#e0e0e0','#ff006e','#00b4d8'],symbols:['☠','◉','▼','✧','✖','⬟','◒','◈']},
+  {kind:'border',dropSeason:6,id:'sd6_pumpkin_glow',name:'Pumpkin Glow',price:4000,currency:'coins',preview:'🎃',style:'border:3px solid #ff7b00;box-shadow:0 0 14px rgba(255,123,0,0.6);animation:borderPulse 2s ease infinite;--bc:255,123,0'},
+  // Season 7 — winter holidays
+  {kind:'theme',dropSeason:7,tier:1,id:'sd7_aurora',name:'Aurora Night',desc:'Northern lights over snow',price:5000,currency:'coins',preview:'🌌',colors:['#050a1f','#2ef2b2','#7b2ff7','#00d4ff','#f72585','#b8f2e6','#4361ee','#ffd166'],symbols:['✧','◎','△','✦','◇','⬡','◌','❄']},
+  {kind:'theme',dropSeason:7,tier:2,id:'sd7_candy',name:'Candy Cane',desc:'Peppermint holiday treats',price:8000,currency:'coins',preview:'🍬',colors:['#2b0f1e','#ff4d6d','#f8f9fa','#2dc653','#ffb3c6','#4cc9f0','#c77dff','#ffd60a'],symbols:['✚','●','▲','❄','✦','⬡','◐','◈']},
+  {kind:'border',dropSeason:7,id:'sd7_starlight',name:'Starlight Wreath',price:4000,currency:'coins',preview:'⭐',style:'border:3px solid #ffd166;box-shadow:0 0 14px rgba(255,209,102,0.55),0 0 6px rgba(46,242,178,0.4);animation:borderOrbit 3s linear infinite;--bc:255,209,102'},
+];
+SEASON_DROPS.forEach(function(d){
+  var item=Object.assign({},d); var label='🆕 Season '+d.dropSeason+' drop';
+  item.desc=d.desc?label+' — '+d.desc:label; delete item.kind;
+  (d.kind==='theme'?SHOP_THEMES:SHOP_BORDERS).push(item);
+});
+// Not out yet? Hidden from the shop (owned items always show)
+// This season's new drops first, everything else keeps its order
+function newDropsFirst(list){var cur=save.season||1;return list.filter(function(i){return i.dropSeason===cur}).concat(list.filter(function(i){return i.dropSeason!==cur}));}
+function dropAvailable(item,ownKey){ return !item.dropSeason||item.dropSeason<=(save.season||1)||(ownKey&&save.owned[ownKey]); }
+
 const SHOP_EFFECTS=[
   {id:'none',name:'No Effect',desc:'Clean, no visual effects',price:0,currency:'free',preview:'⬜'},
-  {id:'confetti',name:'Confetti Pop',desc:'Colorful celebration burst',price:500,currency:'coins',preview:'🎉'},
-  {id:'sparkle',name:'Stardust Burst',desc:'Exploding diamond stars scatter',price:800,currency:'coins',preview:'✨'},
-  {id:'pulse',name:'Shockwave',desc:'Massive expanding energy rings',price:1200,currency:'coins',preview:'💫'},
-  {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:1800,currency:'coins',preview:'🔥'},
-  {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:2500,currency:'coins',preview:'⚡'},
+  {id:'confetti',name:'Confetti Pop',desc:'Colorful celebration burst',price:600,currency:'coins',preview:'🎉'},
+  {id:'sparkle',name:'Stardust Burst',desc:'Exploding diamond stars scatter',price:1500,currency:'coins',preview:'✨'},
+  {id:'pulse',name:'Shockwave',desc:'Massive expanding energy rings',price:3000,currency:'coins',preview:'💫'},
+  {id:'fire_trail',name:'Inferno Blast',desc:'Raging fireball with ember particles',price:5000,currency:'coins',preview:'🔥'},
+  {id:'lightning',name:'Thunder God',desc:'Multiple forked lightning bolts',price:8000,currency:'coins',preview:'⚡'},
   {id:'rainbow_wave',name:'Prismatic Nova',desc:'Blinding rainbow supernova rays',price:0,currency:'free',preview:'🌈',achievement:true,shopLocked:true},
   {id:'plasma',name:'Plasma Storm',desc:'Violent plasma arcs with nuclear glow',price:0,currency:'free',preview:'⚛️',achievement:true,shopLocked:true},
   {id:'storm_fx',name:'Lightning Storm',desc:'Forked lightning across the whole tile',price:0,currency:'free',preview:'⛈️',achievement:true,shopLocked:true},
@@ -3658,65 +3963,72 @@ const SHOP_EFFECTS=[
 // ===== LIMITED EDITION SHOP (rotates every 2 weeks) =====
 const LIMITED_EDITION_POOL=[
   // ===== THEMES (18 total) =====
-  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Dark throne of hellfire obsidian',price:1200,currency:'chromas',preview:'👹',tier:4,colors:['#080a0c','#778899','#556677','#99aabb','#334455','#aabbcc','#1a2233','#ccdde0'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
-  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1400,currency:'chromas',preview:'🌊',tier:3,colors:['#050508','#334477','#223366','#445588','#112255','#556699','#0a1133','#6677aa'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
+  {type:'theme',id:'le_inferno',name:'Infernal King',desc:'LIMITED — Dark throne of hellfire obsidian',price:1500,currency:'chromas',preview:'👹',tier:4,colors:['#080a0c','#778899','#556677','#99aabb','#334455','#aabbcc','#1a2233','#ccdde0'],symbols:['♛','🜂','✦','◆','✖','▼','◥','⬥']},
+  {type:'theme',id:'le_deep_ocean',name:'Abyssal Depths',desc:'LIMITED — Bioluminescent creatures of the deep',price:1500,currency:'chromas',preview:'🌊',tier:3,colors:['#050508','#334477','#223366','#445588','#112255','#556699','#0a1133','#6677aa'],symbols:['≋','◎','◇','✧','◈','▽','○','△']},
   {type:'theme',id:'le_nether',name:'Nether Realm',desc:'LIMITED — Dark underworld abyss',price:1500,currency:'chromas',preview:'😈',tier:4,colors:['#050005','#aa00ff','#ff0044','#00ffaa','#ff8800','#4400aa','#ff00aa','#0044ff'],symbols:['☠','✟','◆','❖','✦','◇','✝','◈']},
-  {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1200,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
-  {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1300,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
-  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1600,currency:'chromas',preview:'✨',tier:4,colors:['#000a05','#00cc66','#008844','#44ff88','#006633','#22dd77','#004422','#88ffaa'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
-  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Eclipse of silver and shadow',price:1400,currency:'chromas',preview:'🌙',tier:4,colors:['#050010','#9966cc','#cc99ff','#6633aa','#440088','#bb77ee','#330066','#eeccff'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
-  {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1300,currency:'chromas',preview:'🌞',tier:4,colors:['#010810','#336677','#224455','#558899','#113344','#447788','#002233','#66aabb'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
-  {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1200,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
-  {type:'theme',id:'le_vaporwave',name:'Vaporwave Dream',desc:'LIMITED — Retro aesthetic overload',price:1300,currency:'chromas',preview:'🌴',tier:3,colors:['#0a0014','#ff71ce','#01cdfe','#05ffa1','#b967ff','#fffb96','#ff6b6b','#8ec5fc'],symbols:['◆','▲','◇','✦','⬡','●','✧','⊕']},
-  {type:'theme',id:'le_steampunk',name:'Steampunk Engine',desc:'LIMITED — Brass gears and copper pipes',price:1400,currency:'chromas',preview:'⚙️',tier:3,colors:['#080300','#8b2500','#a03010','#cc4422','#6b1500','#bb3311','#440800','#dd6644'],symbols:['⚙','⊕','◈','✦','⬢','◆','⊛','⬡']},
-  {type:'theme',id:'le_cosmic_dust',name:'Cosmic Dust',desc:'LIMITED — Stardust nebula swirl',price:1400,currency:'chromas',preview:'💫',tier:4,colors:['#000005','#ff6633','#ffcc00','#66ffcc','#cc33ff','#3366ff','#ff3366','#33ff66'],symbols:['✶','⊹','✵','⋆','✷','⊛','⊕','✧']},
-  {type:'theme',id:'le_midnight',name:'Midnight Raven',desc:'LIMITED — Darkest hour before dawn',price:1200,currency:'chromas',preview:'🦇',tier:3,colors:['#080808','#1a1a2e','#2a2a3e','#3a3a4e','#111128','#4a4a5e','#0a0a18','#5a5a6e'],symbols:['◇','◎','▽','✧','◈','△','○','◆']},
-  {type:'theme',id:'le_candy',name:'Candy Pop',desc:'LIMITED — Sugar rush explosion',price:1100,currency:'chromas',preview:'🍬',tier:3,colors:['#1a0010','#ff44aa','#44ddff','#ffee44','#ff8844','#44ff88','#dd44ff','#ff4444'],symbols:['♡','★','♦','●','✦','✧','◆','▲']},
+  {type:'theme',id:'le_sakura',name:'Cherry Blossom',desc:'LIMITED — Spring in full bloom',price:1500,currency:'chromas',preview:'🌸',tier:3,colors:['#1a0810','#ff88aa','#ffaacc','#ff6688','#ffccdd','#cc4466','#ff99bb','#ee5577'],symbols:['❀','✿','♡','☆','✾','♥','❁','✧']},
+  {type:'theme',id:'le_cyber',name:'Cyber Samurai',desc:'LIMITED — Neon blade warrior',price:1500,currency:'chromas',preview:'⚔️',tier:4,colors:['#000008','#00ffcc','#ff0066','#ffff00','#00aaff','#ff00ff','#00ff00','#ff8800'],symbols:['⟁','⌬','⏣','⎔','⟐','⏢','⌖','⏥']},
+  {type:'theme',id:'le_golden',name:'Midas Touch',desc:'LIMITED — Everything turns to gold',price:1500,currency:'chromas',preview:'✨',tier:4,colors:['#000a05','#00cc66','#008844','#44ff88','#006633','#22dd77','#004422','#88ffaa'],symbols:['♛','⚜','♕','❖','✦','♔','⚝','✧']},
+  {type:'theme',id:'le_blood_moon',name:'Blood Moon',desc:'LIMITED — Eclipse of silver and shadow',price:1500,currency:'chromas',preview:'🌙',tier:4,colors:['#050010','#9966cc','#cc99ff','#6633aa','#440088','#bb77ee','#330066','#eeccff'],symbols:['☽','◉','✦','◆','❖','✧','◇','⬡']},
+  {type:'theme',id:'le_aurora',name:'Solar Flare',desc:'LIMITED — Explosive solar corona burst',price:1500,currency:'chromas',preview:'🌞',tier:4,colors:['#010810','#336677','#224455','#558899','#113344','#447788','#002233','#66aabb'],symbols:['☀','✸','✴','⊛','✦','◉','⊕','✺']},
+  {type:'theme',id:'le_jade',name:'Jade Emperor',desc:'LIMITED — Ancient jade dynasty',price:1500,currency:'chromas',preview:'🐲',tier:4,colors:['#001a0a','#00aa66','#008844','#44cc88','#006633','#22bb77','#00dd88','#339966'],symbols:['龍','◈','✦','◆','⬡','✧','◇','⊕']},
+  {type:'theme',id:'le_vaporwave',name:'Vaporwave Dream',desc:'LIMITED — Retro aesthetic overload',price:1500,currency:'chromas',preview:'🌴',tier:3,colors:['#0a0014','#ff71ce','#01cdfe','#05ffa1','#b967ff','#fffb96','#ff6b6b','#8ec5fc'],symbols:['◆','▲','◇','✦','⬡','●','✧','⊕']},
+  {type:'theme',id:'le_steampunk',name:'Steampunk Engine',desc:'LIMITED — Brass gears and copper pipes',price:1500,currency:'chromas',preview:'⚙️',tier:3,colors:['#080300','#8b2500','#a03010','#cc4422','#6b1500','#bb3311','#440800','#dd6644'],symbols:['⚙','⊕','◈','✦','⬢','◆','⊛','⬡']},
+  {type:'theme',id:'le_cosmic_dust',name:'Cosmic Dust',desc:'LIMITED — Stardust nebula swirl',price:1500,currency:'chromas',preview:'💫',tier:4,colors:['#000005','#ff6633','#ffcc00','#66ffcc','#cc33ff','#3366ff','#ff3366','#33ff66'],symbols:['✶','⊹','✵','⋆','✷','⊛','⊕','✧']},
+  {type:'theme',id:'le_midnight',name:'Midnight Raven',desc:'LIMITED — Darkest hour before dawn',price:1500,currency:'chromas',preview:'🦇',tier:3,colors:['#080808','#1a1a2e','#2a2a3e','#3a3a4e','#111128','#4a4a5e','#0a0a18','#5a5a6e'],symbols:['◇','◎','▽','✧','◈','△','○','◆']},
+  {type:'theme',id:'le_candy',name:'Candy Pop',desc:'LIMITED — Sugar rush explosion',price:1500,currency:'chromas',preview:'🍬',tier:3,colors:['#1a0010','#ff44aa','#44ddff','#ffee44','#ff8844','#44ff88','#dd44ff','#ff4444'],symbols:['♡','★','♦','●','✦','✧','◆','▲']},
   {type:'theme',id:'le_sandstorm',name:'Sandstorm Pharaoh',desc:'LIMITED — Ancient desert tomb',price:1500,currency:'chromas',preview:'🏺',tier:4,colors:['#0a0800','#daa520','#c4a35a','#8b7355','#f0e68c','#cd853f','#e6c89c','#b8860b'],symbols:['𓂀','◈','✦','△','⬡','◆','✧','◇']},
-  {type:'theme',id:'le_toxic_waste',name:'Toxic Wasteland',desc:'LIMITED — Radioactive mutation zone',price:1300,currency:'chromas',preview:'☢️',tier:3,colors:['#000a00','#33ff00','#ff8800','#00ff44','#ffdd00','#66ff22','#ff4400','#ccff00'],symbols:['☢','◉','⬟','⚠','◬','✦','◈','⊕']},
+  {type:'theme',id:'le_toxic_waste',name:'Toxic Wasteland',desc:'LIMITED — Radioactive mutation zone',price:1500,currency:'chromas',preview:'☢️',tier:3,colors:['#000a00','#33ff00','#ff8800','#00ff44','#ffdd00','#66ff22','#ff4400','#ccff00'],symbols:['☢','◉','⬟','⚠','◬','✦','◈','⊕']},
   {type:'theme',id:'le_galaxy_core',name:'Galaxy Core',desc:'LIMITED — Heart of the universe',price:1500,currency:'chromas',preview:'🔮',tier:4,colors:['#000a0a','#00ccdd','#008899','#00eeff','#005566','#00bbcc','#003344','#44ddee'],symbols:['✶','⊹','✵','⋆','✷','⊛','❖','✧']},
   // ===== BORDERS (8 total) =====
   {type:'border',id:'le_phoenix',name:'Phoenix Frame',desc:'LIMITED — Rising from ashes',price:900,currency:'chromas',preview:'🔥'},
   {type:'border',id:'le_frost_crown',name:'Frost Crown',desc:'LIMITED — Icy crystalline frame',price:900,currency:'chromas',preview:'❄️'},
-  {type:'border',id:'le_shadow_claw',name:'Shadow Claw',desc:'LIMITED — Dark tendrils frame',price:1000,currency:'chromas',preview:'🌑'},
-  {type:'border',id:'le_rainbow_ring',name:'Rainbow Ring',desc:'LIMITED — Shifting spectrum frame',price:1200,currency:'chromas',preview:'🌈'},
-  {type:'border',id:'le_dragon_scale',name:'Dragon Scale',desc:'LIMITED — Armored scales shimmer around your portrait',price:1100,currency:'chromas',preview:'🐉'},
-  {type:'border',id:'le_void_rift',name:'Void Rift',desc:'LIMITED — Cracks of purple energy tear around the frame',price:1300,currency:'chromas',preview:'🕳️'},
-  {type:'border',id:'le_crown_jewel',name:'Crown Jewel',desc:'LIMITED — Golden crown with sparkling gems',price:1400,currency:'chromas',preview:'👑'},
-  {type:'border',id:'le_sakura_frame',name:'Sakura Frame',desc:'LIMITED — Cherry blossom petals drift around the frame',price:1000,currency:'chromas',preview:'🌸'},
+  {type:'border',id:'le_shadow_claw',name:'Shadow Claw',desc:'LIMITED — Dark tendrils frame',price:900,currency:'chromas',preview:'🌑'},
+  {type:'border',id:'le_rainbow_ring',name:'Rainbow Ring',desc:'LIMITED — Shifting spectrum frame',price:900,currency:'chromas',preview:'🌈'},
+  {type:'border',id:'le_dragon_scale',name:'Dragon Scale',desc:'LIMITED — Armored scales shimmer around your portrait',price:900,currency:'chromas',preview:'🐉'},
+  {type:'border',id:'le_void_rift',name:'Void Rift',desc:'LIMITED — Cracks of purple energy tear around the frame',price:900,currency:'chromas',preview:'🕳️'},
+  {type:'border',id:'le_crown_jewel',name:'Crown Jewel',desc:'LIMITED — Golden crown with sparkling gems',price:900,currency:'chromas',preview:'👑'},
+  {type:'border',id:'le_sakura_frame',name:'Sakura Frame',desc:'LIMITED — Cherry blossom petals drift around the frame',price:900,currency:'chromas',preview:'🌸'},
   // ===== EFFECTS (8 total) =====
   {type:'effect',id:'le_cherry_pop',name:'Cherry Blossom Fall',desc:'LIMITED — Petals scatter on capture',price:900,currency:'chromas',preview:'🌸'},
-  {type:'effect',id:'le_meteor',name:'Meteor Strike',desc:'LIMITED — Flaming meteor impact',price:1000,currency:'chromas',preview:'☄️'},
-  {type:'effect',id:'le_glitch',name:'Glitch Effect',desc:'LIMITED — Digital corruption burst',price:1100,currency:'chromas',preview:'📺'},
-  {type:'effect',id:'le_golden_fx',name:'Gold Rush',desc:'LIMITED — Golden coins scatter',price:1200,currency:'chromas',preview:'✨'},
-  {type:'effect',id:'le_electric_surge',name:'Electric Surge',desc:'LIMITED — Lightning bolts crackle on capture',price:1100,currency:'chromas',preview:'⚡'},
-  {type:'effect',id:'le_frost_shatter',name:'Frost Shatter',desc:'LIMITED — Ice crystals explode outward',price:1000,currency:'chromas',preview:'🧊'},
-  {type:'effect',id:'le_void_collapse',name:'Void Collapse',desc:'LIMITED — Dark matter implodes on capture',price:1300,currency:'chromas',preview:'🕳️'},
-  {type:'effect',id:'le_stardust',name:'Stardust Burst',desc:'LIMITED — Sparkling stars scatter everywhere',price:1100,currency:'chromas',preview:'⭐'},
+  {type:'effect',id:'le_meteor',name:'Meteor Strike',desc:'LIMITED — Flaming meteor impact',price:900,currency:'chromas',preview:'☄️'},
+  {type:'effect',id:'le_glitch',name:'Glitch Effect',desc:'LIMITED — Digital corruption burst',price:900,currency:'chromas',preview:'📺'},
+  {type:'effect',id:'le_golden_fx',name:'Gold Rush',desc:'LIMITED — Golden coins scatter',price:900,currency:'chromas',preview:'✨'},
+  {type:'effect',id:'le_electric_surge',name:'Electric Surge',desc:'LIMITED — Lightning bolts crackle on capture',price:900,currency:'chromas',preview:'⚡'},
+  {type:'effect',id:'le_frost_shatter',name:'Frost Shatter',desc:'LIMITED — Ice crystals explode outward',price:900,currency:'chromas',preview:'🧊'},
+  {type:'effect',id:'le_void_collapse',name:'Void Collapse',desc:'LIMITED — Dark matter implodes on capture',price:900,currency:'chromas',preview:'🕳️'},
+  {type:'effect',id:'le_stardust',name:'Stardust Burst',desc:'LIMITED — Sparkling stars scatter everywhere',price:900,currency:'chromas',preview:'⭐'},
 ];
 
-function getLimitedShopItems(){
-  var now=Date.now();
-  var twoWeeks=14*24*60*60*1000;
-  if(!save.limitedShopRotation||now-save.limitedShopRotation>=twoWeeks){
-    // Rotate — pick 2 themes, 1 border, 1 effect randomly
-    var themes=LIMITED_EDITION_POOL.filter(function(i){return i.type==='theme'});
-    var borders=LIMITED_EDITION_POOL.filter(function(i){return i.type==='border'});
-    var effects=LIMITED_EDITION_POOL.filter(function(i){return i.type==='effect'});
-    var shuffle=function(arr){for(var i=arr.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=arr[i];arr[i]=arr[j];arr[j]=t}return arr};
-    var st=shuffle(themes.slice());var sb=shuffle(borders.slice());var se=shuffle(effects.slice());
-var picked=[st[0].id,st[1].id,sb[0].id,sb[1].id,se[0].id,se[1].id];
-    save.limitedShopRotation=now;
-    save.limitedShopItems=picked;
-    saveProg();
-  }
-  return LIMITED_EDITION_POOL.filter(function(i){return (save.limitedShopItems||[]).indexOf(i.id)>=0});
+// ===== LIMITED SHOP — same for every player =====
+// Every 2 weeks: 1 theme + 1 border + 1 effect, picked from the pool by the period number (seeded),
+// so all players see the same drop with no server. Never the same item two rotations in a row.
+var LIMITED_PERIOD_MS=14*24*60*60*1000, LIMITED_EPOCH=Date.UTC(2026,0,1); // flips at 00:00 UTC (7 PM ET in winter)
+function limitedPeriod(){ return Math.floor((Date.now()-LIMITED_EPOCH)/LIMITED_PERIOD_MS); }
+function _seededRand(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+// Each type walks through a seeded shuffle of its pool: every item appears once per cycle (themes every
+// 17 drops, borders/effects every 8), so nothing repeats until everything has had its turn. If a new cycle
+// would start with the item that just ended the previous one, its first two items are swapped.
+function _limitedOrder(cycle,type,n){
+  var r=_seededRand(cycle*7919+(type==='theme'?11:type==='border'?23:37)), o=[];
+  for(var i=0;i<n;i++)o.push(i);
+  for(var j=n-1;j>0;j--){var k=Math.floor(r()*(j+1));var t=o[j];o[j]=o[k];o[k]=t;}
+  return o;
 }
-
+function _limitedPick(period,type){
+  var pool=LIMITED_EDITION_POOL.filter(function(i){return i.type===type;}), n=pool.length; if(!n)return null;
+  var cycle=Math.floor(period/n), pos=((period%n)+n)%n, order=_limitedOrder(cycle,type,n);
+  if(n>2){ var prevLast=_limitedOrder(cycle-1,type,n)[n-1]; if(order[0]===prevLast){var t=order[0];order[0]=order[1];order[1]=t;} }
+  return pool[order[pos]];
+}
+function getLimitedShopItems(){
+  var p=limitedPeriod();
+  var picks=['theme','border','effect'].map(function(t){return _limitedPick(p,t);}).filter(Boolean);
+  save.limitedShopItems=picks.map(function(i){return i.id;}); save.limitedShopRotation=LIMITED_EPOCH+p*LIMITED_PERIOD_MS;
+  return picks;
+}
 function getLimitedTimeLeft(){
-  var twoWeeks=14*24*60*60*1000;
-  var elapsed=Date.now()-(save.limitedShopRotation||Date.now());
-  var remaining=Math.max(0,twoWeeks-elapsed);
+  var remaining=Math.max(0,LIMITED_EPOCH+(limitedPeriod()+1)*LIMITED_PERIOD_MS-Date.now());
   var days=Math.floor(remaining/(24*60*60*1000));
   var hours=Math.floor((remaining%(24*60*60*1000))/(60*60*1000));
   return days+'d '+hours+'h';
@@ -3815,6 +4127,12 @@ function checkTitleUnlocks(){
     if(title.id==='Iron Wall'&&save.challengesDone[18])earned=true;
     if(title.id==='Nexus Lord'&&save.challengesDone[19])earned=true;
     if(title.id==='Chromancer Supreme'&&save.challengesDone[16]&&save.challengesDone[17]&&save.challengesDone[18]&&save.challengesDone[19])earned=true;
+    // Login-loyalty ladder (total daily rewards claimed)
+    var _claims=save.totalDailyClaims||0;
+    if(title.id==='30-Day Devotee'&&_claims>=30)earned=true;
+    if(title.id==='Seasoned Chromancer'&&_claims>=90)earned=true;
+    if(title.id==='Half-Year Hero'&&_claims>=180)earned=true;
+    if(title.id==='HexClaim Legend'&&_claims>=365)earned=true;
     if(earned){save.owned['title_'+title.id]=true;saveProg()}
   });
 }
@@ -3920,6 +4238,7 @@ function getBorderStyle(id){
   if(b==='achieve_vsai_insane')return 'border:3px solid #003399;box-shadow:0 0 14px rgba(0,51,153,0.8);animation:borderPulse 1.5s ease infinite;--bc:0,51,153';
   if(b==='achieve_level25')return 'border:2px solid #bb9900;box-shadow:0 0 8px rgba(187,153,0,0.6);animation:borderBreathe 3s ease infinite';
   if(b==='achieve_level50')return 'border:3px solid #ff6600;box-shadow:0 0 12px rgba(255,102,0,0.7);animation:borderPulse 2s ease infinite;--bc:255,102,0';
+  var _sb=SHOP_BORDERS.find(function(x){return x.id===b&&x.style;}); if(_sb)return _sb.style; // seasonal drops carry their own style
   return 'border:2px solid var(--p1)';
 }
 
@@ -4126,6 +4445,11 @@ const SHOP_TITLES=[
   {id:'Iron Wall',name:'Iron Wall',achievement:'💀 Complete Iron Curtain challenge',color:'#5500ff',style:'gradient',font:'Archivo Black',glow:3},
   {id:'Nexus Lord',name:'Nexus Lord',achievement:'💀 Complete Absolute Zero challenge',color:'#ff00ff',style:'bold',glow:4},
   {id:'Chromancer Supreme',name:'Chromancer Supreme',achievement:'💀 Complete all four elite challenges',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
+  // Login-loyalty ladder — counts total daily rewards claimed (missing a day never resets progress)
+  {id:'30-Day Devotee',name:'30-Day Devotee',achievement:'📅 Claim 30 daily login rewards',color:'#06d6a0',style:'bold',glow:1},
+  {id:'Seasoned Chromancer',name:'Seasoned Chromancer',achievement:'📅 Claim 90 daily login rewards',color:'#118ab2',style:'gradient',glow:2},
+  {id:'Half-Year Hero',name:'Half-Year Hero',achievement:'📅 Claim 180 daily login rewards',color:'#9b5ef5',style:'gradient',glow:3},
+  {id:'HexClaim Legend',name:'HexClaim Legend',achievement:'📅 Claim 365 daily login rewards',color:'#ffd166',style:'rainbow',font:'Archivo Black',glow:5},
 ];
 
 const CHROMA_BUNDLES=[
@@ -4137,107 +4461,115 @@ const CHROMA_BUNDLES=[
 ];
 
 // Battle Pass tiers
-const BP_XP_PER_LEVEL=100;
-const BP_TIERS=[{level:1,  free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},         premium:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'}},
-  {level:2,  free:{type:'chromas',amount:5,icon:'💎',name:'5 Diamonds'},       premium:{type:'chromas',amount:15,icon:'💎',name:'15 Diamonds'}},
-  {level:3,  free:{type:'coins',amount:75,icon:'🟡',name:'75 Coins'},          premium:{type:'border',id:'flame',icon:'🔥',name:'Flame Border'}},
-  {level:4,  free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:5,  free:{type:'chromas',amount:10,icon:'💎',name:'10 Diamonds'},     premium:{type:'theme',id:'ocean',icon:'🌊',name:'Deep Sea Skin'}},
-  {level:6,  free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:20,icon:'💎',name:'20 Diamonds'}},
-  {level:7,  free:{type:'coins',amount:125,icon:'🟡',name:'125 Coins'},        premium:{type:'border',id:'electric',icon:'⚡',name:'Electric Border'}},
-  {level:8,  free:{type:'chromas',amount:8,icon:'💎',name:'8 Diamonds'},       premium:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'}},
-  {level:9,  free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:10, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'theme',id:'neon',icon:'💜',name:'Neon Rush Skin'}},
-  {level:11, free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'}},
-  {level:12, free:{type:'chromas',amount:10,icon:'💎',name:'10 Diamonds'},     premium:{type:'border',id:'frost',icon:'❄️',name:'Frostbite Border'}},
-  {level:13, free:{type:'coins',amount:175,icon:'🟡',name:'175 Coins'},        premium:{type:'chromas',amount:30,icon:'💎',name:'30 Diamonds'}},
-  {level:14, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'effect',id:'confetti',icon:'🎉',name:'Confetti Effect'}},
-  {level:15, free:{type:'chromas',amount:15,icon:'💎',name:'15 Diamonds'},     premium:{type:'theme',id:'fire',icon:'🔥',name:'Hellfire Skin'}},
-  {level:16, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'}},
-  {level:17, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'border',id:'shadow',icon:'🌑',name:'Shadow Border'}},
-  {level:18, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'chromas',amount:40,icon:'💎',name:'40 Diamonds'}},
-  {level:19, free:{type:'coins',amount:225,icon:'🟡',name:'225 Coins'},        premium:{type:'effect',id:'sparkle',icon:'✨',name:'Stardust Effect'}},
-  {level:20, free:{type:'chromas',amount:20,icon:'💎',name:'20 Diamonds'},     premium:{type:'theme',id:'galaxy',icon:'🌌',name:'Galaxy Nebula Skin'}},
-  {level:21, free:{type:'coins',amount:225,icon:'🟡',name:'225 Coins'},        premium:{type:'coins',amount:400,icon:'🟡',name:'400 Coins'}},
-  {level:22, free:{type:'chromas',amount:15,icon:'💎',name:'15 Diamonds'},     premium:{type:'chromas',amount:45,icon:'💎',name:'45 Diamonds'}},
-  {level:23, free:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'},        premium:{type:'effect',id:'pulse',icon:'💫',name:'Shockwave Effect'}},
-  {level:24, free:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'},        premium:{type:'coins',amount:450,icon:'🟡',name:'450 Coins'}},
-  {level:25, free:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'},     premium:{type:'theme',id:'blood',icon:'🩸',name:'Bloodmoon Skin'}},
-  {level:26, free:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'},        premium:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'}},
-  {level:27, free:{type:'chromas',amount:18,icon:'💎',name:'18 Diamonds'},     premium:{type:'effect',id:'fire_trail',icon:'🔥',name:'Inferno Effect'}},
-  {level:28, free:{type:'coins',amount:275,icon:'🟡',name:'275 Coins'},        premium:{type:'coins',amount:500,icon:'🟡',name:'500 Coins'}},
-  {level:29, free:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'},        premium:{type:'chromas',amount:55,icon:'💎',name:'55 Diamonds'}},
-  {level:30, free:{type:'chromas',amount:30,icon:'💎',name:'30 Diamonds'},     premium:{type:'border',id:'neon_pulse',icon:'💜',name:'Neon Pulse Border'}},
-  {level:31, free:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'},        premium:{type:'coins',amount:500,icon:'🟡',name:'500 Coins'}},
-  {level:32, free:{type:'chromas',amount:20,icon:'💎',name:'20 Diamonds'},     premium:{type:'chromas',amount:60,icon:'💎',name:'60 Diamonds'}},
-  {level:33, free:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'},        premium:{type:'effect',id:'lightning',icon:'⚡',name:'Thunder God Effect'}},
-  {level:34, free:{type:'coins',amount:325,icon:'🟡',name:'325 Coins'},        premium:{type:'coins',amount:600,icon:'🟡',name:'600 Coins'}},
-  {level:35, free:{type:'chromas',amount:35,icon:'💎',name:'35 Diamonds'},     premium:{type:'border',id:'galaxy_border',icon:'🌌',name:'Galaxy Border'}},
-  {level:36, free:{type:'coins',amount:325,icon:'🟡',name:'325 Coins'},        premium:{type:'chromas',amount:65,icon:'💎',name:'65 Diamonds'}},
-  {level:37, free:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'},     premium:{type:'effect',id:'rainbow_wave',icon:'🌈',name:'Prismatic Nova Effect'}},
-  {level:38, free:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'},        premium:{type:'coins',amount:700,icon:'🟡',name:'700 Coins'}},
-  {level:39, free:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'},        premium:{type:'chromas',amount:70,icon:'💎',name:'70 Diamonds'}},
-  {level:40, free:{type:'chromas',amount:40,icon:'💎',name:'40 Diamonds'},     premium:{type:'border',id:'storm_border',icon:'⛈️',name:'Storm Ring Border'}},
-  {level:41, free:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'},        premium:{type:'coins',amount:700,icon:'🟡',name:'700 Coins'}},
-  {level:42, free:{type:'chromas',amount:30,icon:'💎',name:'30 Diamonds'},     premium:{type:'chromas',amount:80,icon:'💎',name:'80 Diamonds'}},
-  {level:43, free:{type:'coins',amount:375,icon:'🟡',name:'375 Coins'},        premium:{type:'effect',id:'plasma',icon:'⚛️',name:'Plasma Storm Effect'}},
-  {level:44, free:{type:'coins',amount:375,icon:'🟡',name:'375 Coins'},        premium:{type:'coins',amount:800,icon:'🟡',name:'800 Coins'}},
-  {level:45, free:{type:'chromas',amount:45,icon:'💎',name:'45 Diamonds'},     premium:{type:'border',id:'cosmic_border',icon:'🪐',name:'Cosmic Orbit Border'}},
-  {level:46, free:{type:'coins',amount:375,icon:'🟡',name:'375 Coins'},        premium:{type:'chromas',amount:90,icon:'💎',name:'90 Diamonds'}},
-  {level:47, free:{type:'chromas',amount:35,icon:'💎',name:'35 Diamonds'},     premium:{type:'effect',id:'storm_fx',icon:'⛈️',name:'Lightning Storm Effect'}},
-  {level:48, free:{type:'coins',amount:400,icon:'🟡',name:'400 Coins'},        premium:{type:'coins',amount:900,icon:'🟡',name:'900 Coins'}},
-  {level:49, free:{type:'coins',amount:400,icon:'🟡',name:'400 Coins'},        premium:{type:'chromas',amount:100,icon:'💎',name:'100 Diamonds'}},
-  {level:50, free:{type:'chromas',amount:100,icon:'💎',name:'100 Diamonds'},   premium:{type:'theme',id:'bp_season1',icon:'🏆',name:'Season 1 Champion Skin'}},
-  {level:51, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:52, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:53, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:54, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:55, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'}},
-  {level:56, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:57, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:58, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:59, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:60, free:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'},     premium:{type:'border',id:'bp_prestige_border',icon:'⭐',name:'Prestige Border'}},
-  {level:61, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:62, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:63, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:64, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:65, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'}},
-  {level:66, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:67, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:68, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:69, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:70, free:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'},     premium:{type:'coins',amount:500,icon:'🟡',name:'500 Coins'}},
-  {level:71, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:72, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:73, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:74, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:75, free:{type:'chromas',amount:75,icon:'💎',name:'75 Diamonds'},     premium:{type:'theme',id:'bp_prestige_skin',icon:'🌟',name:'Prestige Skin'}},
-  {level:76, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:77, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:78, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:79, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:80, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'chromas',amount:75,icon:'💎',name:'75 Diamonds'}},
-  {level:81, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:82, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:83, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:84, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:85, free:{type:'chromas',amount:75,icon:'💎',name:'75 Diamonds'},     premium:{type:'coins',amount:750,icon:'🟡',name:'750 Coins'}},
-  {level:86, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:87, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:88, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:89, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:90, free:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'},        premium:{type:'chromas',amount:100,icon:'💎',name:'100 Diamonds'}},
-  {level:91, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:92, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:93, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:94, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:95, free:{type:'chromas',amount:100,icon:'💎',name:'100 Diamonds'},   premium:{type:'coins',amount:1000,icon:'🟡',name:'1000 Coins'}},
-  {level:96, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:97, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:98, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:25,icon:'💎',name:'25 Diamonds'}},
-  {level:99, free:{type:'chromas',amount:12,icon:'💎',name:'12 Diamonds'},     premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
-  {level:100,free:{type:'chromas',amount:150,icon:'💎',name:'150 Diamonds'},   premium:{type:'effect',id:'supernova',icon:'💥',name:'Supernova Effect'}},
+// 100 levels x 250 XP = 25,000 XP per season (engaged player ~30 days; catch-up XP helps late joiners).
+const BP_XP_PER_LEVEL=250;
+const BP_MAX_LEVEL=100;
+const BP_LEVEL_PRICE=75;            // 💎 per level bought
+const BP_LEVEL_BUNDLE={levels:10,price:600}; // 20% off
+const BP_PREMIUM_PRICE=800;         // 💎, per season
+const BP_BONUS_XP=1000;             // after level 100: one Bonus Chest per 1,000 XP
+const BP_BONUS_REWARD={coins:150,chromas:2}; // doubled with Premium (small on purpose — not a diamond farm)
+const BP_CATCHUP_MULT=2;            // XP multiplier while behind the season's pace
+const BP_TIERS=[{level:1,  free:{type:'coins',amount:25,icon:'🟡',name:'25 Coins'},         premium:{type:'coins',amount:75,icon:'🟡',name:'75 Coins'}},
+  {level:2,  free:{type:'chromas',amount:2,icon:'💎',name:'2 Diamonds'},       premium:{type:'chromas',amount:10,icon:'💎',name:'10 Diamonds'}},
+  {level:3,  free:{type:'coins',amount:40,icon:'🟡',name:'40 Coins'},          premium:{type:'border',id:'flame',icon:'🔥',name:'Flame Border'}},
+  {level:4,  free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:5,  free:{type:'chromas',amount:3,icon:'💎',name:'3 Diamonds'},     premium:{type:'theme',id:'ocean',icon:'🌊',name:'Deep Sea Skin'}},
+  {level:6,  free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:13,icon:'💎',name:'13 Diamonds'}},
+  {level:7,  free:{type:'coins',amount:65,icon:'🟡',name:'65 Coins'},        premium:{type:'border',id:'electric',icon:'⚡',name:'Electric Border'}},
+  {level:8,  free:{type:'chromas',amount:3,icon:'💎',name:'3 Diamonds'},       premium:{type:'coins',amount:125,icon:'🟡',name:'125 Coins'}},
+  {level:9,  free:{type:'coins',amount:75,icon:'🟡',name:'75 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:10, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'theme',id:'neon',icon:'💜',name:'Neon Rush Skin'}},
+  {level:11, free:{type:'coins',amount:75,icon:'🟡',name:'75 Coins'},        premium:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'}},
+  {level:12, free:{type:'chromas',amount:3,icon:'💎',name:'3 Diamonds'},     premium:{type:'border',id:'frost',icon:'❄️',name:'Frostbite Border'}},
+  {level:13, free:{type:'coins',amount:90,icon:'🟡',name:'90 Coins'},        premium:{type:'chromas',amount:20,icon:'💎',name:'20 Diamonds'}},
+  {level:14, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'effect',id:'confetti',icon:'🎉',name:'Confetti Effect'}},
+  {level:15, free:{type:'chromas',amount:5,icon:'💎',name:'5 Diamonds'},     premium:{type:'theme',id:'fire',icon:'🔥',name:'Hellfire Skin'}},
+  {level:16, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'coins',amount:175,icon:'🟡',name:'175 Coins'}},
+  {level:17, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'border',id:'shadow',icon:'🌑',name:'Shadow Border'}},
+  {level:18, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:26,icon:'💎',name:'26 Diamonds'}},
+  {level:19, free:{type:'coins',amount:115,icon:'🟡',name:'115 Coins'},        premium:{type:'effect',id:'sparkle',icon:'✨',name:'Stardust Effect'}},
+  {level:20, free:{type:'chromas',amount:6,icon:'💎',name:'6 Diamonds'},     premium:{type:'theme',id:'galaxy',icon:'🌌',name:'Galaxy Nebula Skin'}},
+  {level:21, free:{type:'coins',amount:115,icon:'🟡',name:'115 Coins'},        premium:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'}},
+  {level:22, free:{type:'chromas',amount:5,icon:'💎',name:'5 Diamonds'},     premium:{type:'chromas',amount:30,icon:'💎',name:'30 Diamonds'}},
+  {level:23, free:{type:'coins',amount:125,icon:'🟡',name:'125 Coins'},        premium:{type:'effect',id:'pulse',icon:'💫',name:'Shockwave Effect'}},
+  {level:24, free:{type:'coins',amount:125,icon:'🟡',name:'125 Coins'},        premium:{type:'coins',amount:225,icon:'🟡',name:'225 Coins'}},
+  {level:25, free:{type:'chromas',amount:8,icon:'💎',name:'8 Diamonds'},     premium:{type:'theme',id:'blood',icon:'🩸',name:'Bloodmoon Skin'}},
+  {level:26, free:{type:'coins',amount:125,icon:'🟡',name:'125 Coins'},        premium:{type:'chromas',amount:33,icon:'💎',name:'33 Diamonds'}},
+  {level:27, free:{type:'chromas',amount:6,icon:'💎',name:'6 Diamonds'},     premium:{type:'effect',id:'fire_trail',icon:'🔥',name:'Inferno Effect'}},
+  {level:28, free:{type:'coins',amount:140,icon:'🟡',name:'140 Coins'},        premium:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'}},
+  {level:29, free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'chromas',amount:36,icon:'💎',name:'36 Diamonds'}},
+  {level:30, free:{type:'chromas',amount:10,icon:'💎',name:'10 Diamonds'},     premium:{type:'border',id:'neon_pulse',icon:'💜',name:'Neon Pulse Border'}},
+  {level:31, free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'}},
+  {level:32, free:{type:'chromas',amount:6,icon:'💎',name:'6 Diamonds'},     premium:{type:'chromas',amount:40,icon:'💎',name:'40 Diamonds'}},
+  {level:33, free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'effect',id:'lightning',icon:'⚡',name:'Thunder God Effect'}},
+  {level:34, free:{type:'coins',amount:165,icon:'🟡',name:'165 Coins'},        premium:{type:'coins',amount:300,icon:'🟡',name:'300 Coins'}},
+  {level:35, free:{type:'chromas',amount:11,icon:'💎',name:'11 Diamonds'},     premium:{type:'border',id:'galaxy_border',icon:'🌌',name:'Galaxy Border'}},
+  {level:36, free:{type:'coins',amount:165,icon:'🟡',name:'165 Coins'},        premium:{type:'chromas',amount:43,icon:'💎',name:'43 Diamonds'}},
+  {level:37, free:{type:'chromas',amount:8,icon:'💎',name:'8 Diamonds'},     premium:{type:'effect',id:'rainbow_wave',icon:'🌈',name:'Prismatic Nova Effect'}},
+  {level:38, free:{type:'coins',amount:175,icon:'🟡',name:'175 Coins'},        premium:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'}},
+  {level:39, free:{type:'coins',amount:175,icon:'🟡',name:'175 Coins'},        premium:{type:'chromas',amount:46,icon:'💎',name:'46 Diamonds'}},
+  {level:40, free:{type:'chromas',amount:13,icon:'💎',name:'13 Diamonds'},     premium:{type:'border',id:'storm_border',icon:'⛈️',name:'Storm Ring Border'}},
+  {level:41, free:{type:'coins',amount:175,icon:'🟡',name:'175 Coins'},        premium:{type:'coins',amount:350,icon:'🟡',name:'350 Coins'}},
+  {level:42, free:{type:'chromas',amount:10,icon:'💎',name:'10 Diamonds'},     premium:{type:'chromas',amount:53,icon:'💎',name:'53 Diamonds'}},
+  {level:43, free:{type:'coins',amount:190,icon:'🟡',name:'190 Coins'},        premium:{type:'effect',id:'plasma',icon:'⚛️',name:'Plasma Storm Effect'}},
+  {level:44, free:{type:'coins',amount:190,icon:'🟡',name:'190 Coins'},        premium:{type:'coins',amount:400,icon:'🟡',name:'400 Coins'}},
+  {level:45, free:{type:'chromas',amount:14,icon:'💎',name:'14 Diamonds'},     premium:{type:'border',id:'cosmic_border',icon:'🪐',name:'Cosmic Orbit Border'}},
+  {level:46, free:{type:'coins',amount:190,icon:'🟡',name:'190 Coins'},        premium:{type:'chromas',amount:59,icon:'💎',name:'59 Diamonds'}},
+  {level:47, free:{type:'chromas',amount:11,icon:'💎',name:'11 Diamonds'},     premium:{type:'effect',id:'storm_fx',icon:'⛈️',name:'Lightning Storm Effect'}},
+  {level:48, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'coins',amount:450,icon:'🟡',name:'450 Coins'}},
+  {level:49, free:{type:'coins',amount:200,icon:'🟡',name:'200 Coins'},        premium:{type:'chromas',amount:66,icon:'💎',name:'66 Diamonds'}},
+  {level:50, free:{type:'chromas',amount:32,icon:'💎',name:'32 Diamonds'},   premium:{type:'theme',id:'bp_season1',icon:'🏆',name:'Season 1 Champion Skin'}},
+  {level:51, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:52, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:53, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:54, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:55, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:33,icon:'💎',name:'33 Diamonds'}},
+  {level:56, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:57, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:58, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:59, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:60, free:{type:'chromas',amount:16,icon:'💎',name:'16 Diamonds'},     premium:{type:'border',id:'bp_prestige_border',icon:'⭐',name:'Prestige Border'}},
+  {level:61, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:62, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:63, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:64, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:65, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:33,icon:'💎',name:'33 Diamonds'}},
+  {level:66, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:67, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:68, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:69, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:70, free:{type:'chromas',amount:16,icon:'💎',name:'16 Diamonds'},     premium:{type:'coins',amount:250,icon:'🟡',name:'250 Coins'}},
+  {level:71, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:72, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:73, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:74, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:75, free:{type:'chromas',amount:24,icon:'💎',name:'24 Diamonds'},     premium:{type:'theme',id:'bp_prestige_skin',icon:'🌟',name:'Prestige Skin'}},
+  {level:76, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:77, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:78, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:79, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:80, free:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'},        premium:{type:'chromas',amount:50,icon:'💎',name:'50 Diamonds'}},
+  {level:81, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:82, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:83, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:84, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:85, free:{type:'chromas',amount:24,icon:'💎',name:'24 Diamonds'},     premium:{type:'coins',amount:375,icon:'🟡',name:'375 Coins'}},
+  {level:86, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:87, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:88, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:89, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:90, free:{type:'coins',amount:150,icon:'🟡',name:'150 Coins'},        premium:{type:'chromas',amount:66,icon:'💎',name:'66 Diamonds'}},
+  {level:91, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:92, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:93, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:94, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:95, free:{type:'chromas',amount:32,icon:'💎',name:'32 Diamonds'},   premium:{type:'coins',amount:500,icon:'🟡',name:'500 Coins'}},
+  {level:96, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:97, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:98, free:{type:'coins',amount:50,icon:'🟡',name:'50 Coins'},        premium:{type:'chromas',amount:17,icon:'💎',name:'17 Diamonds'}},
+  {level:99, free:{type:'chromas',amount:4,icon:'💎',name:'4 Diamonds'},     premium:{type:'coins',amount:100,icon:'🟡',name:'100 Coins'}},
+  {level:100,free:{type:'chromas',amount:48,icon:'💎',name:'48 Diamonds'},   premium:{type:'effect',id:'supernova',icon:'💥',name:'Supernova Effect'}},
 ];
 
 // ===== SHOP FUNCTIONS =====
@@ -4299,8 +4631,9 @@ function renderShopTab(tab){
     cont.appendChild(preview);
 
     // Group skins: unlocked first, then by rank
-    var allSkins=getAllSkins().filter(function(s){return !s.hidden||s.shopLocked||save.owned['theme_'+s.id];});
+    var allSkins=getAllSkins().filter(function(s){return (!s.hidden||s.shopLocked||save.owned['theme_'+s.id])&&dropAvailable(s,'theme_'+s.id);});
     var noRank=allSkins.filter(function(s){return !s.rankReq});
+    noRank=newDropsFirst(noRank); // this season's drops at the top
     var rankGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:allSkins.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:allSkins.filter(function(s){return s.rankReq==='Platinum'})},
@@ -4335,7 +4668,7 @@ function renderShopTab(tab){
   }
 
   else if(tab==='borders'){
-    var noRankBorders=SHOP_BORDERS.filter(function(s){return !s.rankReq&&!s.seasonal&&!s.rankup&&(!s.achievement||s.shopLocked||save.owned['border_'+s.id])});
+    var noRankBorders=SHOP_BORDERS.filter(function(s){return dropAvailable(s,'border_'+s.id)&&!s.rankReq&&!s.seasonal&&!s.rankup&&(!s.achievement||s.shopLocked||save.owned['border_'+s.id])});
     var rankBorderGroups=[
       {name:'Gold',icon:'🥇',color:'#ffd700',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Gold'})},
       {name:'Platinum',icon:'💠',color:'#e5e4e2',items:SHOP_BORDERS.filter(function(s){return s.rankReq==='Platinum'})},
@@ -4370,7 +4703,7 @@ function renderShopTab(tab){
         dragon_border:'border:3px solid #ff4400;box-shadow:0 0 14px rgba(255,68,0,0.6),0 0 6px rgba(255,170,0,0.3);animation:borderOrbit 2s linear infinite;--bc:255,68,0',
         void_border:'border:3px solid #8800ff;box-shadow:0 0 16px rgba(136,0,255,0.7),0 0 8px rgba(0,0,0,0.5);animation:borderBreathe 3s ease infinite',
       };
-      prevStyle+=(borderMap[item.id]||'border:2px solid var(--border)');
+      prevStyle+=(borderMap[item.id]||item.style||'border:2px solid var(--border)');
       var savedBorder=save.equipped.border;save.equipped.border=item.id;
       var decoHTML=getBorderDecoHTML(36);save.equipped.border=savedBorder;
       if(rankLocked){
@@ -4378,12 +4711,12 @@ function renderShopTab(tab){
         el.innerHTML='<div style="'+prevStyle+';filter:grayscale(0.8)">\u{1f512}</div><div class="si-info"><div class="si-name">\u{1f512} '+item.name+'</div><div style="font-size:8px;color:var(--c4);font-weight:700">🔒 '+lockDesc+'</div></div><div style="font-size:9px;color:var(--muted);font-weight:700">\u{1f512}</div>';
         el.onclick=function(){playSfx('click')};
       } else {
-        el.innerHTML='<div style="'+prevStyle+';position:relative;overflow:hidden">'+(save.equipped.icon||'\u2b21')+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc" style="font-size:9px;color:var(--muted)">Frames your profile icon</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
+        el.innerHTML='<div style="'+prevStyle+';position:relative;overflow:hidden">'+(save.equipped.icon||'\u2b21')+'</div><div class="si-info"><div class="si-name">'+item.name+'</div><div class="si-desc" style="font-size:9px;color:var(--muted)">'+(item.desc||'Frames your profile icon')+'</div>'+'</div>'+(equipped?'<div class="si-equipped">Equipped \u2713</div>':owned?'<div style="cursor:pointer;font-size:9px;color:var(--p1);font-weight:800;padding:4px 8px;border:1px solid var(--p1);border-radius:6px">Apply</div>':'<div class="si-price">'+(item.currency==='coins'?'🟡':'💎')+' '+item.price+'</div>');
         el.onclick=function(){if(equipped)return;if(owned){save.equipped.border=item.id;saveProg();updateTopBar();renderShopTab('borders');playSfx('click');return}if(!buyItem('border',item))return;updateTopBar();renderShopTab('borders')};
       }
       cont.appendChild(el);
     }
-    noRankBorders.forEach(renderBorderItem);
+    newDropsFirst(noRankBorders).forEach(renderBorderItem); // this season's drops at the top
     rankBorderGroups.forEach(function(g){
       if(!g.items.length)return;
       g.items.forEach(renderBorderItem);
@@ -4428,7 +4761,7 @@ function renderShopTab(tab){
     header.innerHTML='<div style="font-size:16px;margin-bottom:4px">⏰</div>'
       +'<div style="font-size:14px;font-weight:800;color:var(--c4)">LIMITED EDITION</div>'
       +'<div style="font-size:10px;color:var(--muted);margin-top:4px">Exclusive skins — disappear in <span style="color:var(--c4);font-weight:800">'+timeLeft+'</span></div>'
-      +'<div style="font-size:9px;color:var(--gold);margin-top:4px">💎 Diamonds only — limited time! New selection every 2 weeks.</div>';
+      +'<div style="font-size:9px;color:var(--gold);margin-top:4px">💎 Diamonds only — limited time! 1 theme · 1 border · 1 effect — the same drop for every player. New drop every 2 weeks.</div>';
     cont.appendChild(header);
 
     items.forEach(function(item){
@@ -4825,18 +5158,114 @@ function buyChromaBundle(bundle){
 }
 
 // ===== BATTLE PASS =====
+// ===== BATTLE PASS (seasonal) =====
+// Resets with each season (fixed calendar dates). 100 levels x 200 XP. Catch-up XP for late joiners,
+// buy levels with diamonds, Bonus Chests after level 100, Premium is per season.
+function getSeasonStart(n){ return (n||1)<=1?Date.UTC(2026,9,1):getSeasonEnd(n-1); }
+function bpLevel(){ return Math.min(BP_MAX_LEVEL,Math.floor((save.bpXP||0)/BP_XP_PER_LEVEL)); }
+// The level the season "expects" by now: on pace to reach 100 by 80% of the season
+function bpExpectedLevel(){
+  var s=getSeasonStart(save.season||1), e=getSeasonEnd(save.season||1), f=(Date.now()-s)/(e-s);
+  return Math.max(0,Math.min(BP_MAX_LEVEL,Math.floor(f/0.8*BP_MAX_LEVEL)));
+}
+function bpCatchUpActive(){ var l=bpLevel(); return l<BP_MAX_LEVEL&&l<bpExpectedLevel()-5; }
+// ALL Battle Pass XP goes through here so catch-up applies everywhere. Returns the XP actually added.
+function addBPXP(x,mult){ if(!x)return 0; var g=Math.round(x*Math.max(bpCatchUpActive()?BP_CATCHUP_MULT:1,mult||1)); save.bpXP=(save.bpXP||0)+g; return g; }
+// Give one tier reward. Cosmetics you already own (e.g. from last season) become coins instead.
+function grantBPReward(reward){
+  var pre={theme:'theme_',border:'border_',icon:'icon_',title:'title_',effect:'effect_'}[reward.type];
+  if(pre){
+    if(save.owned[pre+reward.id]){ var c=reward.type==='theme'?300:100; save.coins=(save.coins||0)+c; return c+' coins (already owned)'; }
+    save.owned[pre+reward.id]=true; return reward.name;
+  }
+  if(reward.type==='coins'){ save.coins=(save.coins||0)+reward.amount; return reward.name; }
+  if(reward.type==='chromas'){ save.chromas=(save.chromas||0)+reward.amount; return reward.name; }
+  return reward.name||'';
+}
+function bpBonusEarned(){ var over=(save.bpXP||0)-BP_MAX_LEVEL*BP_XP_PER_LEVEL; return over>0?Math.floor(over/BP_BONUS_XP):0; }
+function bpBonusAvailable(){ return Math.max(0,bpBonusEarned()-(save.bpBonusClaimed||0)); }
+function grantBonusChest(){ var m=save.bpPremium?2:1; save.coins=(save.coins||0)+BP_BONUS_REWARD.coins*m; save.chromas=(save.chromas||0)+BP_BONUS_REWARD.chromas*m; save.bpBonusClaimed=(save.bpBonusClaimed||0)+1; }
+function claimBPBonus(){
+  var n=bpBonusAvailable(); if(!n)return; var m=save.bpPremium?2:1;
+  for(var i=0;i<n;i++)grantBonusChest();
+  saveProg._lastCloud=0;saveProg();updateShopCurrency();buildBattlePass();
+  showToast('🎁 '+n+' Bonus Chest'+(n>1?'s':'')+': +'+(BP_BONUS_REWARD.coins*m*n)+' coins, +'+(BP_BONUS_REWARD.chromas*m*n)+' 💎',3000);
+  try{playSfx('claimBig');hexHaptic('big');}catch(e){}
+}
+// New season: auto-claim anything reached but unclaimed, then reset the pass (XP, claims, Premium).
+// First run on an existing save just records the season, so current progress is kept.
+function syncBattlePassSeason(){
+  // One-time pace migration (100 -> 200 XP per level): double old XP so nobody loses levels
+  if(!save.bpPace200){ save.bpXP=(save.bpXP||0)*2; save.bpPace200=true; saveProg(); }
+  // Second pace migration (200 -> 250 XP per level): scale XP by 1.25 so levels stay the same
+  if(!save.bpPace250){ save.bpXP=Math.round((save.bpXP||0)*1.25); save.bpPace250=true; saveProg(); }
+  if(save.bpSeason===undefined||save.bpSeason===null){ save.bpSeason=save.season||1; saveProg(); return; }
+  if(save.bpSeason>=(save.season||1))return;
+  var lvl=bpLevel(), got=0;
+  BP_TIERS.forEach(function(t){
+    if(lvl<t.level)return;
+    if(!save.bpClaimed['free_'+t.level]){grantBPReward(t.free);got++;}
+    if(save.bpPremium&&!save.bpClaimed['prem_'+t.level]){grantBPReward(t.premium);got++;}
+  });
+  for(var b=bpBonusAvailable();b>0;b--){grantBonusChest();got++;}
+  var old=save.bpSeason;
+  save.bpSeason=save.season; save.bpXP=0; save.bpClaimed={}; save.bpPremium=false; save.bpBonusClaimed=0;
+  saveProg();
+  setTimeout(function(){try{showToast('🔥 Season '+save.season+' Battle Pass is live!'+(got?' Your unclaimed Season '+old+' rewards were added.':''),4500);}catch(e){}},2500);
+}
+function buyBPLevels(bundle){
+  var lvl=bpLevel(); if(lvl>=BP_MAX_LEVEL){showToast('You are already at level '+BP_MAX_LEVEL+'!');return;}
+  var n=bundle?BP_LEVEL_BUNDLE.levels:1, price=bundle?BP_LEVEL_BUNDLE.price:BP_LEVEL_PRICE;
+  if(lvl+n>BP_MAX_LEVEL){ n=BP_MAX_LEVEL-lvl; price=n*BP_LEVEL_PRICE; }
+  if((save.chromas||0)<price){showToast('Not enough Diamonds! Need 💎 '+price);return;}
+  showConfirmPopup('Buy '+n+' level'+(n>1?'s':'')+'?','Battle Pass level '+lvl+' → '+(lvl+n)+' for 💎 '+price+'.','Buy',function(){
+    if((save.chromas||0)<price){showToast('Not enough Diamonds! Need 💎 '+price);return;}
+    save.chromas-=price;
+    // Keep partial progress; buying can never go past level 100 into Bonus Chest XP
+    save.bpXP=Math.min((save.bpXP||0)+n*BP_XP_PER_LEVEL, Math.max(save.bpXP||0, BP_MAX_LEVEL*BP_XP_PER_LEVEL));
+    saveProg._lastCloud=0;saveProg();updateShopCurrency();buildBattlePass();
+    showToast('⬆️ Battle Pass level '+bpLevel()+'!',2200);try{playSfx('claimBig');hexHaptic('big');}catch(e){}
+  });
+}
+
 function buildBattlePass(){
+  syncBattlePassSeason();
   document.getElementById('bpSeason').textContent=save.season;
   document.getElementById('bpXP').textContent=save.bpXP;
   const cont=document.getElementById('bpContent');
-  const curLevel=Math.floor(save.bpXP/BP_XP_PER_LEVEL);
+  const curLevel=bpLevel();
+  const maxed=curLevel>=BP_MAX_LEVEL;
+  const into=maxed?((save.bpXP-BP_MAX_LEVEL*BP_XP_PER_LEVEL)%BP_BONUS_XP):(save.bpXP%BP_XP_PER_LEVEL);
+  const need=maxed?BP_BONUS_XP:BP_XP_PER_LEVEL;
+  const catchUp=bpCatchUpActive();
+  const daysLeft=seasonDaysLeft();
 
   let html=`<div class="bp-header-card">
     <div class="bp-h-title">Season ${save.season} Battle Pass</div>
-    <div class="bp-h-sub">Level ${curLevel} — ${save.bpXP % BP_XP_PER_LEVEL}/${BP_XP_PER_LEVEL} XP to next</div>
-    <div class="bp-xp-bar"><div class="bp-xp-fill" style="width:${(save.bpXP%BP_XP_PER_LEVEL)/BP_XP_PER_LEVEL*100}%"></div></div>
-    ${save.bpPremium?'<div style="font-size:10px;color:var(--gold);font-weight:800;margin-top:6px">✨ PREMIUM ACTIVE</div>':`<div style="margin-top:8px"><button class="menu-btn" style="max-width:200px;padding:10px;font-size:11px;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1a24" onclick="buyBattlePass()">Upgrade — 💎 800</button></div>`}
+    <div class="bp-h-sub">${maxed?'Level 100 — MAX! Bonus Chest '+into+'/'+need+' XP':'Level '+curLevel+' — '+into+'/'+need+' XP to next'}</div>
+    <div class="bp-xp-bar"><div class="bp-xp-fill" style="width:${into/need*100}%"></div></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:5px">⏳ Season ends in ${daysLeft} day${daysLeft===1?'':'s'}</div>
+    ${catchUp?'<div style="display:inline-block;margin-top:6px;font-size:10px;font-weight:800;color:#1a1a24;background:var(--p1);border-radius:999px;padding:3px 10px">⚡ Catch-up XP ×'+BP_CATCHUP_MULT+' active</div>':''}
+    ${save.bpPremium?'<div style="font-size:10px;color:var(--gold);font-weight:800;margin-top:6px">✨ PREMIUM ACTIVE</div>':`<div style="margin-top:8px"><button class="menu-btn" style="max-width:220px;padding:10px;font-size:11px;background:linear-gradient(135deg,var(--gold),#f59e0b);color:#1a1a24" onclick="buyBattlePass()">✨ Upgrade to Premium — 💎 ${BP_PREMIUM_PRICE}</button></div>`}
+    ${maxed?'':`<div style="display:flex;gap:6px;justify-content:center;margin-top:8px">
+      <button onclick="buyBPLevels(false)" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--diamond);background:rgba(185,242,255,0.08);color:var(--diamond);font-family:Manrope,sans-serif;font-size:10px;font-weight:800;cursor:pointer">+1 Level · 💎${BP_LEVEL_PRICE}</button>
+      <button onclick="buyBPLevels(true)" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--diamond);background:rgba(185,242,255,0.15);color:var(--diamond);font-family:Manrope,sans-serif;font-size:10px;font-weight:800;cursor:pointer">+${BP_LEVEL_BUNDLE.levels} Levels · 💎${BP_LEVEL_BUNDLE.price}</button>
+    </div>`}
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+      ${boosterActive()?'<div style="padding:7px 12px;border-radius:8px;background:rgba(6,214,160,0.15);border:1.5px solid var(--p1);color:var(--p1);font-size:10px;font-weight:800">⚡ 2× Booster · '+boosterDaysLeft()+'d left</div>':'<button onclick="buyBooster()" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--p1);background:rgba(6,214,160,0.08);color:var(--p1);font-family:Manrope,sans-serif;font-size:10px;font-weight:800;cursor:pointer">⚡ 2× Booster 7 days · 💎'+BOOSTER_PRICE+'</button>'}
+      ${(AD_BP_CAP-(save.lastAdDate===getGameDay()?(save.adBpToday||0):0))>0?'<button onclick="watchAdBP()" style="padding:7px 12px;border-radius:8px;border:1.5px solid var(--gold);background:rgba(255,209,102,0.08);color:var(--gold);font-family:Manrope,sans-serif;font-size:10px;font-weight:800;cursor:pointer">▶ +'+AD_BP_XP+' XP · '+(AD_BP_CAP-(save.lastAdDate===getGameDay()?(save.adBpToday||0):0))+' left</button>':''}
+    </div>
   </div>`;
+
+  // Beyond level 100: repeatable Bonus Chests
+  if(maxed){
+    const avail=bpBonusAvailable(), m=save.bpPremium?2:1;
+    html+=`<div class="shop-item" style="margin:6px 0;border:1.5px solid ${avail?'var(--gold)':'var(--border)'};background:${avail?'rgba(255,209,102,0.12)':'var(--surface)'}" ${avail?'onclick="claimBPBonus()"':''}>
+      <div class="si-preview" style="background:var(--dim);font-size:20px">🎁</div>
+      <div class="si-info"><div class="si-name">Bonus Chests</div><div class="si-desc">Every ${BP_BONUS_XP} XP past level 100 — 🟡${BP_BONUS_REWARD.coins*m} + 💎${BP_BONUS_REWARD.chromas*m}${save.bpPremium?' (Premium ×2)':''}</div></div>
+      ${avail?`<div style="cursor:pointer;font-size:9px;color:#1a1a24;font-weight:800;padding:6px 10px;background:var(--gold);border-radius:6px">Claim ${avail}</div>`:'<div style="font-size:9px;color:var(--muted);font-weight:700">'+into+'/'+need+'</div>'}
+    </div>`;
+  }
 
   BP_TIERS.forEach(tier=>{
     const reached=curLevel>=tier.level;
@@ -4869,28 +5298,28 @@ function buildBattlePass(){
 
   cont.innerHTML=html;
   cont.querySelectorAll('.fx-sample-bp').forEach(function(cv){var eid=cv.dataset.effect;if(eid)renderEffectSample(cv,eid);});
+  try{updateBPDot();}catch(e){}
 }
 
 function buyBattlePass(){
-  if(save.chromas<800){showToast('Not enough Diamonds! Need 💎 800');return}
-  showConfirmPopup('Upgrade Battle Pass?','Purchase Premium Battle Pass for 💎 500 Chromas?','Purchase',function(){
-    if(save.chromas<800){showToast('Not enough Diamonds! Need 💎 800');return;}save.chromas-=800;save.bpPremium=true;saveProg();updateShopCurrency();buildBattlePass();
+  if(save.chromas<BP_PREMIUM_PRICE){showToast('Not enough Diamonds! Need 💎 '+BP_PREMIUM_PRICE);return}
+  showConfirmPopup('Upgrade Battle Pass?','Unlock Premium rewards for Season '+save.season+' for 💎 '+BP_PREMIUM_PRICE+'? Premium lasts until the season ends.','Purchase',function(){
+    if(save.chromas<BP_PREMIUM_PRICE){showToast('Not enough Diamonds! Need 💎 '+BP_PREMIUM_PRICE);return;}
+    save.chromas-=BP_PREMIUM_PRICE;save.bpPremium=true;saveProg();updateShopCurrency();buildBattlePass();
     showToast('✨ Premium Battle Pass activated!');playSfx('claimBig');
   });
 }
 
 function claimBPReward(track,level){
   const tier=BP_TIERS.find(t=>t.level===level);if(!tier)return;
+  if(bpLevel()<level)return;
+  if(save.bpClaimed[track+'_'+level])return;
+  if(track==='prem'&&!save.bpPremium)return;
   const reward=track==='free'?tier.free:tier.premium;
-  // Grant reward
-  if(reward.type==='coins')save.coins+=reward.amount;
-  else if(reward.type==='chromas')save.chromas+=reward.amount;
-  else if(reward.type==='theme')save.owned['theme_'+reward.id]=true;
-  else if(reward.type==='border')save.owned['border_'+reward.id]=true;
-  else if(reward.type==='icon')save.owned['icon_'+reward.id]=true;
-  else if(reward.type==='title')save.owned['title_'+reward.id]=true;
+  const got=grantBPReward(reward);
   save.bpClaimed[track+'_'+level]=true;
   saveProg._lastCloud=0;saveProg();updateShopCurrency();buildBattlePass();
+  if(got&&got.indexOf('already owned')>=0)showToast('Already owned — '+got.replace(' (already owned)','')+' instead',2200);
 }
 
 // Grant XP after matches
@@ -4975,16 +5404,17 @@ function checkRankUp(oldElo,newElo){
 }
 
 function grantMatchXP(won,isRanked){
-  var _adx=(save.adDoubleActive)?2:1;
-  if(save.adDoubleActive){save.adDoubleActive=false;}
+  var _boost=boosterActive();
+  var _adx=(!_boost&&save.adDoubleActive)?2:1; // keep the 2× ad for later while a Booster is running
+  if(!_boost&&save.adDoubleActive){save.adDoubleActive=false;}
   let xp=won?30:10;
   if(isRanked)xp+=15;
-  save.bpXP+=xp;
-  // Grant coins and chromas for playing
-  save.coins+=(won?25:10)*_adx;
+  addBPXP(xp,_boost?2:1);
+  // Grant coins and chromas for playing (Booster and 2× ad never stack)
+  save.coins+=(won?25:10)*Math.max(_adx,_boost?2:1);
   if(_adx>1)showToast('✨ 2× match rewards applied!',2000);
   matchDiamonds=0;
-  if(won&&save.lastDiamondWinDate!==getGameDay()){save.chromas+=5;save.lastDiamondWinDate=getGameDay();matchDiamonds=5;}
+  if(won&&save.lastDiamondWinDate!==getGameDay()){save.chromas+=3;save.lastDiamondWinDate=getGameDay();matchDiamonds=3;}
 
   // Profile XP — separate from battle pass XP
   let profileXp=won?40:15;
@@ -5069,12 +5499,12 @@ function renderLeaderboardList(container,lb){
 
 // ===== CHAPTERS =====
 const CHAPTERS=[
-  {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[52,57,62]},
-  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb disrupts enemy territory, 🌊 Surge doubles your next move, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[50,54,58],powerTiles:true},
-  {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[48,51,55],powerTiles:true},
-  {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[47,50,53],powerTiles:true},
-  {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[46,49,52],powerTiles:true,darkZones:true},
-  {name:"Convergence",desc:"King of the Hill, Dark Zones and Decay combined. SHADE at near-full power.",mechanic:"CONVERGENCE",mechanicDesc:"King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE has never been sharper. Outthink it.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has grown beyond what you trained for. Three mechanics at once. No shortcuts, no limits — just you and the board. Prove you're ready for what comes next.",starThresholds:[46,52,58],powerTiles:true,darkZones:true,moveLimit:false,baseMoves:999},
+  {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[0,53,56]},
+  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb disrupts enemy territory, 🌊 Surge doubles your next move, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[0,53,56],powerTiles:true},
+  {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[0,52,54],powerTiles:true},
+  {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[0,51,54],powerTiles:true},
+  {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[0,51,54],powerTiles:true,darkZones:true},
+  {name:"Convergence",desc:"King of the Hill, Dark Zones and Decay combined. SHADE at near-full power.",mechanic:"CONVERGENCE",mechanicDesc:"King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE has never been sharper. Outthink it.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has grown beyond what you trained for. Three mechanics at once. No shortcuts, no limits — just you and the board. Prove you're ready for what comes next.",starThresholds:[0,52,56],powerTiles:true,darkZones:true,moveLimit:false,baseMoves:999},
 ];
 const CHALLENGES=[
  {name:"Territory Lord",desc:"Win 25 games to prove your dominance.",reward:"Title: Territory Lord",rewardTitle:'Territory Lord',cols:9,rows:11,colors:5,aiSmart:0.5,reqChapter:0},
@@ -6823,6 +7253,7 @@ function showStory(ch,ci){
 
 function launchLevel(){
   gameLocked=true;
+  if(curConfig)curConfig._extraMovesOffered=false; window._extraMovesPending=false; // new attempt → +3 moves offer available again
   var rb=document.getElementById('olReplay');if(rb)rb.style.display='none';
   var sp=document.getElementById('spinPopup');if(sp)sp.remove();
   showScreen('gameScreen');
@@ -8173,9 +8604,17 @@ function draw(){
     var kx=kt.c*cellW+cellW/2,ky=kt.r*cellH+cellH/2;
     var pulse=0.7+0.3*Math.sin(Date.now()*0.003);
     ctx.save();
-    ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,215,0,'+pulse+')';ctx.lineWidth=3;
-    ctx.shadowColor='rgba(255,215,0,0.9)';ctx.shadowBlur=15*pulse;ctx.stroke();ctx.shadowBlur=0;
+    // "Pizza" timer: crowns move every 7 turns — one slice is eaten each turn (clockwise from the top).
+    // The last slice turns red and pulses. Translucent so the tile colour/symbol stays readable.
+    var KR=Math.min(cellW,cellH)*0.42, KN=7, kLeft=Math.max(1,Math.min(KN,KN-kingTileTimer)), kLast=kLeft===1;
+    var kA0=-Math.PI/2, kA1=kA0+Math.PI*2*kLeft/KN, kRGB=kLast?'239,71,111':'255,215,0';
+    ctx.beginPath();ctx.moveTo(kx,ky);ctx.arc(kx,ky,KR,kA0,kA1);ctx.closePath();
+    ctx.fillStyle='rgba('+kRGB+','+(kLast?(0.22+0.2*pulse):0.26)+')';ctx.fill();
+    ctx.beginPath();ctx.arc(kx,ky,KR,0,Math.PI*2);ctx.strokeStyle='rgba('+kRGB+',0.22)';ctx.lineWidth=1.5;ctx.stroke(); // eaten part
+    ctx.beginPath();ctx.arc(kx,ky,KR,kA0,kA1);ctx.strokeStyle='rgba('+kRGB+','+pulse+')';ctx.lineWidth=3;
+    ctx.shadowColor='rgba('+kRGB+',0.9)';ctx.shadowBlur=(kLast?18:12)*pulse;ctx.stroke();ctx.shadowBlur=0;
+    ctx.strokeStyle='rgba(10,12,25,0.55)';ctx.lineWidth=1;                       // slice cuts
+    for(var kSi=0;kSi<=kLeft&&kSi<KN;kSi++){var kSa=kA0+Math.PI*2*kSi/KN;ctx.beginPath();ctx.moveTo(kx,ky);ctx.lineTo(kx+Math.cos(kSa)*KR,ky+Math.sin(kSa)*KR);ctx.stroke();}
     // Crown badge in the corner so the tile colour stays readable
     var cR=Math.min(cellW,cellH)*0.22;
     var cbx=kt.c*cellW+cellW-cR-2, cby=kt.r*cellH+cR+2;
@@ -8185,10 +8624,10 @@ function draw(){
     ctx.textAlign='center';ctx.textBaseline='middle';
     ctx.fillText('👑',cbx,cby+0.5);
     if(owner[kt.r][kt.c]===1){
-      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
+      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.48,0,Math.PI*2);
       ctx.strokeStyle='rgba(255,255,255,0.8)';ctx.lineWidth=2;ctx.stroke();
     } else if(owner[kt.r][kt.c]===2){
-      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.42,0,Math.PI*2);
+      ctx.beginPath();ctx.arc(kx,ky,Math.min(cellW,cellH)*0.48,0,Math.PI*2);
       ctx.strokeStyle='rgba(239,71,111,0.8)';ctx.lineWidth=2;ctx.stroke();
     }
     ctx.restore();
@@ -8805,7 +9244,7 @@ function updateObjBar(){
     var p1holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===1}).length;
     var p2holds=kingTiles.filter(function(kt){return owner[kt.r][kt.c]===2}).length;
     var kBonus=p1holds>p2holds?'+':p2holds>p1holds?'-':'';
-    var kStatus='👑 Crowns '+p1holds+'-'+p2holds+(p1holds?' · +'+p1holds+'/turn':'')+' · '+p1KingScore+' vs '+p2KingScore+' pts · moves in '+(7-kingTileTimer)+'t';
+    var kStatus='👑 Crowns '+p1holds+'-'+p2holds+(p1holds?' · +'+p1holds+'/turn':'')+' · '+p1KingScore+' vs '+p2KingScore+' pts';
     var kColor=p1holds>p2holds?'var(--p1)':p2holds>p1holds?'var(--p2)':'var(--gold)';
     var kEl=document.getElementById('kingHillStatus');
     if(!kEl){kEl=document.createElement('div');kEl.id='kingHillStatus';kEl.style.cssText='text-align:center;font-size:9px;font-weight:800;padding:2px 0;';document.getElementById('objBar').appendChild(kEl);}
@@ -9207,6 +9646,7 @@ function checkEnd(){
       '| s1='+countOwned(1), 's2='+countOwned(2));
   }
   if(gameOver)return false;
+  if(window._extraMovesPending)return false; // waiting on the +3 moves offer
   if(window._checkEndRunning)return false;
   window._checkEndRunning=true;
   setTimeout(function(){window._checkEndRunning=false;},3000);
@@ -9236,7 +9676,11 @@ function checkEnd(){
     }
   }
   if(unclaimed===0){ended=true;const reqPct=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct;reason='Board fully claimed'}
-  if(curConfig.moveLimit&&movesLeft<=0&&!ended){ended=true;const reqPct2=curConfig.winPct||0;won=p1n>p2n&&p1p>=reqPct2;reason='Moves exhausted'}
+  if(curConfig.moveLimit&&movesLeft<=0&&!ended){
+    const reqPct2=curConfig.winPct||0; const _wouldWin=p1n>p2n&&p1p>=reqPct2;
+    // Out of moves and losing: offer +3 moves for a rewarded ad (once per attempt, single-player only)
+    if(!_wouldWin&&!curConfig._extraMovesOffered&&!curConfig.isOnline&&!curConfig.isRanked&&!isLocalPVP){curConfig._extraMovesOffered=true;window._checkEndRunning=false;showExtraMovesOffer();return false;}
+    ended=true;won=_wouldWin;reason='Moves exhausted'}
   if(!ended)return false;
 
   gameOver=true;
@@ -9508,7 +9952,9 @@ updateAllUI();
 initFirebase();
 checkSeasonEnd();
 checkSeasonRotation();
+try{syncBattlePassSeason();}catch(e){} // pace migration + new-season reset (also runs when the pass opens)
 checkDailyLogin();
+try{scheduleReminders();}catch(e){} // refresh reminders every launch (no-op on web / without permission)
 checkQuestResets();
 updateAuthUI();
 // Show name entry on very first launch, then login screen
