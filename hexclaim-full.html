@@ -3389,6 +3389,7 @@ const GAME_NEWS=[
     '💎 Welcome-back gift if you\'ve been away for a week or more',
     '💬 Join our Discord from Settings — get 💎 50 as a thank-you',
     '📬 Claimed mail now clears itself, and old mail expires after 30 days',
+    '🎯 Captures now push toward the enemy first — tiles behind your front line are only taken once nothing is left ahead',
     '⭐ Campaign stars rebalanced — every win earns at least 1 star, and 3 stars is now equally fair in every chapter',
     '⚖️ Coin and diamond rewards and shop prices rebalanced ahead of launch — login milestones 7, 14, 21 and 30 still give the biggest rewards',
     '🛠️ Battle Pass effect rewards are now granted correctly',
@@ -5499,12 +5500,12 @@ function renderLeaderboardList(container,lb){
 
 // ===== CHAPTERS =====
 const CHAPTERS=[
-  {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[0,53,56]},
-  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb disrupts enemy territory, 🌊 Surge doubles your next move, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[0,53,56],powerTiles:true},
-  {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[0,52,54],powerTiles:true},
-  {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[0,51,54],powerTiles:true},
-  {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[0,51,54],powerTiles:true,darkZones:true},
-  {name:"Convergence",desc:"King of the Hill, Dark Zones and Decay combined. SHADE at near-full power.",mechanic:"CONVERGENCE",mechanicDesc:"King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE has never been sharper. Outthink it.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has grown beyond what you trained for. Three mechanics at once. No shortcuts, no limits — just you and the board. Prove you're ready for what comes next.",starThresholds:[0,52,56],powerTiles:true,darkZones:true,moveLimit:false,baseMoves:999},
+  {name:"The Awakening",desc:"Learn the basics and claim Bonus Cells for extra territory.",mechanic:"BONUS CELLS",mechanicDesc:"Diamond markers are worth 2x territory. Grab them early for a big advantage!",levels:5,cols:12,rows:14,colors:5,aiSmart:0.35,story:"In the fractured realm of Chromara, color is power. You are a Chromancer — one who bends hues to claim dominion. Your journey begins in the Prismatic Lowlands, where a rogue AI entity called SHADE has begun consuming territory.",starThresholds:[0,51,53]},
+  {name:"Power Surge",desc:"Race to claim Power Tiles before SHADE does.",mechanic:"POWER TILES",mechanicDesc:"Golden tiles grant powers — 💥 Bomb disrupts enemy territory, 🌊 Surge doubles your next move, ⚡ Double gives two turns in a row.",levels:5,cols:12,rows:14,colors:5,aiSmart:0.60,story:"The Chromatic Council has scattered power crystals across the battlefield. SHADE hungers for them. Race to claim every advantage before it does — the tide of war depends on it.",starThresholds:[0,51,53],powerTiles:true},
+  {name:"The Rot",desc:"Your border tiles crumble if left unprotected.",mechanic:"TERRITORY DECAY",mechanicDesc:"Every 6 turns, exposed border tiles revert to neutral. Expand aggressively or your domain crumbles from within.",levels:5,cols:12,rows:14,colors:6,aiSmart:0.75,story:"SHADE has unleashed a chromatic virus that erodes unprotected territory. Your borders are no longer safe. Push forward relentlessly — or watch your domain crumble from within.",starThresholds:[0,51,53],powerTiles:true},
+  {name:"King's Court",desc:"Control the crown tile at the center for a massive bonus.",mechanic:"KING OF THE HILL",mechanicDesc:"The crown tile at the center is worth 10% bonus territory. Hold it when the game ends to gain the advantage.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.82,story:"Deep in the Chromatic Citadel lies the Crown Nexus — a tile of immense power. Whoever holds it when the dust settles controls all of Chromara. SHADE knows this. So do you.",starThresholds:[0,48,50],powerTiles:true},
+  {name:"Dark Frontier",desc:"Mystery zones hide secrets across the battlefield.",mechanic:"DARK ZONES",mechanicDesc:"Dark patches hide bonus cells and power tiles. Expand into them to reveal what lurks inside.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has cloaked portions of the battlefield in chromatic darkness. What lies within those shadowed zones? Territory? Power? Or a trap? There is only one way to find out.",starThresholds:[0,48,50],powerTiles:true,darkZones:true},
+  {name:"Convergence",desc:"King of the Hill, Dark Zones and Decay combined. SHADE at near-full power.",mechanic:"CONVERGENCE",mechanicDesc:"King of the Hill, Territory Decay and Dark Zones all active at once. No move limit — but SHADE has never been sharper. Outthink it.",levels:5,cols:13,rows:15,colors:6,aiSmart:0.90,story:"SHADE has grown beyond what you trained for. Three mechanics at once. No shortcuts, no limits — just you and the board. Prove you're ready for what comes next.",starThresholds:[0,49,51],powerTiles:true,darkZones:true,moveLimit:false,baseMoves:999},
 ];
 const CHALLENGES=[
  {name:"Territory Lord",desc:"Win 25 games to prove your dominance.",reward:"Title: Territory Lord",rewardTitle:'Territory Lord',cols:9,rows:11,colors:5,aiSmart:0.5,reqChapter:0},
@@ -7615,22 +7616,34 @@ function checkDarkZoneReveal(r,c){
     }
   });
 }
-// Shared capture-priority rule: prefer candidates furthest from P1's start corner (toward the opponent); random tiebreak among equals
-function forwardScore(r,c,player){
-  const corner=player===2?{r:ROWS-1-p1StartCorner.r,c:COLS-1-p1StartCorner.c}:p1StartCorner;
-  return Math.abs(r-corner.r)+Math.abs(c-corner.c);
+// Steps from every cell to the nearest tile owned by `enemy` (multi-source BFS).
+function enemyDistanceMap(enemy){
+  var d=[],q=[],h=0;
+  for(var r=0;r<ROWS;r++){var row=[];for(var c=0;c<COLS;c++){if(owner[r][c]===enemy){row.push(0);q.push([r,c]);}else row.push(Infinity);}d.push(row);}
+  while(h<q.length){var p=q[h++];
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(function(o){var nr=p[0]+o[0],nc=p[1]+o[1];
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&d[nr][nc]===Infinity){d[nr][nc]=d[p[0]][p[1]]+1;q.push([nr,nc]);}});}
+  return d;
 }
-function pickForwardCandidates(candidates,maxCount,player){
+// Split capture candidates into forward (toward the enemy, or sideways along the front) and backward
+// (farther from the enemy than the tile they would grow from). ownerGrid = current/simulated ownership.
+function splitForward(candidates,player,ownerGrid){
+  var dist=enemyDistanceMap(player===1?2:1), fwd=[], back=[];
+  candidates.forEach(function(cell){
+    var dc=dist[cell.r][cell.c], from=Infinity;
+    [[0,1],[0,-1],[1,0],[-1,0]].forEach(function(o){var nr=cell.r+o[0],nc=cell.c+o[1];
+      if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&ownerGrid[nr][nc]===player)from=Math.min(from,dist[nr][nc]);});
+    (from===Infinity||dc===Infinity||dc<=from?fwd:back).push(cell);
+  });
+  return {fwd:fwd,back:back};
+}
+function _shuffleCells(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+// When a move can't take every matching tile (2 per move, 6 with Surge): random FORWARD tiles first;
+// backward tiles only once no forward ones are left.
+function pickForwardCandidates(candidates,maxCount,player,ownerGrid){
   if(candidates.length<=maxCount)return candidates.slice();
-  const scored=candidates.map(function(cell){return{r:cell.r,c:cell.c,score:forwardScore(cell.r,cell.c,player)+Math.random()*4};});
-  scored.sort(function(a,b){return b.score-a.score});
-  let i=0;
-  while(i<scored.length){
-    let j=i;while(j<scored.length&&scored[j].score===scored[i].score)j++;
-    for(let k=j-1;k>i;k--){const m=i+Math.floor(Math.random()*(k-i+1));const tmp=scored[k];scored[k]=scored[m];scored[m]=tmp;}
-    i=j;
-  }
-  return scored.slice(0,maxCount).map(function(s){return{r:s.r,c:s.c}});
+  var sp=splitForward(candidates,player,ownerGrid||owner);
+  return _shuffleCells(sp.fwd).concat(_shuffleCells(sp.back)).slice(0,maxCount).map(function(c){return{r:c.r,c:c.c};});
 }
 // Power-tile pickup credit: online, credit whichever player slot is actually mine;
 // offline (VS AI / campaign / local PVP), power-ups remain player-1-only by design.
@@ -7690,7 +7703,7 @@ function expandTerritoryAnimated(player,newColor,callback){
         }
       });
     }
-    const wave=pickForwardCandidates(frontier,MAX_CAP-totalCollected,player);
+    const wave=pickForwardCandidates(frontier,MAX_CAP-totalCollected,player,tempOwner);
     if(wave.length){
       wave.forEach(w=>{tempOwner[w.r][w.c]=player;changed=true});
       waves.push(wave);
@@ -8858,6 +8871,12 @@ function previewCapture(colorIdx){
       });
     }
     if(!frontier.length)break;
+    if(frontier.length>cap-taken){
+      // More candidates than slots: forward tiles are taken first (see pickForwardCandidates)
+      var _sp=splitForward(frontier,1,simOwner);
+      (_sp.fwd.length>=cap-taken?_sp.fwd:frontier).forEach(f=>set.add(f.r+','+f.c));
+      taken=cap;break;
+    }
     frontier.forEach(f=>set.add(f.r+','+f.c));
     if(frontier.length>=cap-taken){taken=cap;break;}
     frontier.forEach(f=>{simOwner[f.r][f.c]=1;});
