@@ -3391,6 +3391,7 @@ const GAME_NEWS=[
     '📬 Claimed mail now clears itself, and old mail expires after 30 days',
     '🎯 Captures now push toward the enemy first — tiles behind your front line are only taken once nothing is left ahead',
     '⭐ Campaign stars rebalanced — every win earns at least 1 star, and 3 stars is now equally fair in every chapter',
+    '🤖 Campaign AI rebalanced in every chapter — fairer difficulty curve, especially in Chapter 2',
     '⚖️ Coin and diamond rewards and shop prices rebalanced ahead of launch — login milestones 7, 14, 21 and 30 still give the biggest rewards',
     '🛠️ Battle Pass effect rewards are now granted correctly',
   ]},
@@ -7014,51 +7015,51 @@ function startCampaignLevel(ci,li){
   const levelProgression=[
     // Chapter 1 — AWAKENING: basics + bonus cells
     [
+      {cols:10,rows:12,colors:4,aiSmart:0.15,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
       {cols:10,rows:12,colors:4,aiSmart:0.20,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
-      {cols:10,rows:12,colors:4,aiSmart:0.27,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
-      {cols:11,rows:13,colors:4,aiSmart:0.33,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
-      {cols:11,rows:13,colors:5,aiSmart:0.38,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
-      {cols:12,rows:14,colors:5,aiSmart:0.43,baseMoves:999,fog:false,powerTiles:false,darkZones:false}
+      {cols:11,rows:13,colors:4,aiSmart:0.25,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.30,baseMoves:999,fog:false,powerTiles:false,darkZones:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.35,baseMoves:999,fog:false,powerTiles:false,darkZones:false}
     ],
     // Chapter 2 — POWER SURGE: power tiles from level 1
     [
-      {cols:10,rows:12,colors:4,aiSmart:0.48,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:11,rows:13,colors:4,aiSmart:0.54,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:11,rows:13,colors:5,aiSmart:0.60,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:12,rows:14,colors:5,aiSmart:0.65,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:12,rows:14,colors:6,aiSmart:0.70,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
+      {cols:10,rows:12,colors:4,aiSmart:0.35,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:4,aiSmart:0.40,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.45,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:5,aiSmart:0.47,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.49,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
     ],
     // Chapter 3 — THE ROT: decay active throughout
     [
-      {cols:11,rows:13,colors:5,aiSmart:0.68,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:11,rows:13,colors:5,aiSmart:0.73,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:12,rows:14,colors:6,aiSmart:0.77,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:12,rows:14,colors:6,aiSmart:0.81,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:13,rows:15,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
+      {cols:11,rows:13,colors:5,aiSmart:0.58,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:11,rows:13,colors:5,aiSmart:0.62,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.66,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.70,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.74,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
     ],
     // Chapter 4 — KING'S COURT: king of the hill active
     [
-      {cols:12,rows:14,colors:6,aiSmart:0.78,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:12,rows:14,colors:6,aiSmart:0.82,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:13,rows:15,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
-      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
+      {cols:12,rows:14,colors:6,aiSmart:0.66,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:12,rows:14,colors:6,aiSmart:0.70,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.74,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.77,baseMoves:999,fog:false,powerTiles:true,darkZones:false},
+      {cols:13,rows:15,colors:6,aiSmart:0.80,baseMoves:999,fog:false,powerTiles:true,darkZones:false}
     ],
     // Chapter 5 — DARK FRONTIER: dark zones active
     [
-      {cols:12,rows:14,colors:6,aiSmart:0.85,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:12,rows:14,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.92,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.95,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
+      {cols:12,rows:14,colors:6,aiSmart:0.78,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:12,rows:14,colors:6,aiSmart:0.81,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.84,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.87,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.90,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
     ],
     // Chapter 6 — CONVERGENCE: all mechanics + move limit
     [
-      {cols:13,rows:15,colors:6,aiSmart:0.88,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.91,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:13,rows:15,colors:6,aiSmart:0.93,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.95,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
-      {cols:14,rows:16,colors:6,aiSmart:0.97,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
+      {cols:13,rows:15,colors:6,aiSmart:0.80,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.83,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:13,rows:15,colors:6,aiSmart:0.86,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.89,baseMoves:999,fog:false,powerTiles:true,darkZones:true},
+      {cols:14,rows:16,colors:6,aiSmart:0.92,baseMoves:999,fog:false,powerTiles:true,darkZones:true}
     ]
   ];
   const lp=levelProgression[ci]?levelProgression[ci][li]||{}:{};
